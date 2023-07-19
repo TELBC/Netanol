@@ -272,3 +272,7 @@ __pycache__/
 # tools/
 
 # End of https://www.toptal.com/developers/gitignore/api/aspnetcore
+
+#extra
+Tapas/bin/Debug/net6.0/*.dll
+Tapas/bin/Debug/net6.0/*.pdb
