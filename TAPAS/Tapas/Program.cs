@@ -10,7 +10,7 @@ collection.AddScoped<TraceRepository>();
 collection.AddHostedService<NetFlow9TraceImporter>(); // TODO: set exception behaviour
 
 builder.Services.AddControllers();
-
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 var app = builder.Build();
 
 app.MapControllers();
