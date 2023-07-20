@@ -1,0 +1,23 @@
+version: '3.9'
+services:
+  tapas:
+    build:
+      context: ../
+      dockerfile: Docker/Dockerfile
+    ports:
+      - "8000:80"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:12
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
