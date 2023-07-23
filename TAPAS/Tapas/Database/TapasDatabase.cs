@@ -14,7 +14,7 @@ public class TapasDatabase
     
     public void Seed()
     {
-        _db.Database.EnsureCreated();
+        _db.Database.EnsureCreatedAsync();
         _db.SaveChanges();
     }
 }
