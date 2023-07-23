@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Tapas.Database.Dto;
 using Tapas.Models;
 
 namespace Tapas;

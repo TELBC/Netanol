@@ -1,4 +1,4 @@
-﻿namespace Tapas;
+﻿namespace Tapas.Database.Dto;
 
 public class SingleTraceDtoEqualityComparer : IEqualityComparer<SingleTraceDto>
 {

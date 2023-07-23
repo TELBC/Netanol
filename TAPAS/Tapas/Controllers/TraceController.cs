@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Tapas.Database;
+using Tapas.Database.Dto;
 using Tapas.Models;
 
 namespace Tapas.Controllers

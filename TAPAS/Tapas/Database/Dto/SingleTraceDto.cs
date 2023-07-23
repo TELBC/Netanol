@@ -1,6 +1,6 @@
 ﻿using Tapas.Models;
 
-namespace Tapas
+namespace Tapas.Database.Dto
 {
 
     public class SingleTraceDto
