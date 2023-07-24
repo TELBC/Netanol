@@ -12,15 +12,15 @@ public class SingleTrace
 {
     public long Id { get; set; }
     
-    public IPAddress ExporterIp { get; }
+    public IPAddress ExporterIp { get; set; }
     
-    public TraceProtocol Protocol { get; }
+    public TraceProtocol Protocol { get; set; }
     
-    public IPAddress SourceIpAddress { get; }
-    public int SourcePort { get; }
+    public IPAddress SourceIpAddress { get; set; }
+    public int SourcePort { get; set; }
     
-    public IPAddress DestinationIpAddress { get; }
-    public int DestinationPort { get; }
+    public IPAddress DestinationIpAddress { get; set; }
+    public int DestinationPort { get; set; }
 
     public SingleTrace(TraceProtocol protocol, IPAddress exporterIp, IPAddress sourceIpAddress, int sourcePort, IPAddress destinationIpAddress, int destinationPort)
     {
@@ -34,5 +34,6 @@ public class SingleTrace
 
 #pragma warning disable CS8618
     public SingleTrace() { }
+ 
 #pragma warning restore CS8618
 }

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Tapas.Database;
 using Tapas.Database.Dto;
@@ -22,12 +23,18 @@ namespace Tapas.Controllers
         public async Task<IActionResult> GetAllTraces()
         {
             var traces = await _traceRepository.GetAllSingleTraces();
-            var traceDtos = _mapper.Map<IEnumerable<SingleTraceDto>>(traces); // this uses AutoMapper to map the traces to SingleTraceDto
+            var traceDtos = _mapper.Map<IEnumerable<SingleTraceDto>>(traces);
 
             var groupedTraces = traceDtos.GroupBy(dto => dto, new SingleTraceDtoEqualityComparer())
                 .Select(group => new
                 {
-                    Trace = group.Key,
+                    Trace = new SingleTraceDto(
+                        group.Key.Protocol,
+                        IPAddress.Parse(group.Key.SourceIpAddress).ToString(), // Convert back to IPAddress
+                        group.Key.SourcePort,
+                        IPAddress.Parse(group.Key.DestinationIpAddress).ToString(), // Convert back to IPAddress
+                        group.Key.DestinationPort
+                    ),
                     Count = group.Count()
                 });
 

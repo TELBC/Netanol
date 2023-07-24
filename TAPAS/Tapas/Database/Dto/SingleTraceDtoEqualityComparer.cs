@@ -1,4 +1,7 @@
-﻿namespace Tapas.Database.Dto;
+﻿using System.Collections.Generic;
+using System.Net;
+
+namespace Tapas.Database.Dto;
 
 public class SingleTraceDtoEqualityComparer : IEqualityComparer<SingleTraceDto>
 {
@@ -11,9 +14,9 @@ public class SingleTraceDtoEqualityComparer : IEqualityComparer<SingleTraceDto>
             return false;
 
         return x.Protocol == y.Protocol &&
-               x.SourceIpAddress == y.SourceIpAddress &&
+               IPAddress.Equals(x.SourceIpAddress, y.SourceIpAddress) &&
                x.SourcePort == y.SourcePort &&
-               x.DestinationIpAddress == y.DestinationIpAddress &&
+               IPAddress.Equals(x.DestinationIpAddress, y.DestinationIpAddress) &&
                x.DestinationPort == y.DestinationPort;
     }
     
