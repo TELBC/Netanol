@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Tapas.Database;
@@ -38,6 +39,28 @@ namespace Tapas.Controllers
                     Count = group.Count()
                 });
 
+            return Ok(groupedTraces);
+        }
+        
+        [HttpGet("/get_by_timestamp")]
+        public async Task<IActionResult> GetTracesByTimestamp([FromQuery(Name = "from")] DateTimeOffset from, [FromQuery(Name = "until")] DateTimeOffset until)
+        {
+            var traces = await _traceRepository.GetTracesByTimestamp(from, until);
+            var traceDtos = _mapper.Map<IEnumerable<SingleTraceDto>>(traces);
+            
+            var groupedTraces = traceDtos.GroupBy(dto => dto, new SingleTraceDtoEqualityComparer())
+                .Select(group => new
+                {
+                    Trace = new SingleTraceDto(
+                        group.Key.Protocol,
+                        IPAddress.Parse(group.Key.SourceIpAddress).ToString(), // Convert back to IPAddress
+                        group.Key.SourcePort,
+                        IPAddress.Parse(group.Key.DestinationIpAddress).ToString(), // Convert back to IPAddress
+                        group.Key.DestinationPort
+                    ),
+                    Count = group.Count()
+                });
+            
             return Ok(groupedTraces);
         }
     }
