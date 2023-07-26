@@ -20,7 +20,7 @@ namespace Tapas.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("/get_all")]
+        [HttpGet("get_all")]
         public async Task<IActionResult> GetAllTraces()
         {
             var traces = await _traceRepository.GetAllSingleTraces();
@@ -42,7 +42,7 @@ namespace Tapas.Controllers
             return Ok(groupedTraces);
         }
         
-        [HttpGet("/get_by_window")]
+        [HttpGet("get_by_window")]
         public async Task<IActionResult> GetTracesByWindow([FromQuery(Name = "from")] DateTimeOffset from, [FromQuery(Name = "until")] DateTimeOffset until)
         {
             var traces = await _traceRepository.GetTracesByTimestamp(from, until);
