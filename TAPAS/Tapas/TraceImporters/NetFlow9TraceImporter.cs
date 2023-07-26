@@ -37,7 +37,7 @@ public class NetFlow9TraceImporter : BackgroundService
         var data = nr.ReadFlowSet() as DataFlowSet;
         var view = new NetflowView(data, template);
         var record = view[0];
-        var timestamp = DateTimeOffset.UtcNow.ToOffset(TimeSpan.Zero);
+        var timestamp = DateTimeOffset.UtcNow;
         
         return new SingleTrace(TraceProtocol.Udp, IPAddress.Loopback, record.IPv4SourceAddress, 0, record.IPv4DestinationAddress, 0,timestamp);
     }

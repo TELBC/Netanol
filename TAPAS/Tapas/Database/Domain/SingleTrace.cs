@@ -32,7 +32,7 @@ public class SingleTrace
         SourcePort = sourcePort;
         DestinationIpAddress = destinationIpAddress;
         DestinationPort = destinationPort;
-        Timestamp = timestamp;
+        Timestamp = timestamp.ToOffset(TimeSpan.Zero);
     }
 
 #pragma warning disable CS8618
