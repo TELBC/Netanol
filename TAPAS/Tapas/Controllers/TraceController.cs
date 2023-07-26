@@ -42,7 +42,7 @@ namespace Tapas.Controllers
             return Ok(groupedTraces);
         }
         
-        [HttpGet("/get_by_timespan")]
+        [HttpGet("/get_by_window")]
         public async Task<IActionResult> GetTracesByTimestamp([FromQuery(Name = "from")] DateTimeOffset from, [FromQuery(Name = "until")] DateTimeOffset until)
         {
             var traces = await _traceRepository.GetTracesByTimestamp(from, until);
