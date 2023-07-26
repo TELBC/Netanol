@@ -43,7 +43,7 @@ namespace Tapas.Controllers
         }
         
         [HttpGet("/get_by_window")]
-        public async Task<IActionResult> GetTracesByTimestamp([FromQuery(Name = "from")] DateTimeOffset from, [FromQuery(Name = "until")] DateTimeOffset until)
+        public async Task<IActionResult> GetTracesByWindow([FromQuery(Name = "from")] DateTimeOffset from, [FromQuery(Name = "until")] DateTimeOffset until)
         {
             var traces = await _traceRepository.GetTracesByTimestamp(from, until);
             var traceDtos = _mapper.Map<IEnumerable<SingleTraceDto>>(traces);
