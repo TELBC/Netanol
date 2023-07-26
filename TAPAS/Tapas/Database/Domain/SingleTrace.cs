@@ -24,7 +24,7 @@ public class SingleTrace
     
     public DateTimeOffset Timestamp { get; set; }
 
-    public SingleTrace(TraceProtocol protocol, IPAddress exporterIp, IPAddress sourceIpAddress, int sourcePort, IPAddress destinationIpAddress, int destinationPort,DateTimeOffset timestamp)
+    public SingleTrace(TraceProtocol protocol, IPAddress exporterIp, IPAddress sourceIpAddress, int sourcePort, IPAddress destinationIpAddress, int destinationPort, DateTimeOffset timestamp)
     {
         Protocol = protocol;
         ExporterIp = exporterIp;
