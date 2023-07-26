@@ -21,8 +21,10 @@ public class SingleTrace
     
     public IPAddress DestinationIpAddress { get; set; }
     public int DestinationPort { get; set; }
+    
+    public DateTimeOffset Timestamp { get; set; }
 
-    public SingleTrace(TraceProtocol protocol, IPAddress exporterIp, IPAddress sourceIpAddress, int sourcePort, IPAddress destinationIpAddress, int destinationPort)
+    public SingleTrace(TraceProtocol protocol, IPAddress exporterIp, IPAddress sourceIpAddress, int sourcePort, IPAddress destinationIpAddress, int destinationPort, DateTimeOffset timestamp)
     {
         Protocol = protocol;
         ExporterIp = exporterIp;
@@ -30,6 +32,7 @@ public class SingleTrace
         SourcePort = sourcePort;
         DestinationIpAddress = destinationIpAddress;
         DestinationPort = destinationPort;
+        Timestamp = timestamp.ToOffset(TimeSpan.Zero);
     }
 
 #pragma warning disable CS8618

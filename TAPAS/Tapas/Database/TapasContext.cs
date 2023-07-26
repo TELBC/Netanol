@@ -10,4 +10,9 @@ public class TapasContext : DbContext
     public TapasContext(DbContextOptions options) : base(options)
     {
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasDefaultSchema("Tapas");
+    }
 }

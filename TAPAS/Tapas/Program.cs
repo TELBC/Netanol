@@ -13,7 +13,7 @@ var collection = builder.Services;
 collection.AddDbContext<TapasContext>(options => options.UseNpgsql(connectionString));
 collection.AddScoped<TraceRepository>();
 collection.AddHostedService<NetFlow9TraceImporter>(); // TODO: set exception behaviour
-
+builder.Host.UseDefaultServiceProvider(opts => opts.ValidateScopes = false);
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 var app = builder.Build();

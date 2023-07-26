@@ -21,4 +21,11 @@ public class TraceRepository
     {
         return Task.FromResult<IEnumerable<SingleTrace>>(_context.SingleTraces);
     }
+
+    public Task<IEnumerable<SingleTrace>> GetTracesByTimestamp(DateTimeOffset from, DateTimeOffset until)
+    {
+        return Task.FromResult<IEnumerable<SingleTrace>>(_context.SingleTraces
+            .Where(trace => trace.Timestamp >= from && trace.Timestamp <= until));
+    }
+   
 }
