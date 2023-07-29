@@ -6,6 +6,8 @@ services:
       dockerfile: Docker/Dockerfile
     ports:
       - "8000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
     depends_on:
       - postgres
 
