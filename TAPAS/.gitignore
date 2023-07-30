@@ -276,3 +276,5 @@ __pycache__/
 #extra
 Tapas/bin/Debug/net6.0/*.dll
 Tapas/bin/Debug/net6.0/*.pdb
+
+*.env
