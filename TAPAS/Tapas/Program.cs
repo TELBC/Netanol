@@ -1,23 +1,17 @@
 using Microsoft.EntityFrameworkCore;
+using Tapas;
 using Tapas.Database;
 using Tapas.Listeners;
 
 var builder = WebApplication.CreateBuilder(args);
+var startup = new Startup(builder.Configuration);
 
-var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
-var db = new TapasDatabase(new DbContextOptionsBuilder<TapasContext>().UseNpgsql(connectionString).Options);
-db.Seed();
-
-var collection = builder.Services;
-// collection.AddDbContext<TapasContext>(optionsBuilder => optionsBuilder.UseInMemoryDatabase("Tapas"));
-collection.AddDbContext<TapasContext>(options => options.UseNpgsql(connectionString));
-collection.AddScoped<TraceRepository>();
-collection.AddHostedService<NetFlow9TraceImporter>(); // TODO: set exception behaviour
+// TODO: use proper services
 builder.Host.UseDefaultServiceProvider(opts => opts.ValidateScopes = false);
-builder.Services.AddControllers();
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+startup.ConfigureServices(builder.Services);
+startup.ConfigureHost(builder.Host);
+
 var app = builder.Build();
-
-app.MapControllers();
-
+startup.Configure(app, builder.Environment);
 app.Run();
