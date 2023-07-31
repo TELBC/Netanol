@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Net;
+﻿using System.Net;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Tapas.Database;
@@ -30,10 +29,12 @@ namespace Tapas.Controllers
                 .Select(group => new
                 {
                     Trace = new SingleTraceDto(
-                        group.Key.Protocol,
-                        IPAddress.Parse(group.Key.SourceIpAddress).ToString(), // Convert back to IPAddress
+                        (TraceProtocol)Enum.Parse(typeof(TraceProtocol), group.Key.Protocol),
+                        IPAddress.Parse(group.Key.SourceIpv4Address).ToString(),
+                        IPAddress.Parse(group.Key.SourceIpv6Address).ToString(),
                         group.Key.SourcePort,
-                        IPAddress.Parse(group.Key.DestinationIpAddress).ToString(), // Convert back to IPAddress
+                        IPAddress.Parse(group.Key.DestinationIpv4Address).ToString(),
+                        IPAddress.Parse(group.Key.DestinationIpv6Address).ToString(),
                         group.Key.DestinationPort
                     ),
                     Count = group.Count()
@@ -41,26 +42,29 @@ namespace Tapas.Controllers
 
             return Ok(groupedTraces);
         }
-        
+
         [HttpGet("get_by_window")]
-        public async Task<IActionResult> GetTracesByWindow([FromQuery(Name = "from")] DateTimeOffset from, [FromQuery(Name = "until")] DateTimeOffset until)
+        public async Task<IActionResult> GetTracesByWindow([FromQuery(Name = "from")] DateTimeOffset from,
+            [FromQuery(Name = "until")] DateTimeOffset until)
         {
             var traces = await _traceRepository.GetTracesByTimestamp(from, until);
             var traceDtos = _mapper.Map<IEnumerable<SingleTraceDto>>(traces);
-            
+
             var groupedTraces = traceDtos.GroupBy(dto => dto, new SingleTraceDtoEqualityComparer())
                 .Select(group => new
                 {
                     Trace = new SingleTraceDto(
-                        group.Key.Protocol,
-                        IPAddress.Parse(group.Key.SourceIpAddress).ToString(), // Convert back to IPAddress
+                        (TraceProtocol)Enum.Parse(typeof(TraceProtocol), group.Key.Protocol),
+                        IPAddress.Parse(group.Key.SourceIpv4Address).ToString(),
+                        IPAddress.Parse(group.Key.SourceIpv6Address).ToString(),
                         group.Key.SourcePort,
-                        IPAddress.Parse(group.Key.DestinationIpAddress).ToString(), // Convert back to IPAddress
+                        IPAddress.Parse(group.Key.DestinationIpv4Address).ToString(),
+                        IPAddress.Parse(group.Key.DestinationIpv6Address).ToString(),
                         group.Key.DestinationPort
                     ),
                     Count = group.Count()
                 });
-            
+
             return Ok(groupedTraces);
         }
     }

@@ -25,13 +25,13 @@ public class NetFlow9TraceImporter : BackgroundService
             var singleTrace = ReadSingleTrace(result);
             await _traceRepository.AddSingleTrace(singleTrace);
         }
-    }
+    } 
 
     private SingleTrace ReadSingleTrace(UdpReceiveResult result)
     {
         var stream = new MemoryStream(result.Buffer);
         using var nr = new NetflowReader(stream);
-        
+
         _ = nr.ReadPacketHeader();
         var template = nr.ReadFlowSet() as TemplateFlowSet;
         var data = nr.ReadFlowSet() as DataFlowSet;
@@ -39,6 +39,15 @@ public class NetFlow9TraceImporter : BackgroundService
         var record = view[0];
         var timestamp = DateTimeOffset.UtcNow;
         
-        return new SingleTrace(TraceProtocol.Udp, IPAddress.Loopback, record.IPv4SourceAddress, 0, record.IPv4DestinationAddress, 0,timestamp);
+        return new SingleTrace(
+            (TraceProtocol)new Random().Next(2),
+            IPAddress.Loopback,
+            record.IPv4SourceAddress,
+            record.IPv6SourceAddress,
+            new Random().Next(20,23),
+            record.IPv4DestinationAddress,
+            record.IPv6DestinationAddress,
+            new Random().Next(20,23),
+            timestamp);
     }
 }
