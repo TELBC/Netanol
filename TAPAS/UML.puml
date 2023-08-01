@@ -1,0 +1,76 @@
+﻿@startuml
+
+package "Technical Storage" {
+    class SingleTrace {
+        + long Id [Key]
+    
+        + DateTime StartTimeStamp
+        + DateTime EndTimeStamp
+        
+        + int Protocol [Enum]
+        + int TypeOfService [Enum]
+    
+        + NetworkHost SourceHost
+        + int SourcePort
+        
+        + NetworkHost DestinationHost
+        + int Destination
+        
+        + long ByteCount
+        + long PacketCount
+    }
+    SingleTrace-> NetworkHost
+    
+    class NetworkHost {
+        + long Id [Key]
+    
+        + IpAddress IpAddress [Unique]
+        + string DnsName [Updated by BackgroundService]
+        + DateTime LastAccessedDnsName
+        
+        + NetworkDevice NetworkDevice
+    }
+    NetworkHost -> NetworkDevice
+    
+    class NetworkDevice {
+        + long Id [Key]
+        
+        + string DnsName [Unique]
+    }
+}
+
+package "Layout Storage" {
+    class LayoutPreset {
+        + long Id [Key]
+        + string Name [Unique]
+    }
+
+    class GraphNode {
+        + long Id [Key]
+        + int LayoutId
+        
+        + string DisplayName
+    }
+    GraphNode -> LayoutPreset
+    
+    class DeviceNode {
+        + long NetworkDeviceId
+        + long? IslandId
+    }
+    DeviceNode -* GraphNode
+    DeviceNode --> NetworkDevice
+    DeviceNode -> IslandGroup
+    
+    class CompressedGroup {
+        + long GraphElementId
+        + long NetworkDeviceId
+    }
+    CompressedGroup -> GraphNode
+    CompressedGroup -> NetworkDevice
+    
+    class IslandGroup {
+        + long Id
+    }
+}
+
+@enduml
