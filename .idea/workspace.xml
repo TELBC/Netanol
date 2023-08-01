@@ -4,7 +4,35 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ed972b1-8c87-471e-86d5-7d3db37a3f7e" name="Changes" comment="" />
+    <list default="true" id="1ed972b1-8c87-471e-86d5-7d3db37a3f7e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/.eslintrc.cjs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/Manager/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/.nuxt/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/Manager/.nuxt/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/.nuxt/router.js" beforeDir="false" afterPath="$PROJECT_DIR$/Manager/.nuxt/router.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/.nuxt/routes.json" beforeDir="false" afterPath="$PROJECT_DIR$/Manager/.nuxt/routes.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/.vscode/extensions.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/Manager/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/env.d.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/Manager/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/public/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/src/App.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/src/assets/TapasTheme.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/src/assets/base.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/src/assets/main.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/src/main.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/src/router/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/src/views/HomeView.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/tsconfig.app.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/Manager/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/tsconfig.node.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/tsconfig.vitest.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/vite.config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Manager/vitest.config.ts" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -18,14 +46,14 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/Manager-Nuxt/Manager" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="2TOcD5hZY5BDMsnVmtlApMiKNYN" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -36,7 +64,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "dev",
     "last_opened_file_path": "C:/Users/TELB/Desktop/New folder (2)",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -56,6 +84,7 @@
       <option name="presentableId" value="Default" />
       <updated>1690917444524</updated>
       <workItem from="1690917448971" duration="1830000" />
+      <workItem from="1690925969270" duration="333000" />
     </task>
     <servers />
   </component>
