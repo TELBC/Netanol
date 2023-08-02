@@ -20,25 +20,40 @@ var addresses = new[]
 while (true)
 {
     var header = new PacketHeader(2, 0, 0);
-
     var record = new TemplateRecord(256);
-    record.Fields.Add(new Field(FieldType.IPv4SourceAddress));
-    record.Fields.Add(new Field(FieldType.IPv6SourceAddress));
-    record.Fields.Add(new Field(FieldType.IPv4DestinationAddress));
-    record.Fields.Add(new Field(FieldType.IPv6DestinationAddress));
-
+    var IPVersion = new Random().Next(2);
+    if (IPVersion == 0)
+    {
+        record.Fields.Add(new Field(FieldType.IPv4SourceAddress));
+        record.Fields.Add(new Field(FieldType.Layer4SourcePort));
+        record.Fields.Add(new Field(FieldType.IPv4DestinationAddress));
+        record.Fields.Add(new Field(FieldType.Layer4DestinationPort));    
+    }
+    else
+    {
+        record.Fields.Add(new Field(FieldType.IPv6SourceAddress));
+        record.Fields.Add(new Field(FieldType.Layer4SourcePort));
+        record.Fields.Add(new Field(FieldType.IPv6DestinationAddress));
+        record.Fields.Add(new Field(FieldType.Layer4DestinationPort));   
+    }
+    
     var template = new TemplateFlowSet();
     template.Records.Add(record);
-
+    
+    var rand = new Random();
+    
+    var source = rand.Next(0, addresses.Length);
+    var dest = 0;
+    do
+    {
+        dest = rand.Next(0, addresses.Length);
+    } while (dest == source);
+    
     var data = new DataFlowSet(256);
-
-    var source = new Random().Next(0, addresses.Length);
-    var destination = new Random().Next(0, addresses.Length);
-
-    data.Records.Add(IPAddress.Parse(addresses[source][0]));
-    data.Records.Add(IPAddress.Parse(addresses[source][1]));
-    data.Records.Add(IPAddress.Parse(addresses[destination][0]));
-    data.Records.Add(IPAddress.Parse(addresses[destination][1]));
+    data.Records.Add(IPAddress.Parse(addresses[source][IPVersion])); 
+    data.Records.Add((short)rand.Next(20,23));
+    data.Records.Add(IPAddress.Parse(addresses[dest][IPVersion]));
+    data.Records.Add((short)rand.Next(20,23));
 
     using (var ms = new MemoryStream())
     using (var nw = new NetflowWriter(ms))

@@ -5,23 +5,22 @@ namespace Tapas.Database.Dto;
 public class SingleTraceDto
 {
     public string Protocol { get; set; }
-    public string? SourceIpv4Address { get; set; }
-    public string? SourceIpv6Address { get; set; }
+    public string SourceIpAddress { get; set; }
     public int SourcePort { get; set; }
-    public string? DestinationIpv4Address { get; set; }
-    public string? DestinationIpv6Address { get; set; }
+    public string DestinationIpAddress { get; set; }
     public int DestinationPort { get; set; }
-
-    public SingleTraceDto(TraceProtocol protocol = default, string? sourceIpv4Address = null,
-        string? sourceIpv6Address = null, int sourcePort = default, string? destinationIpv4Address = null,
-        string? destinationIpv6Address = null, int destinationPort = default)
+    
+    public int Count { get; set; }
+    public SingleTraceDto(string protocol, string sourceIpAddress, int sourcePort, string destinationIpAddress,
+        int destinationPort, int count)
     {
-        Protocol = protocol.ToString();
-        SourceIpv4Address = sourceIpv4Address;
-        SourceIpv6Address = sourceIpv6Address;
+        Protocol = protocol;
+        SourceIpAddress = sourceIpAddress;
         SourcePort = sourcePort;
-        DestinationIpv4Address = destinationIpv4Address;
-        DestinationIpv6Address = destinationIpv6Address;
+        DestinationIpAddress = destinationIpAddress;
         DestinationPort = destinationPort;
+        Count = count;
+
     }
+    
 }

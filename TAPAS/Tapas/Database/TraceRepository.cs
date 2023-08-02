@@ -1,4 +1,6 @@
-﻿using Tapas.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Tapas.Database.Dto;
+using Tapas.Models;
 
 namespace Tapas.Database;
 
@@ -16,16 +18,25 @@ public class TraceRepository
         _context.SingleTraces.Add(singleTrace);
         await _context.SaveChangesAsync();
     }
-
-    public Task<IEnumerable<SingleTrace>> GetAllSingleTraces()
+    
+    public async Task<List<SingleTraceDto>> GroupTracesByTimeSpanAndReturnAsDto(DateTimeOffset from, DateTimeOffset until)
     {
-        return Task.FromResult<IEnumerable<SingleTrace>>(_context.SingleTraces);
+        return await _context.SingleTraces.Where(trace => trace.Timestamp >= from && trace.Timestamp <= until).GroupBy(st => new
+            {
+                st.Protocol,
+                st.SourceIpAddress,
+                st.SourcePort,
+                st.DestinationIpAddress,
+                st.DestinationPort
+            })
+            .Select(group => new SingleTraceDto(
+                group.Key.Protocol.ToString(),
+                group.Key.SourceIpAddress.ToString(),
+                group.Key.SourcePort,
+                group.Key.DestinationIpAddress.ToString(),
+                group.Key.DestinationPort,
+                group.Count()
+            ))
+            .ToListAsync();
     }
-
-    public Task<IEnumerable<SingleTrace>> GetTracesByTimestamp(DateTimeOffset from, DateTimeOffset until)
-    {
-        return Task.FromResult<IEnumerable<SingleTrace>>(_context.SingleTraces
-            .Where(trace => trace.Timestamp >= from && trace.Timestamp <= until));
-    }
-   
 }

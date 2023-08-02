@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using AutoMapper;
+using Elasticsearch.Net.Specification.RollupApi;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Tapas.Database;
 using Tapas.Database.Dto;
 using Tapas.Models;
@@ -18,54 +20,12 @@ namespace Tapas.Controllers
             _traceRepository = traceRepository;
             _mapper = mapper;
         }
-
-        [HttpGet("get_all")]
-        public async Task<IActionResult> GetAllTraces()
-        {
-            var traces = await _traceRepository.GetAllSingleTraces();
-            var traceDtos = _mapper.Map<IEnumerable<SingleTraceDto>>(traces);
-
-            var groupedTraces = traceDtos.GroupBy(dto => dto, new SingleTraceDtoEqualityComparer())
-                .Select(group => new
-                {
-                    Trace = new SingleTraceDto(
-                        (TraceProtocol)Enum.Parse(typeof(TraceProtocol), group.Key.Protocol),
-                        IPAddress.Parse(group.Key.SourceIpv4Address).ToString(),
-                        IPAddress.Parse(group.Key.SourceIpv6Address).ToString(),
-                        group.Key.SourcePort,
-                        IPAddress.Parse(group.Key.DestinationIpv4Address).ToString(),
-                        IPAddress.Parse(group.Key.DestinationIpv6Address).ToString(),
-                        group.Key.DestinationPort
-                    ),
-                    Count = group.Count()
-                });
-
-            return Ok(groupedTraces);
-        }
-
+        
         [HttpGet("get_by_window")]
         public async Task<IActionResult> GetTracesByWindow([FromQuery(Name = "from")] DateTimeOffset from,
             [FromQuery(Name = "until")] DateTimeOffset until)
         {
-            var traces = await _traceRepository.GetTracesByTimestamp(from, until);
-            var traceDtos = _mapper.Map<IEnumerable<SingleTraceDto>>(traces);
-
-            var groupedTraces = traceDtos.GroupBy(dto => dto, new SingleTraceDtoEqualityComparer())
-                .Select(group => new
-                {
-                    Trace = new SingleTraceDto(
-                        (TraceProtocol)Enum.Parse(typeof(TraceProtocol), group.Key.Protocol),
-                        IPAddress.Parse(group.Key.SourceIpv4Address).ToString(),
-                        IPAddress.Parse(group.Key.SourceIpv6Address).ToString(),
-                        group.Key.SourcePort,
-                        IPAddress.Parse(group.Key.DestinationIpv4Address).ToString(),
-                        IPAddress.Parse(group.Key.DestinationIpv6Address).ToString(),
-                        group.Key.DestinationPort
-                    ),
-                    Count = group.Count()
-                });
-
-            return Ok(groupedTraces);
+            return Ok(await _traceRepository.GroupTracesByTimeSpanAndReturnAsDto(from, until));
         }
     }
 }
