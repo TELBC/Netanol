@@ -1,67 +1,60 @@
-﻿using System.Globalization;
-using System.Net;
+﻿using System.Net;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Tapas.Database;
-using Tapas.Database.Dto;
-using Tapas.Models;
 
-namespace Tapas.Controllers
+namespace Tapas.Controllers;
+
+public class NetworkHostDto
 {
-    [Route("trace")]
-    public class TraceController : ControllerBase
+    public long Id { get; set; }
+    public string IpAddress { get; set; }
+}
+
+
+[Route("traces")]
+public class TraceController : ControllerBase
+{
+    private readonly TraceRepository _traceRepository;
+    private readonly TapasContext _context;
+    private readonly IMapper _mapper;
+
+    public TraceController(TraceRepository traceRepository, IMapper mapper, TapasContext context)
     {
-        private readonly TraceRepository _traceRepository;
-        private readonly IMapper _mapper;
+        _traceRepository = traceRepository;
+        _mapper = mapper;
+        _context = context;
+    }
+    
+    [HttpGet("get_by_window")]
+    public async Task<IActionResult> GetTracesByWindow([FromQuery] DateTimeOffset from, [FromQuery] DateTimeOffset to)
+    {
+        var traces = await _context.SingleTraces
+            .Where(trace => trace.Timestamp >= from && trace.Timestamp <= to)
+            .GroupBy(trace => new { trace.SourceHostId, trace.DestinationHostId })
+            .Select(trace => new
+            {
+                trace.Key.SourceHostId,
+                trace.Key.DestinationHostId,
+                Count = trace.Count()
+            })
+            .ToListAsync();
 
-        public TraceController(TraceRepository traceRepository, IMapper mapper)
-        {
-            _traceRepository = traceRepository;
-            _mapper = mapper;
-        }
-
-        [HttpGet("get_all")]
-        public async Task<IActionResult> GetAllTraces()
-        {
-            var traces = await _traceRepository.GetAllSingleTraces();
-            var traceDtos = _mapper.Map<IEnumerable<SingleTraceDto>>(traces);
-
-            var groupedTraces = traceDtos.GroupBy(dto => dto, new SingleTraceDtoEqualityComparer())
-                .Select(group => new
-                {
-                    Trace = new SingleTraceDto(
-                        group.Key.Protocol,
-                        IPAddress.Parse(group.Key.SourceIpAddress).ToString(), // Convert back to IPAddress
-                        group.Key.SourcePort,
-                        IPAddress.Parse(group.Key.DestinationIpAddress).ToString(), // Convert back to IPAddress
-                        group.Key.DestinationPort
-                    ),
-                    Count = group.Count()
-                });
-
-            return Ok(groupedTraces);
-        }
+        var hostIds = traces.Select(t => t.SourceHostId).Concat(traces.Select(t => t.DestinationHostId)).Distinct();
+        var nodes = await _context.NetworkHosts
+            .Where(host => hostIds.Contains(host.Id))
+            .Select(host => new NetworkHostDto
+            {
+                Id = host.Id,
+                IpAddress = host.IpAddress.ToString()
+            })
+            .ToDictionaryAsync(host => host.Id);
         
-        [HttpGet("get_by_window")]
-        public async Task<IActionResult> GetTracesByWindow([FromQuery(Name = "from")] DateTimeOffset from, [FromQuery(Name = "until")] DateTimeOffset until)
+        return Ok(new
         {
-            var traces = await _traceRepository.GetTracesByTimestamp(from, until);
-            var traceDtos = _mapper.Map<IEnumerable<SingleTraceDto>>(traces);
-            
-            var groupedTraces = traceDtos.GroupBy(dto => dto, new SingleTraceDtoEqualityComparer())
-                .Select(group => new
-                {
-                    Trace = new SingleTraceDto(
-                        group.Key.Protocol,
-                        IPAddress.Parse(group.Key.SourceIpAddress).ToString(), // Convert back to IPAddress
-                        group.Key.SourcePort,
-                        IPAddress.Parse(group.Key.DestinationIpAddress).ToString(), // Convert back to IPAddress
-                        group.Key.DestinationPort
-                    ),
-                    Count = group.Count()
-                });
-            
-            return Ok(groupedTraces);
-        }
+            Nodes = nodes,
+            Traces = traces
+        });
     }
 }

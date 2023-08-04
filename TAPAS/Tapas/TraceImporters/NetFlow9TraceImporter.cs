@@ -1,20 +1,20 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using DotNetFlow.Netflow9;
-using Tapas.Database;
 using Tapas.Models;
+using Tapas.Services;
 
 namespace Tapas.Listeners;
 
 public class NetFlow9TraceImporter : BackgroundService
 {
     private readonly UdpClient _udpClient;
-    private readonly TraceRepository _traceRepository;
+    private readonly IServiceProvider _serviceProvider;
 
-    public NetFlow9TraceImporter(TraceRepository traceRepository)
+    public NetFlow9TraceImporter(IServiceProvider serviceProvider)
     {
         _udpClient = new UdpClient(22055);
-        _traceRepository = traceRepository;
+        _serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken ct)
@@ -22,12 +22,15 @@ public class NetFlow9TraceImporter : BackgroundService
         while (!ct.IsCancellationRequested)
         {
             var result = await _udpClient.ReceiveAsync(ct);
-            var singleTrace = ReadSingleTrace(result);
-            await _traceRepository.AddSingleTrace(singleTrace);
+            var info = ReadSingleTrace(result);
+            
+            var scope = _serviceProvider.CreateScope();
+            var importer = scope.ServiceProvider.GetRequiredService<ITraceImportService>();
+            importer.ImportTrace(info);
         }
     }
 
-    private SingleTrace ReadSingleTrace(UdpReceiveResult result)
+    private TraceImportInfo ReadSingleTrace(UdpReceiveResult result)
     {
         var stream = new MemoryStream(result.Buffer);
         using var nr = new NetflowReader(stream);
@@ -37,8 +40,13 @@ public class NetFlow9TraceImporter : BackgroundService
         var data = nr.ReadFlowSet() as DataFlowSet;
         var view = new NetflowView(data, template);
         var record = view[0];
-        var timestamp = DateTimeOffset.UtcNow;
         
-        return new SingleTrace(TraceProtocol.Udp, IPAddress.Loopback, record.IPv4SourceAddress, 0, record.IPv4DestinationAddress, 0,timestamp);
+        // TODO: read the correct information here
+        return new TraceImportInfo(
+            DateTimeOffset.Now, IPAddress.Loopback,
+            record.IPv4SourceAddress, 0, 
+            record.IPv4DestinationAddress, 0,
+            255,
+            255);
     }
 }
