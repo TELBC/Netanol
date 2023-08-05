@@ -3,6 +3,8 @@
 This file includes a full list of services and how to configure them to run in either a 
 development or production environment.
 
+1. copy the ``.env.example`` file and rename it to be ``.env``
+
 ## Services
 ### TAPAS
 ### PostGreSQL
