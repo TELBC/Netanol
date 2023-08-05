@@ -17,6 +17,8 @@ export default defineNuxtConfig({
     ]
   },
 
+  css: ["v-network-graph/lib/style.css"],
+
   // Auto import components
   components: true,
 
