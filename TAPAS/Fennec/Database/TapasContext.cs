@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Tapas.Models;
+﻿using Fennec.Database.Domain.Layout;
+using Fennec.Database.Domain.Technical;
+using Microsoft.EntityFrameworkCore;
 
-namespace Tapas.Database;
+namespace Fennec.Database;
 
 /// <summary>
 /// The <see cref="DbContext"/> storing all data for TAPAS.
@@ -22,6 +23,6 @@ public class TapasContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("Tapas");
+        modelBuilder.HasDefaultSchema("Fennec");
     }
 }

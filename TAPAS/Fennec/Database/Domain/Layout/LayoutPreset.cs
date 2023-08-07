@@ -1,4 +1,4 @@
-﻿namespace Tapas.Models;
+﻿namespace Fennec.Database.Domain.Layout;
 
 /// <summary>
 /// A layout defined by the user to be able to switch between when displaying

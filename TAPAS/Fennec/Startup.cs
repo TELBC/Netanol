@@ -1,14 +1,14 @@
 ﻿using System.Reflection;
+using Fennec.Database;
+using Fennec.Services;
+using Fennec.TraceImporters;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
-using Tapas.Database;
-using Tapas.Listeners;
-using Tapas.Services;
 
-namespace Tapas;
+namespace Fennec;
 
 public class Startup
 {

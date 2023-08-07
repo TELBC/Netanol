@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Tapas;
-using Tapas.Database;
-using Tapas.Listeners;
+using Fennec;
+using Fennec.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 var startup = new Startup(builder.Configuration);

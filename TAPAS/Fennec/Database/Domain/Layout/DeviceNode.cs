@@ -1,4 +1,6 @@
-﻿namespace Tapas.Models;
+﻿using Fennec.Database.Domain.Technical;
+
+namespace Fennec.Database.Domain.Layout;
 
 /// <summary>
 /// A <see cref="GraphNode"/> that represents a <see cref="NetworkDevice"/> on the

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 
-namespace Tapas;
+namespace Fennec;
 
 public class AutoMapperProfile : Profile
 {

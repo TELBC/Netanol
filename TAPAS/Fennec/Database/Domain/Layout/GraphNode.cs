@@ -1,4 +1,4 @@
-﻿namespace Tapas.Models;
+﻿namespace Fennec.Database.Domain.Layout;
 
 /// <summary>
 /// On the frontend this represents a single node to be drawn on the graph. It

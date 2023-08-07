@@ -2,7 +2,7 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 
-namespace Tapas.Models;
+namespace Fennec.Database.Domain.Technical;
 
 /// <summary>
 /// Collection of DNS lookup information for a <see cref="NetworkHost"/>.

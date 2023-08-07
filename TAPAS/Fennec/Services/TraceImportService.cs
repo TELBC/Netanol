@@ -1,8 +1,8 @@
 ﻿using System.Net;
-using Tapas.Database;
-using Tapas.Models;
+using Fennec.Database;
+using Fennec.Database.Domain.Technical;
 
-namespace Tapas.Services;
+namespace Fennec.Services;
 
 /// <summary>
 /// Imports traces into the database. Responsible for preventing serial and parallel duplication.

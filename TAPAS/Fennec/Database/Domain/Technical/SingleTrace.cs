@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Tapas.Models;
+namespace Fennec.Database.Domain.Technical;
 
 public enum TraceProtocol
 {

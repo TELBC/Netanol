@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using AutoMapper;
+using Fennec.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Tapas.Database;
 
-namespace Tapas.Controllers;
+namespace Fennec.Controllers;
 
 public class NetworkHostDto
 {

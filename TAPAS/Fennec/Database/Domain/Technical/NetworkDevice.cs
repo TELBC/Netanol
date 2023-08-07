@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Fennec.Database.Domain.Layout;
 
-namespace Tapas.Models;
+namespace Fennec.Database.Domain.Technical;
 
 /// <summary>
 /// A single device on the network uniquely identified by its DNS entry.

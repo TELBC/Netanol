@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using Microsoft.EntityFrameworkCore;
-using Tapas.Controllers;
-using Tapas.Models;
+using Fennec.Controllers;
+using Fennec.Database.Domain.Technical;
 
-namespace Tapas.Database;
+namespace Fennec.Database;
 
 public record HostCommunicationKey(NetworkHost SourceHost, NetworkHost DestinationHost);
 

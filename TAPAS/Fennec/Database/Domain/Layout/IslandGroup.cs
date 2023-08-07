@@ -1,4 +1,4 @@
-﻿namespace Tapas.Models;
+﻿namespace Fennec.Database.Domain.Layout;
 
 /// <summary>
 /// A grouping of <see cref="DeviceNode"/>s which are meant to be draw closely together

@@ -1,4 +1,6 @@
-﻿namespace Tapas.Models;
+﻿using Fennec.Database.Domain.Technical;
+
+namespace Fennec.Database.Domain.Layout;
 
 /// <summary>
 /// Represents a compressed group of <see cref="NetworkDevice"/>s which should

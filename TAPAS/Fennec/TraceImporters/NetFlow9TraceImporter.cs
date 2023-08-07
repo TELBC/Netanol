@@ -1,10 +1,9 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using DotNetFlow.Netflow9;
-using Tapas.Models;
-using Tapas.Services;
+using Fennec.Services;
 
-namespace Tapas.Listeners;
+namespace Fennec.TraceImporters;
 
 public class NetFlow9TraceImporter : BackgroundService
 {
