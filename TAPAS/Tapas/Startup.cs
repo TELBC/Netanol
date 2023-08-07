@@ -6,6 +6,7 @@ using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
 using Tapas.Database;
 using Tapas.Listeners;
+using Tapas.Services;
 
 namespace Tapas;
 
@@ -20,8 +21,9 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDbContext<TapasContext>(optionsBuilder => optionsBuilder.UseInMemoryDatabase("Tapas"));
-        services.AddDbContext<TapasContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));
+        services.AddDbContext<TapasContext>(options => 
+            options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));
+        services.AddScoped<ITraceImportService, TraceImportService>();
         services.AddScoped<TraceRepository>();
         services.AddHostedService<NetFlow9TraceImporter>(); // TODO: set exception behaviour
         services.AddControllers();
