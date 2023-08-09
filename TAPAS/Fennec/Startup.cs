@@ -3,6 +3,7 @@ using Fennec.Database;
 using Fennec.Services;
 using Fennec.TraceImporters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
@@ -29,6 +30,10 @@ public class Startup
         services.AddHostedService<NetFlow9TraceImporter>(); // TODO: set exception behaviour
         services.AddControllers();
         services.AddAutoMapper(typeof(Program).Assembly);
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Fennec API", Version = "v1" });
+        });
     }
 
     public void ConfigureHost(ConfigureHostBuilder host)
@@ -74,6 +79,13 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fennec API V1");
+            c.RoutePrefix = "swagger";
+        });
+        
         using (var scope = app.Services.CreateScope())
         {
             var ctx = scope.ServiceProvider.GetRequiredService<TapasContext>();
