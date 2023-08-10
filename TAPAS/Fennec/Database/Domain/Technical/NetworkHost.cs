@@ -35,6 +35,15 @@ public class DnsInformation
         LastAccessedDnsName = lastAccessedDnsName;
         NetworkDevice = networkDevice;
     }
+    
+    public DnsInformation(string dnsName, DateTimeOffset lastAccessedDnsName, NetworkDevice networkDevice, long networkDeviceId)
+    {
+        DnsName = dnsName;
+        LastAccessedDnsName = lastAccessedDnsName;
+        NetworkDevice = networkDevice;
+        NetworkDeviceId = networkDeviceId;
+    }
+    
 
 #pragma warning disable CS8618
     public DnsInformation(string dnsName, DateTimeOffset lastAccessedDnsName, long networkDeviceId)
@@ -68,6 +77,11 @@ public class NetworkHost
     /// </summary>
     public DnsInformation? DnsInformation { get; set; }
 
+    public NetworkHost (IPAddress ipAddress, NetworkDevice networkDevice)
+    {
+        IpAddress = ipAddress;
+        DnsInformation = new DnsInformation(networkDevice.DnsName, DateTimeOffset.UtcNow, networkDevice, networkDevice.Id);
+    }
     public NetworkHost(IPAddress ipAddress)
     {
         IpAddress = ipAddress;

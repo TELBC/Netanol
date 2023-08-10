@@ -38,8 +38,14 @@ public class TraceImportService : ITraceImportService
 
     private async Task ImportTraceAsync(TraceImportInfo info)
     {
-        var srcHost = await _traceRepository.GetNetworkHost(info.SrcIp);
-        var dstHost = await _traceRepository.GetNetworkHost(info.DstIp);
+        var srcDns = await Dns.GetHostEntryAsync(info.SrcIp);
+        var dstDns = await Dns.GetHostEntryAsync(info.DstIp);
+        
+        var srcDevice = await _traceRepository.GetNetworkDevice(srcDns.HostName);
+        var dstDevice = await _traceRepository.GetNetworkDevice(dstDns.HostName);
+        
+        var srcHost = await _traceRepository.GetNetworkHost(info.SrcIp, srcDevice);
+        var dstHost = await _traceRepository.GetNetworkHost(info.DstIp, dstDevice);
 
         await _traceRepository.AddSingleTrace(
             new SingleTrace(

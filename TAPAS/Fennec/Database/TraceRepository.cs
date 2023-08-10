@@ -26,8 +26,9 @@ public class TraceRepository
     /// Get or create a <see cref="NetworkHost"/> by its <see cref="IPAddress"/>.
     /// </summary>
     /// <param name="ipAddress"></param>
+    /// <param name="device"></param>
     /// <returns></returns>
-    public async Task<NetworkHost> GetNetworkHost(IPAddress ipAddress)
+    public async Task<NetworkHost> GetNetworkHost(IPAddress ipAddress, NetworkDevice device)
     {
         var host = await _context.NetworkHosts
             .Where(n => n.IpAddress == ipAddress)
@@ -36,9 +37,23 @@ public class TraceRepository
         if (host != null)
             return host;
 
-        host = new NetworkHost(ipAddress);
+        host = new NetworkHost(ipAddress, device);
         _context.NetworkHosts.Add(host);
         await _context.SaveChangesAsync();
         return host;
+    }
+    public async Task<NetworkDevice> GetNetworkDevice(string dnsName)
+    {
+        var device = await _context.NetworkDevices
+            .Where(d => d.DnsName == dnsName)
+            .FirstOrDefaultAsync();
+
+        if (device != null)
+            return device;
+
+        device = new NetworkDevice(dnsName);
+        _context.NetworkDevices.Add(device);
+        await _context.SaveChangesAsync();
+        return device;
     }
 }
