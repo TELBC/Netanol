@@ -47,25 +47,14 @@ public class DnsReverseService : BackgroundService
                             resolvedDnsName = "Unknown Hostname";
                         }
 
-                        if (host.DnsInformation == null)
-                        {
-                            host.DnsInformation = new DnsInformation
-                            {
-                                DnsName = resolvedDnsName,
-                                LastAccessedDnsName = DateTimeOffset.UtcNow,
-                                NetworkDeviceId = 1 // what is the purpose of the NetworkDeviceId in DnsInformation ??
-                            };
-                        }
-                        else if (resolvedDnsName != host.DnsInformation?.DnsName)
-                        {
-                            host.DnsInformation!.DnsName = resolvedDnsName;
-                            host.DnsInformation.LastAccessedDnsName = DateTimeOffset.UtcNow;
-                        }
+                        if (resolvedDnsName == host.DnsInformation?.DnsName) continue;
+                        host.DnsInformation!.DnsName = resolvedDnsName;
+                        host.DnsInformation.LastAccessedDnsName = DateTimeOffset.UtcNow;
                     }
                     await dbContext.SaveChangesAsync(stoppingToken);
                 }
                 // still have to agree on an interval -> maybe make it configurable?
-                await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(120), stoppingToken);
             }
         }
     }
