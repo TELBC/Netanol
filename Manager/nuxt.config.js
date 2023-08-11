@@ -1,5 +1,5 @@
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   head: {
     titleTemplate: '%s - Manager',
     title: 'Manager',
@@ -51,7 +51,7 @@ export default defineNuxtConfig({
 
           outline: '#424242'
         },
-        dark: {} // TODO
+        dark: {} // TODO next PR
       }
     }
   },

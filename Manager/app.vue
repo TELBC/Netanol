@@ -1,4 +1,23 @@
+<template>
+  <v-network-graph
+    class="graph"
+    :nodes="nodes"
+    :edges="edges"
+    :configs="configs"
+  />
+</template>
+
+<style scoped>
+.graph{
+  height: 100vh;
+  width: 100vw;
+}
+</style>
+
 <script setup lang="ts">
+import {parseJsonData} from "~/components/NetworkGraphParsing";
+import * as vNG from "v-network-graph"
+
 const jsonData = `{
   "nodes": {
     "1" :{
@@ -19,38 +38,27 @@ const jsonData = `{
   ]
 }`;
 
-const data = JSON.parse(jsonData);
+const { nodes, edges } = parseJsonData(jsonData);
 
-const nodes = {};
-const edges = {};
-
-for (const nodeId in data.nodes) {
-  const node = data.nodes[nodeId];
-  nodes[`node${nodeId}`] = { name: node.ipAddress, ipAddress: node.ipAddress };
-}
-
-data.traces.forEach((trace, index) => {
-  edges[`edge${index}`] = {
-    source: `node${trace.sourceHostId}`,
-    target: `node${trace.destinationHostId}`,
-    count: trace.count
-  };
-});
+const configs = vNG.defineConfigs({
+  view: {
+    grid: {
+      visible: true,
+      interval: 10,
+      thickIncrements: 10,
+      line: {
+        color: "#e0e0e0",
+        width: 1,
+        dasharray: 1,
+      },
+      thick: {
+        color: "#cccccc",
+        width: 1,
+        dasharray: 0,
+      },
+    },
+    layoutHandler: new vNG.GridLayout({ grid: 15 }),
+  },
+})
 
 </script>
-
-<template>
-  <v-network-graph
-    class="graph"
-    :nodes="nodes"
-    :edges="edges"
-  />
-</template>
-
-<style>
-.graph {
-  width: 800px;
-  height: 600px;
-  border: 1px solid #000;
-}
-</style>
