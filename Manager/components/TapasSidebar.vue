@@ -1,26 +1,26 @@
 <template>
-  <div class="sidebar-main" :class="`${is_expanded ? 'is-expanded': ''}`">
+  <div class="sidebar-main">
     <div class="toggle-sidebar-wrap">
-      <font-awesome-icon id="toggle-sidebar" @click="toggleSidebar" icon="fa-solid fa-bars" />
+      <font-awesome-icon id="toggle-sidebar" icon="fa-solid fa-bars" />
     </div>
     <NuxtLink to="/">
       <div class="links">
         <font-awesome-icon id="chart" class="faicon" icon="fa-solid fa-chart-line" />
         <div class="text-wrap" id="chart-text">
-          <p v-if="is_expanded">Network Graph</p>
+          <p>Network Graph</p>
         </div>
       </div>
     </NuxtLink>
-    <NuxtLink to="/" class="link-between">
+    <NuxtLink to="/">
       <font-awesome-icon class="faicon" icon="fa-solid fa-diagram-project" />
       <div class="text-wrap">
-        <p v-if="is_expanded">"Packet Tracer"</p>
+        <p>"Packet Tracer"</p>
       </div>
     </NuxtLink>
     <NuxtLink to="/" id="settings-icon">
       <font-awesome-icon class="faicon" icon="fa-solid fa-gear" />
       <div class="text-wrap">
-        <p v-if="is_expanded">Settings</p>
+        <p>Settings</p>
       </div>
     </NuxtLink>
   </div>
@@ -28,21 +28,12 @@
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import { ref } from "vue";
-
-const is_expanded = ref(false);
-
-const toggleSidebar = () => {
-  is_expanded.value = !is_expanded.value;
-  console.log(is_expanded.value);
-}
 </script>
 
 <style scoped>
 .sidebar-main {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   position: fixed;
   left: 0;
   top: 0;
@@ -57,13 +48,32 @@ const toggleSidebar = () => {
   z-index: 999;
 }
 
+.sidebar-main:hover {
+  width: 18rem;
+
+  .toggle-sidebar-wrap {
+    justify-content: flex-end;
+    padding-right: 1rem;
+  }
+}
+
+.sidebar-main:hover p {
+  opacity: 1;
+}
+
 a {
   text-decoration: none;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
-  margin-left: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+a:hover {
+  background: #3E6474;
+  transition: 0.2s ease-in-out;
 }
 
 .links {
@@ -77,17 +87,8 @@ a {
   height: 2rem;
 }
 
-#chart-text {
-  margin-top: 1rem;
-}
-
-.link-between {
-  margin-top: 2rem;
-}
-
 #toggle-sidebar {
   margin-top: 1rem;
-  cursor: pointer;
 }
 
 .toggle-sidebar-wrap {
@@ -102,28 +103,18 @@ p {
   white-space: nowrap;
   font-size: 1.3rem;
   margin-left: 1rem;
-}
-
-.is-expanded {
-  width: 18rem;
-
-  .toggle-sidebar-wrap {
-    justify-content: flex-end;
-    padding-right: 1rem;
-  }
-}
-
-#chart {
-  margin-top: 1rem;
+  transition: 0.1s ease-in-out;
+  opacity: 0;
 }
 
 .faicon {
   cursor: pointer;
   color: white;
+  margin-left: 1rem;
 }
 
 #settings-icon {
-  padding-top: 2rem;
+  padding-top: 1rem;
   margin-top: auto;
   margin-bottom: 1rem;
   cursor: pointer;
