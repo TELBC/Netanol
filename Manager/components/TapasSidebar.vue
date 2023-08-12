@@ -35,6 +35,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
   display: flex;
   flex-direction: column;
   position: fixed;
+  overflow: hidden;
   left: 0;
   top: 0;
   width: 4rem;
@@ -50,6 +51,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 .sidebar-main:hover {
   width: 18rem;
+  overflow: visible;
 
   .toggle-sidebar-wrap {
     justify-content: flex-end;
@@ -74,6 +76,10 @@ a {
 a:hover {
   background: #3E6474;
   transition: 0.2s ease-in-out;
+}
+
+a:active {
+  background: #294D61;
 }
 
 .links {
