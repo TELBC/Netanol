@@ -38,7 +38,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
   overflow: hidden;
   left: 0;
   top: 0;
-  width: 4rem;
+  width: 3.5vw;
   height: 100vh;
   background: #537B87;
   color: white;
@@ -46,16 +46,15 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
   //font-family: 'Open Sans', sans-serif;
   transition: 0.2s ease-in-out;
   user-select: none;
-  z-index: 999;
 }
 
 .sidebar-main:hover {
-  width: 18rem;
+  width: 15.75vw;
   overflow: visible;
 
   .toggle-sidebar-wrap {
     justify-content: flex-end;
-    padding-right: 1rem;
+    padding-right: 0.875vw;
   }
 }
 
@@ -69,8 +68,8 @@ a {
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding-top: 1.5vh;
+  padding-bottom: 1.5vh;
 }
 
 a:hover {
@@ -94,13 +93,13 @@ a:active {
 }
 
 #toggle-sidebar {
-  margin-top: 1rem;
+  margin-top: 1.5vh;
 }
 
 .toggle-sidebar-wrap {
   display: flex;
   justify-content: center;
-  padding-bottom: 1rem;
+  padding-bottom: 1.5vh;
   border-bottom: 1px solid white;
 }
 
@@ -108,7 +107,7 @@ p {
   color: white;
   white-space: nowrap;
   font-size: 1.3rem;
-  margin-left: 1rem;
+  margin-left: 0.875vw;
   transition: 0.1s ease-in-out;
   opacity: 0;
 }
@@ -116,13 +115,13 @@ p {
 .faicon {
   cursor: pointer;
   color: white;
-  margin-left: 1rem;
+  margin-left: 0.875vw;
 }
 
 #settings-icon {
-  padding-top: 1rem;
+  padding-top: 1.5vh;
   margin-top: auto;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5vh;
   cursor: pointer;
 }
 </style>
