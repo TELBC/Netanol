@@ -1,5 +1,6 @@
 <template>
   <div>
+    <TapasSidebar />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
