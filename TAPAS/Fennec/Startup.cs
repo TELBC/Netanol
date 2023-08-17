@@ -46,7 +46,7 @@ public class Startup
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
-                .WriteTo.Console(restrictedToMinimumLevel: LogEventLevel.Debug)
+                .WriteTo.Console(restrictedToMinimumLevel: LogEventLevel.Debug)  // TODO: behave different in different environments
                 .WriteTo.Elasticsearch(
                     new ElasticsearchSinkOptions(new Uri(sect["Uri"] ??
                                                          throw new InvalidOperationException(
