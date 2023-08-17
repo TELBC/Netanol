@@ -87,6 +87,17 @@ public class Startup
                 c.RoutePrefix = "swagger";
             });
         }
+        else // return 404 for swagger in production
+        {
+            app.MapWhen(context => context.Request.Path.StartsWithSegments("/swagger"), builder =>
+            {
+                builder.Run(async context =>
+                {
+                    context.Response.StatusCode = 404;
+                    await context.Response.WriteAsync("Not found.");
+                });
+            });
+        }
 
         using (var scope = app.Services.CreateScope())
         {
