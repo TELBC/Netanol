@@ -1,0 +1,42 @@
+{
+	"info": {
+		"_postman_id": "0f4509f2-d6ea-4e3a-9271-1b1d682b40e4",
+		"name": "TAPAS",
+		"description": "[https://github.com/TELBC/TAPAS/wiki/API-Documentation](https://github.com/TELBC/TAPAS/wiki/API-Documentation)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "29192471"
+	},
+	"item": [
+		{
+			"name": "get_by_window",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/traces/get_by_window?from=2023-01-01T12:00:00Z&to=2023-12-31T20:00:00Z",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"traces",
+						"get_by_window"
+					],
+					"query": [
+						{
+							"key": "from",
+							"value": "2023-01-01T12:00:00Z"
+						},
+						{
+							"key": "to",
+							"value": "2023-12-31T20:00:00Z"
+						}
+					]
+				},
+				"description": "Requests all traces for the whole year of 2023."
+			},
+			"response": []
+		}
+	]
+}
