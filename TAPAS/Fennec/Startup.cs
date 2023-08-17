@@ -78,13 +78,16 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
-        app.UseSwagger();
-        app.UseSwaggerUI(c =>
+        if (env.IsDevelopment())
         {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fennec API V1");
-            c.RoutePrefix = "swagger";
-        });
-        
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fennec API V1");
+                c.RoutePrefix = "swagger";
+            });
+        }
+
         using (var scope = app.Services.CreateScope())
         {
             var ctx = scope.ServiceProvider.GetRequiredService<TapasContext>();
