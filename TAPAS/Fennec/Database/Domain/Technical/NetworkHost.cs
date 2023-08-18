@@ -15,7 +15,7 @@ public class DnsInformation
     /// </summary>
     [MaxLength(250)]
     public string DnsName { get; set; }
-    
+
     /// <summary>
     /// The last time the <see cref="DnsName"/> has been looked up.
     /// </summary>
@@ -27,6 +27,7 @@ public class DnsInformation
     /// The <see cref="NetworkDevice"/> this <see cref="NetworkHost"/> belongs to.
     /// </summary>
     public NetworkDevice NetworkDevice { get; set; }
+
     public long NetworkDeviceId { get; set; }
 
     public DnsInformation(string dnsName, DateTimeOffset lastAccessedDnsName, NetworkDevice networkDevice)
@@ -35,16 +36,6 @@ public class DnsInformation
         LastAccessedDnsName = lastAccessedDnsName;
         NetworkDevice = networkDevice;
     }
-    
-    public DnsInformation(string dnsName, DateTimeOffset lastAccessedDnsName, NetworkDevice networkDevice, long networkDeviceId)
-    {
-        DnsName = dnsName;
-        LastAccessedDnsName = lastAccessedDnsName;
-        NetworkDevice = networkDevice;
-        NetworkDeviceId = networkDeviceId;
-    }
-    
-
 #pragma warning disable CS8618
     public DnsInformation(string dnsName, DateTimeOffset lastAccessedDnsName, long networkDeviceId)
 #pragma warning restore CS8618
@@ -55,7 +46,9 @@ public class DnsInformation
     }
 
 #pragma warning disable CS8618
-    public DnsInformation() { }
+    public DnsInformation()
+    {
+    }
 #pragma warning restore CS8618
 }
 
@@ -65,29 +58,26 @@ public class DnsInformation
 public class NetworkHost
 {
     public long Id { get; set; }
-    
+
     /// <summary>
     /// The <see cref="IpAddress"/> being matched using reverse DNS lookup.
     /// </summary>
     public IPAddress IpAddress { get; set; }
-    
+
     /// <summary>
     /// Various information about the DNS lookup for the <see cref="IpAddress"/>. This is set once a reverse lookup
     /// has been completed.
     /// </summary>
     public DnsInformation? DnsInformation { get; set; }
 
-    public NetworkHost (IPAddress ipAddress, NetworkDevice networkDevice)
-    {
-        IpAddress = ipAddress;
-        DnsInformation = new DnsInformation(networkDevice.DnsName, DateTimeOffset.UtcNow, networkDevice, networkDevice.Id);
-    }
     public NetworkHost(IPAddress ipAddress)
     {
         IpAddress = ipAddress;
     }
 
 #pragma warning disable CS8618
-    public NetworkHost() { }
+    public NetworkHost()
+    {
+    }
 #pragma warning restore CS8618
 }

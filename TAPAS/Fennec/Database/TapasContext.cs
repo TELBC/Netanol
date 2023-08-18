@@ -24,5 +24,6 @@ public class TapasContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("Fennec");
+        modelBuilder.Entity<NetworkDevice>().HasIndex(device => device.DnsName).IsUnique();
     }
 }
