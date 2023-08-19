@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MockServer", "MockServer\Mo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetFlow", "DotNetFlow\DotNetFlow.csproj", "{50CAD1DC-8DCD-45C5-B0D0-986C7271218A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{9BAC4DB5-B655-4EBF-B8EA-9AB854406F22}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fennec.Tests", "Fennec.Tests\Fennec.Tests.csproj", "{9BAC4DB5-B655-4EBF-B8EA-9AB854406F22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
