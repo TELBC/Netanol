@@ -3,7 +3,7 @@ FROM python:3
 
 # Install tcpreplay and iproute2
 RUN apt-get update && \
-    apt-get install -y tshark python3 && \
+    apt-get install -y tshark && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
