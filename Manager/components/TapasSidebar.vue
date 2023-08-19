@@ -5,22 +5,52 @@
     </div>
     <NuxtLink to="/">
       <div class="links">
-        <font-awesome-icon id="chart" class="faicon" icon="fa-solid fa-chart-line" />
+        <div class="icon-placement">
+          <font-awesome-icon id="chart" class="faicon" icon="fa-solid fa-house" />
+        </div>
         <div class="text-wrap" id="chart-text">
-          <p>Network Graph</p>
+          <p>Main Menu</p>
         </div>
       </div>
     </NuxtLink>
-    <NuxtLink to="/">
-      <font-awesome-icon class="faicon" icon="fa-solid fa-diagram-project" />
-      <div class="text-wrap">
-        <p>"Packet Tracer"</p>
+    <NuxtLink to="/network-analysis">
+      <div class="links">
+        <div class="icon-placement">
+          <font-awesome-icon class="faicon" icon="fa-solid fa-chart-line" />
+        </div>
+        <div class="text-wrap">
+          <p>Network Analysis</p>
+        </div>
       </div>
     </NuxtLink>
-    <NuxtLink to="/" id="settings-icon">
-      <font-awesome-icon class="faicon" icon="fa-solid fa-gear" />
-      <div class="text-wrap">
-        <p>Settings</p>
+    <NuxtLink to="/topology">
+      <div class="links">
+        <div class="icon-placement">
+          <font-awesome-icon class="faicon" icon="fa-solid fa-diagram-project" />
+        </div>
+        <div class="text-wrap">
+          <p>Topology</p>
+        </div>
+      </div>
+    </NuxtLink>
+    <NuxtLink to="/about">
+      <div class="links">
+        <div class="icon-placement">
+          <font-awesome-icon class="faicon" icon="fa-solid fa-circle-info" />
+        </div>
+        <div class="text-wrap">
+          <p>About</p>
+        </div>
+      </div>
+    </NuxtLink>
+    <NuxtLink to="/settings" id="settings-icon">
+      <div class="links">
+        <div class="icon-placement">
+          <font-awesome-icon class="faicon" icon="fa-solid fa-gear" />
+        </div>
+        <div class="text-wrap">
+          <p>Settings</p>
+        </div>
       </div>
     </NuxtLink>
   </div>
@@ -48,41 +78,38 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
   user-select: none;
 }
 
-.sidebar-main:hover {
-  width: 15.75vw;
-  overflow: visible;
-
-  .toggle-sidebar-wrap {
-    justify-content: flex-end;
-    padding-right: 0.875vw;
-  }
-}
-
-.sidebar-main:hover p {
-  opacity: 1;
-}
-
 a {
   text-decoration: none;
   display: flex;
   flex-direction: row;
-  flex-wrap: nowrap;
+//flex-wrap: nowrap;
   align-items: center;
   padding-top: 1.5vh;
   padding-bottom: 1.5vh;
 }
 
-a:hover {
-  background: #3E6474;
-  transition: 0.2s ease-in-out;
-}
-
-a:active {
-  background: #294D61;
-}
-
 .links {
   display: flex;
+}
+
+.icon-placement {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 3.5vw;
+}
+
+#settings-icon {
+  padding-top: 1.5vh;
+  margin-top: auto;
+  margin-bottom: 1.5vh;
+  cursor: pointer;
+}
+
+.faicon {
+  cursor: pointer;
+  color: white;
+  //margin-left: 0.875vw;
 }
 
 .text-wrap {
@@ -92,10 +119,6 @@ a:active {
   height: 2rem;
 }
 
-#toggle-sidebar {
-  margin-top: 1.5vh;
-}
-
 .toggle-sidebar-wrap {
   display: flex;
   justify-content: center;
@@ -103,25 +126,39 @@ a:active {
   border-bottom: 1px solid white;
 }
 
+#toggle-sidebar {
+  margin-top: 1.5vh;
+}
+
 p {
   color: white;
   white-space: nowrap;
   font-size: 1.3rem;
-  margin-left: 0.875vw;
+  //margin-left: 0.875vw;
   transition: 0.1s ease-in-out;
   opacity: 0;
 }
 
-.faicon {
-  cursor: pointer;
-  color: white;
-  margin-left: 0.875vw;
+.sidebar-main:hover {
+  width: 15.75vw;
+  overflow: visible;
 }
 
-#settings-icon {
-  padding-top: 1.5vh;
-  margin-top: auto;
-  margin-bottom: 1.5vh;
-  cursor: pointer;
+.sidebar-main:hover .toggle-sidebar-wrap {
+  justify-content: flex-end;
+  padding-right: 0.875vw;
+}
+
+.sidebar-main:hover p {
+  opacity: 1;
+}
+
+a:hover {
+  background: #3E6474;
+  transition: 0.2s ease-in-out;
+}
+
+a:active {
+  background: #294D61;
 }
 </style>
