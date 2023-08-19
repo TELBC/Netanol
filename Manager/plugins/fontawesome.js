@@ -1,8 +1,8 @@
 import { library, config } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faGear, faBars, faChartLine, faDiagramProject } from '@fortawesome/free-solid-svg-icons'
+import { faGear, faBars, faChartLine, faDiagramProject, faHouse, faCircleInfo } from '@fortawesome/free-solid-svg-icons'
 
-library.add(faGear, faBars, faChartLine, faDiagramProject)
+library.add(faGear, faBars, faChartLine, faDiagramProject, faHouse, faCircleInfo)
 
 config.autoAddCss = false
 
