@@ -1,4 +1,4 @@
-name: Fennec Continous Integration
+name: Fennec Continuous Integration
 
 on:
   push:
@@ -14,29 +14,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository to the GitHub Actions runner
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # Setup .NET Core SDK on the runner
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x # Adjust this to your project's .NET version
+        dotnet-version: 6.0.x
 
-    # Restore dependencies
     - name: Restore NuGet packages
       working-directory: TAPAS/Fennec.Tests
       run: |
         dotnet restore
 
-    # Build the solution
     - name: Build solution
       working-directory: TAPAS/Fennec.Tests
       run: |
         dotnet build --no-restore
 
-    # Run tests
     - name: Run tests
       working-directory: TAPAS/Fennec.Tests
       run: |

@@ -5,7 +5,7 @@ using Fennec.Database.Domain.Technical;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Fennec.Tests.Integration;
+namespace Fennec.Tests.Controllers;
 
 public class TraceControllerTests
 {
