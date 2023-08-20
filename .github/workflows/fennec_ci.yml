@@ -24,22 +24,20 @@ jobs:
       with:
         dotnet-version: 6.0.x # Adjust this to your project's .NET version
 
-    # Change directory to the test project
-    - name: Change directory to Fennec.Tests
-      run: |
-        cd TAPAS/Fennec.Tests
-
     # Restore dependencies
     - name: Restore NuGet packages
+      working-directory: TAPAS/Fennec.Tests
       run: |
         dotnet restore
 
     # Build the solution
     - name: Build solution
+      working-directory: TAPAS/Fennec.Tests
       run: |
         dotnet build --no-restore
 
     # Run tests
     - name: Run tests
+      working-directory: TAPAS/Fennec.Tests
       run: |
         dotnet test --no-build --verbosity normal
