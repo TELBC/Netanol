@@ -7,8 +7,31 @@ namespace Fennec.Database;
 /// <summary>
 /// The <see cref="DbContext"/> storing all data for TAPAS.
 /// </summary>
-public class TapasContext : DbContext
+public interface ITapasContext
 {
+    DbSet<LayoutPreset> LayoutPresets { get; }
+    DbSet<GraphNode> GraphNodes { get; }
+    DbSet<DeviceNode> DeviceNodes { get; }
+    DbSet<IslandGroup> IslandGroups { get; }
+    DbSet<CompressedGroup> CompressedGroups { get; }
+
+    DbSet<NetworkHost> NetworkHosts { get; }
+    DbSet<NetworkDevice> NetworkDevices { get; }
+    DbSet<SingleTrace> SingleTraces { get; }
+
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+}
+
+public class TapasContext : DbContext, ITapasContext
+{
+    public TapasContext(DbContextOptions options) : base(options)
+    {
+    }
+
+    public TapasContext()
+    {
+    }
+
     public DbSet<LayoutPreset> LayoutPresets => Set<LayoutPreset>();
     public DbSet<GraphNode> GraphNodes => Set<GraphNode>();
     public DbSet<DeviceNode> DeviceNodes => Set<DeviceNode>();
@@ -18,8 +41,6 @@ public class TapasContext : DbContext
     public DbSet<NetworkHost> NetworkHosts => Set<NetworkHost>();
     public DbSet<NetworkDevice> NetworkDevices => Set<NetworkDevice>();
     public DbSet<SingleTrace> SingleTraces => Set<SingleTrace>();
-
-    public TapasContext(DbContextOptions options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

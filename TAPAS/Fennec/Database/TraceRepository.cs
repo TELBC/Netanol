@@ -1,17 +1,34 @@
 ﻿using System.Net;
-using Microsoft.EntityFrameworkCore;
-using Fennec.Controllers;
 using Fennec.Database.Domain.Technical;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fennec.Database;
 
-public record HostCommunicationKey(NetworkHost SourceHost, NetworkHost DestinationHost);
-
-public class TraceRepository
+/// <summary>
+///     Database operation abstractions for handling traces.
+/// </summary>
+public interface ITraceRepository
 {
-    private readonly TapasContext _context;
+    /// <summary>
+    ///     Add a single trace to the database.
+    /// </summary>
+    /// <param name="singleTrace"></param>
+    /// <returns></returns>
+    public Task AddSingleTrace(SingleTrace singleTrace);
 
-    public TraceRepository(TapasContext context)
+    /// <summary>
+    /// Get or create a <see cref="NetworkHost"/> by its <see cref="IPAddress"/>.
+    /// </summary>
+    /// <param name="ipAddress"></param>
+    /// <returns></returns>
+    public Task<NetworkHost> GetNetworkHost(IPAddress ipAddress);
+}
+
+public class TraceRepository : ITraceRepository
+{
+    private readonly ITapasContext _context;
+
+    public TraceRepository(ITapasContext context)
     {
         _context = context;
     }
@@ -22,11 +39,6 @@ public class TraceRepository
         await _context.SaveChangesAsync();
     }
 
-    /// <summary>
-    /// Get or create a <see cref="NetworkHost"/> by its <see cref="IPAddress"/>.
-    /// </summary>
-    /// <param name="ipAddress"></param>
-    /// <returns></returns>
     public async Task<NetworkHost> GetNetworkHost(IPAddress ipAddress)
     {
         var host = await _context.NetworkHosts
