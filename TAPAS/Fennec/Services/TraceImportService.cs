@@ -24,9 +24,9 @@ public record TraceImportInfo(
 
 public class TraceImportService : ITraceImportService
 {
-    private readonly TraceRepository _traceRepository;
+    private readonly ITraceRepository _traceRepository;
 
-    public TraceImportService(TraceRepository traceRepository)
+    public TraceImportService(ITraceRepository traceRepository)
     {
         _traceRepository = traceRepository;
     }
