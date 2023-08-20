@@ -10,7 +10,7 @@ public interface INetworkDeviceRepository
     public Task SaveAsync(CancellationToken cancellationToken);
 }
 
-public class NetworkDeviceRepository
+public class NetworkDeviceRepository : INetworkDeviceRepository
 {
     private readonly ITapasContext _context;
 

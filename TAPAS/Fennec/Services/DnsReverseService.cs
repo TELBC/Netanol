@@ -44,14 +44,14 @@ public class DnsReverseService : BackgroundService, IDnsReverseService
             {
                 resolvedDnsName = (await Dns.GetHostEntryAsync(host.IpAddress.ToString(), stoppingToken)).HostName;
             }
-            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.HostNotFound)
+            catch (SocketException)
             {
                 _logger.LogDebug(
                     "No DNS host found for IP address {IpAddress}. Defaulting to 'Unknown Hostname'",
                     host.IpAddress);
                 resolvedDnsName = "Unknown Hostname";
             }
-            catch
+            catch (Exception)
             {
                 _logger.LogDebug(
                     "Unexpected error resolving IP address {IpAddress}. Defaulting to 'Unknown Hostname'",

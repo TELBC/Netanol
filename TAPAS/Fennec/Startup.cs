@@ -26,6 +26,11 @@ public class Startup
             options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));
         services.AddScoped<ITraceImportService, TraceImportService>();
         services.AddScoped<TraceRepository>();
+        services.AddScoped<NetworkDeviceRepository>();
+        services.AddScoped<NetworkHostRepository>();
+        services.AddScoped<INetworkHostRepository, NetworkHostRepository>();
+        services.AddScoped<INetworkDeviceRepository, NetworkDeviceRepository>();
+        services.AddScoped<ITapasContext, TapasContext>();
         services.AddHostedService<DnsReverseService>();
         services.AddHostedService<NetFlow9TraceImporter>(); // TODO: set exception behaviour
         services.AddControllers();
