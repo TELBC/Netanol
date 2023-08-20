@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
+using Fennec.Collectors;
 using Fennec.Database;
 using Fennec.Services;
-using Fennec.TraceImporters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -13,26 +13,23 @@ namespace Fennec;
 
 public class Startup
 {
-    private IConfigurationRoot Configuration { get; }
-
     public Startup(IConfigurationRoot configuration)
     {
         Configuration = configuration;
     }
 
+    private IConfigurationRoot Configuration { get; }
+
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDbContext<TapasContext>(options => 
+        services.AddDbContext<TapasContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));
         services.AddScoped<ITraceImportService, TraceImportService>();
         services.AddScoped<TraceRepository>();
-        services.AddHostedService<NetFlow9TraceImporter>(); // TODO: set exception behaviour
+        services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
         services.AddControllers();
         services.AddAutoMapper(typeof(Program).Assembly);
-        services.AddSwaggerGen(c =>
-        {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Fennec API", Version = "v1" });
-        });
+        services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "Fennec API", Version = "v1" }); });
     }
 
     public void ConfigureHost(ConfigureHostBuilder host)
@@ -45,7 +42,9 @@ public class Startup
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
-                .WriteTo.Console(restrictedToMinimumLevel: LogEventLevel.Debug)  // TODO: behave different in different environments
+                .WriteTo
+                .Console(restrictedToMinimumLevel: LogEventLevel
+                    .Debug) // TODO: behave different in different environments
                 .WriteTo.Elasticsearch(
                     new ElasticsearchSinkOptions(new Uri(sect["Uri"] ??
                                                          throw new InvalidOperationException(
@@ -58,7 +57,8 @@ public class Startup
                             x.BasicAuthentication(
                                 sect["Username"] ??
                                 throw new InvalidOperationException("Elasticsearch:Username is not defined."),
-                                sect["Password"] ??  // TODO: remove sensitive credentials from appsettings.Development.json
+                                sect
+                                    ["Password"] ?? // TODO: remove sensitive credentials from appsettings.Development.json
                                 throw new InvalidOperationException("Elasticsearch:Password is not defined.")
                             );
                             return x;

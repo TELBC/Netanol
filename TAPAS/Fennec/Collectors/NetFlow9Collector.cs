@@ -1,24 +1,27 @@
-﻿using System.Buffers.Text;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using DotNetFlow.Netflow9;
+using Fennec.Options;
 using Fennec.Services;
-using Serilog;
+using Microsoft.Extensions.Options;
 using Serilog.Context;
 
-namespace Fennec.TraceImporters;
+namespace Fennec.Collectors;
 
-public class NetFlow9TraceImporter : BackgroundService
+public class NetFlow9Collector : BackgroundService
 {
-    private readonly UdpClient _udpClient;
     private readonly ILogger _log;
+    private readonly Netflow9CollectorOptions _options;
     private readonly IServiceProvider _serviceProvider;
+    private readonly UdpClient _udpClient;
 
-    public NetFlow9TraceImporter(ILogger log, IServiceProvider serviceProvider)
+    public NetFlow9Collector(ILogger log, IOptions<Netflow9CollectorOptions> iOptions,
+        IServiceProvider serviceProvider)
     {
-        _log = log.ForContext<NetFlow9TraceImporter>();
-        _udpClient = new UdpClient(2055);
+        _options = iOptions.Value;
+
+        _log = log.ForContext<NetFlow9Collector>();
+        _udpClient = new UdpClient(_options.ListeningPort);
         _serviceProvider = serviceProvider;
     }
 
@@ -27,12 +30,13 @@ public class NetFlow9TraceImporter : BackgroundService
         while (!ct.IsCancellationRequested)
         {
             var result = await _udpClient.ReceiveAsync(ct);
-            using var idCtx = LogContext.PushProperty("TraceGuid", Guid.NewGuid());
+            using var guidCtx = LogContext.PushProperty("TraceGuid", Guid.NewGuid());
+
             _log.ForContext("TrafficBytes", result.Buffer)
-                .Debug("Received {TraceImporterType} bytes from {TraceExporterIp} " +
-                         "with a length of {PacketLength} bytes", 
-                    TraceImporterType.Netflow9,
-                    result.RemoteEndPoint.ToString(), 
+                .Debug("Received {FlowCollectorType} bytes from {TraceExporterIp} " +
+                       "with a length of {PacketLength} bytes",
+                    CollectorType.Netflow9,
+                    result.RemoteEndPoint.ToString(),
                     result.Buffer.Length);
 
             var info = ReadSingleTrace(result);
@@ -68,8 +72,7 @@ public class NetFlow9TraceImporter : BackgroundService
         }
         catch (Exception ex)
         {
-            _log.ForContext("Base64Bytes", Convert.ToBase64String(result.Buffer))
-                .Error(ex, "Failed to parse bytes to {TraceImporterType}", TraceImporterType.Netflow9);
+            _log.Error(ex, "Failed to parse bytes to {FlowCollectorType}", CollectorType.Netflow9);
             return null;
         }
     }
