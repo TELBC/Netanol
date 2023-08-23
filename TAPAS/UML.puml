@@ -25,17 +25,11 @@ package "Technical Storage" {
         + long Id [Key]
     
         + IpAddress IpAddress [Unique]
-        + string DnsName [Updated by BackgroundService]
+        
         + DateTime LastAccessedDnsName
-        
-        + NetworkDevice NetworkDevice
-    }
-    NetworkHost -> NetworkDevice
-    
-    class NetworkDevice {
-        + long Id [Key]
-        
         + string DnsName [Unique]
+        
+        + NetworkHost NetworkHost
     }
 }
 
@@ -54,19 +48,19 @@ package "Layout Storage" {
     GraphNode -> LayoutPreset
     
     class DeviceNode {
-        + long NetworkDeviceId
+        + long NetworkHostId
         + long? IslandId
     }
     DeviceNode -* GraphNode
-    DeviceNode --> NetworkDevice
+    DeviceNode --> NetworkHost
     DeviceNode -> IslandGroup
     
     class CompressedGroup {
         + long GraphElementId
-        + long NetworkDeviceId
+        + long NetworkHostId
     }
     CompressedGroup -> GraphNode
-    CompressedGroup -> NetworkDevice
+    CompressedGroup -> NetworkHost
     
     class IslandGroup {
         + long Id
