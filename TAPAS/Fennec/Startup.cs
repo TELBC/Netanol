@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Fennec.Collectors;
 using Fennec.Database;
+using Fennec.Options;
 using Fennec.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -22,22 +23,33 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        // Options
+        services.Configure<Netflow9CollectorOptions>(Configuration.GetSection("Collectors:Netflow9"));
+
+        // Database services
+        services.AddScoped<ITraceImportService, TraceImportService>();
+        services.AddScoped<ITraceRepository, TraceRepository>();
         services.AddDbContext<TapasContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));
-        services.AddScoped<ITraceImportService, TraceImportService>();
-        services.AddScoped<TraceRepository>();
+
+        // Collector services
         services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
+
+        // Web services
         services.AddControllers();
         services.AddAutoMapper(typeof(Program).Assembly);
         services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "Fennec API", Version = "v1" }); });
     }
 
-    public void ConfigureHost(ConfigureHostBuilder host)
+    public void ConfigureHost(ConfigureHostBuilder host, IConfiguration configuration)
     {
-        host.UseSerilog((context, _, configuration) =>
+        var options = new ElasticsearchOptions();
+        configuration.GetSection("Elasticsearch").Bind(options);
+
+        host.UseSerilog((context, _, loggerConfiguration) =>
         {
             var sect = Configuration.GetRequiredSection("Elasticsearch");
-            configuration
+            loggerConfiguration
                 .ReadFrom.Configuration(context.Configuration)
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
@@ -53,14 +65,12 @@ public class Startup
                         ModifyConnectionSettings = x =>
                         {
                             // TODO: properly establish trust between components
-                            x.ServerCertificateValidationCallback((_, _, _, _) => true); // trust any certificate
-                            x.BasicAuthentication(
-                                sect["Username"] ??
-                                throw new InvalidOperationException("Elasticsearch:Username is not defined."),
-                                sect
-                                    ["Password"] ?? // TODO: remove sensitive credentials from appsettings.Development.json
-                                throw new InvalidOperationException("Elasticsearch:Password is not defined.")
-                            );
+                            // trust any certificate
+                            x.ServerCertificateValidationCallback((_, _, _, _) => true);
+
+                            if (options.Username == null || options.Password == null)
+                                return x;
+                            x.BasicAuthentication(options.Username, options.Password);
                             return x;
                         },
                         MinimumLogEventLevel = LogEventLevel.Verbose,

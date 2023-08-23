@@ -27,6 +27,12 @@ public class NetFlow9Collector : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
+        if (!_options.Enabled)
+        {
+            _log.Information("Netflow9 collector is disabled... Rerun the application to enable it");
+            return;
+        }
+
         while (!ct.IsCancellationRequested)
         {
             var result = await _udpClient.ReceiveAsync(ct);
