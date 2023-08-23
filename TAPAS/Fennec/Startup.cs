@@ -28,7 +28,7 @@ public class Startup
 
         // Database services
         services.AddScoped<ITraceImportService, TraceImportService>();
-        services.AddScoped<ILayoutPresetRepository, LayoutPresetRepository>();
+        services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddScoped<ITraceRepository, TraceRepository>();
         services.AddDbContext<ITapasContext, TapasContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));

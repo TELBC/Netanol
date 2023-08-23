@@ -7,56 +7,56 @@ using Moq;
 
 namespace Fennec.Tests.Controllers;
 
-public class LayoutPresetControllerTests
+public class LayoutControllerTests
 {
-    private readonly LayoutPresetController _controller;
-    private readonly Mock<ILayoutPresetRepository> _layoutPresetRepositoryMock;
+    private readonly LayoutController _controller;
+    private readonly Mock<ILayoutRepository> _layoutRepositoryMock;
 
-    public LayoutPresetControllerTests()
+    public LayoutControllerTests()
     {
-        _layoutPresetRepositoryMock = new Mock<ILayoutPresetRepository>();
-        _controller = new LayoutPresetController(_layoutPresetRepositoryMock.Object);
+        _layoutRepositoryMock = new Mock<ILayoutRepository>();
+        _controller = new LayoutController(_layoutRepositoryMock.Object);
     }
 
     [Fact]
-    public async void List_ReturnsAllLayoutPresets()
+    public async void List_ReturnsAllLayouts()
     {
-        var layoutPresets = new List<LayoutPreset>
+        var layouts = new List<Layout>
         {
             new("Preset 1"),
             new("Preset 2")
         };
 
-        _layoutPresetRepositoryMock
-            .Setup(repo => repo.ListLayoutPresets())
-            .ReturnsAsync(layoutPresets);
+        _layoutRepositoryMock
+            .Setup(repo => repo.ListLayouts())
+            .ReturnsAsync(layouts);
 
         var result = await _controller.List();
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(layoutPresets, okResult.Value);
+        Assert.Equal(layouts, okResult.Value);
     }
 
     [Fact]
-    public async void Create_ReturnsCreatedLayoutPreset()
+    public async void Create_ReturnsCreatedLayout()
     {
-        var layoutPreset = new LayoutPreset("New Preset");
+        var layout = new Layout("New Preset");
 
-        _layoutPresetRepositoryMock
-            .Setup(repo => repo.CreateLayoutPreset(It.IsAny<string>()))
-            .ReturnsAsync(layoutPreset);
+        _layoutRepositoryMock
+            .Setup(repo => repo.CreateLayout(It.IsAny<string>()))
+            .ReturnsAsync(layout);
 
         var result = await _controller.Create("New Preset");
 
         var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result);
-        Assert.Equal(layoutPreset, createdAtActionResult.Value);
+        Assert.Equal(layout, createdAtActionResult.Value);
     }
 
     [Fact]
     public async void Create_ReturnsBadRequest_WhenDuplicateName()
     {
-        _layoutPresetRepositoryMock
-            .Setup(repo => repo.CreateLayoutPreset(It.IsAny<string>()))
+        _layoutRepositoryMock
+            .Setup(repo => repo.CreateLayout(It.IsAny<string>()))
             .ThrowsAsync(new DuplicateNameException("A layout with the name New Preset already exists."));
 
         var result = await _controller.Create("New Preset");
@@ -65,25 +65,25 @@ public class LayoutPresetControllerTests
     }
 
     [Fact]
-    public async void Rename_ReturnsUpdatedLayoutPreset()
+    public async void Rename_ReturnsUpdatedLayout()
     {
-        var layoutPreset = new LayoutPreset("Updated Preset");
+        var layout = new Layout("Updated Preset");
 
-        _layoutPresetRepositoryMock
-            .Setup(repo => repo.RenameLayoutPreset(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(layoutPreset);
+        _layoutRepositoryMock
+            .Setup(repo => repo.RenameLayout(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(layout);
 
         var result = await _controller.Rename("Old Preset", "Updated Preset");
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(layoutPreset, okResult.Value);
+        Assert.Equal(layout, okResult.Value);
     }
 
     [Fact]
-    public async void Rename_ReturnsNotFound_WhenLayoutPresetNotFound()
+    public async void Rename_ReturnsNotFound_WhenLayoutNotFound()
     {
-        _layoutPresetRepositoryMock
-            .Setup(repo => repo.RenameLayoutPreset(It.IsAny<string>(), It.IsAny<string>()))
+        _layoutRepositoryMock
+            .Setup(repo => repo.RenameLayout(It.IsAny<string>(), It.IsAny<string>()))
             .ThrowsAsync(new KeyNotFoundException("A layout with the name Old Preset does not exist."));
 
         var result = await _controller.Rename("Old Preset", "Updated Preset");
@@ -92,25 +92,25 @@ public class LayoutPresetControllerTests
     }
 
     [Fact]
-    public async void Delete_ReturnsDeletedLayoutPreset()
+    public async void Delete_ReturnsDeletedLayout()
     {
-        var layoutPreset = new LayoutPreset("Preset to delete");
+        var layout = new Layout("Preset to delete");
 
-        _layoutPresetRepositoryMock
-            .Setup(repo => repo.DeleteLayoutPreset(It.IsAny<string>()))
-            .ReturnsAsync(layoutPreset);
+        _layoutRepositoryMock
+            .Setup(repo => repo.DeleteLayout(It.IsAny<string>()))
+            .ReturnsAsync(layout);
 
         var result = await _controller.Delete("Preset to delete");
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(layoutPreset, okResult.Value);
+        Assert.Equal(layout, okResult.Value);
     }
 
     [Fact]
-    public async void Delete_ReturnsNotFound_WhenLayoutPresetNotFound()
+    public async void Delete_ReturnsNotFound_WhenLayoutNotFound()
     {
-        _layoutPresetRepositoryMock
-            .Setup(repo => repo.DeleteLayoutPreset(It.IsAny<string>()))
+        _layoutRepositoryMock
+            .Setup(repo => repo.DeleteLayout(It.IsAny<string>()))
             .ThrowsAsync(new KeyNotFoundException("A layout with the name Preset to delete does not exist."));
 
         var result = await _controller.Delete("Preset to delete");

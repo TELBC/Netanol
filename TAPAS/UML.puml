@@ -47,24 +47,19 @@ package "Layout Storage" {
     }
     GraphNode -> LayoutPreset
     
-    class DeviceNode {
+    class HostNode {
         + long NetworkHostId
         + long? IslandId
     }
-    DeviceNode -* GraphNode
-    DeviceNode --> NetworkHost
-    DeviceNode -> IslandGroup
+    HostNode -* GraphNode
+    HostNode --> NetworkHost
     
     class CompressedGroup {
         + long GraphElementId
         + long NetworkHostId
     }
-    CompressedGroup -> GraphNode
+    CompressedGroup -* GraphNode
     CompressedGroup -> NetworkHost
-    
-    class IslandGroup {
-        + long Id
-    }
 }
 
 @enduml
