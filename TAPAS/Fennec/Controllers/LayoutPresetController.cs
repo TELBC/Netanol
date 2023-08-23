@@ -7,19 +7,19 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Fennec.Controllers;
 
 /// <summary>
-///     Create, update and delete <see cref="LayoutPreset" />s.
+///     Create, update and delete <see cref="Layout" />s.
 /// </summary>
 [Route("layout/{name}")]
 [ApiController]
 [Produces("application/json")]
 [SwaggerTag("Manage Layout Presets")]
-public class LayoutPresetController : ControllerBase
+public class LayoutController : ControllerBase
 {
-    private readonly ILayoutPresetRepository _layoutPresetRepository;
+    private readonly ILayoutRepository _layoutRepository;
 
-    public LayoutPresetController(ILayoutPresetRepository layoutPresetRepository)
+    public LayoutController(ILayoutRepository layoutRepository)
     {
-        _layoutPresetRepository = layoutPresetRepository;
+        _layoutRepository = layoutRepository;
     }
 
     [HttpGet]
@@ -27,8 +27,8 @@ public class LayoutPresetController : ControllerBase
     [SwaggerResponse(StatusCodes.Status200OK, "Layout presets listed successfully")]
     public async Task<IActionResult> List()
     {
-        var layoutPresets = await _layoutPresetRepository.ListLayoutPresets();
-        return Ok(layoutPresets);
+        var layouts = await _layoutRepository.ListLayouts();
+        return Ok(layouts);
     }
 
     [HttpPost("")]
@@ -39,8 +39,8 @@ public class LayoutPresetController : ControllerBase
     {
         try
         {
-            var layoutPreset = await _layoutPresetRepository.CreateLayoutPreset(name);
-            return CreatedAtAction(nameof(Create), layoutPreset);
+            var layout = await _layoutRepository.CreateLayout(name);
+            return CreatedAtAction(nameof(Create), layout);
         }
         catch (DuplicateNameException ex)
         {
@@ -57,8 +57,8 @@ public class LayoutPresetController : ControllerBase
     {
         try
         {
-            var layoutPreset = await _layoutPresetRepository.RenameLayoutPreset(name, newName);
-            return Ok(layoutPreset);
+            var layout = await _layoutRepository.RenameLayout(name, newName);
+            return Ok(layout);
         }
         catch (KeyNotFoundException ex)
         {
@@ -78,8 +78,8 @@ public class LayoutPresetController : ControllerBase
     {
         try
         {
-            var layoutPreset = await _layoutPresetRepository.DeleteLayoutPreset(name);
-            return Ok(layoutPreset);
+            var layout = await _layoutRepository.DeleteLayout(name);
+            return Ok(layout);
         }
         catch (KeyNotFoundException ex)
         {

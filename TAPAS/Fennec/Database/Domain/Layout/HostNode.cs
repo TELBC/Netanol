@@ -9,16 +9,16 @@ namespace Fennec.Database.Domain.Layout;
 public class HostNode : GraphNode
 {
 #pragma warning disable CS8618
-    public HostNode(long layoutResetId, string displayName, long networkHostId, long? islandGroupId) : base(
+    public HostNode(long layoutResetId, string displayName, long networkHostId, long? islandGroup) : base(
         layoutResetId, displayName)
 #pragma warning restore CS8618
     {
         NetworkHostId = networkHostId;
-        IslandGroupId = islandGroupId;
+        IslandGroup = islandGroup;
     }
 
-    public HostNode(LayoutPreset layoutPreset, string displayName, NetworkHost networkHost, IslandGroup? islandGroup) :
-        base(layoutPreset, displayName)
+    public HostNode(Layout layout, string displayName, NetworkHost networkHost, long? islandGroup) :
+        base(layout, displayName)
     {
         NetworkHost = networkHost;
         IslandGroup = islandGroup;
@@ -38,10 +38,8 @@ public class HostNode : GraphNode
     public long NetworkHostId { get; set; }
 
     /// <summary>
-    /// The <see cref="IslandGroup"/> this <see cref="HostNode"/> is a member of. If not
-    /// set it is not part of a <see cref="IslandGroup"/>.
+    /// The *IslandGroup* this <see cref="HostNode"/> is a member of. If not
+    /// set it is not part of a *IslandGroup*.
     /// </summary>
-    public IslandGroup? IslandGroup { get; set; }
-
-    public long? IslandGroupId { get; set; }
+    public long? IslandGroup { get; set; }
 }

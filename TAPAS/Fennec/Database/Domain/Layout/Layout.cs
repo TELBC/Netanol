@@ -7,22 +7,22 @@ namespace Fennec.Database.Domain.Layout;
 /// the graph.
 /// </summary>
 [Index(nameof(Name), IsUnique = true)]
-public class LayoutPreset
+public class Layout
 {
-    public LayoutPreset(string name)
+    public Layout(string name)
     {
         Name = name;
     }
 
 #pragma warning disable CS8618
-    public LayoutPreset()
+    public Layout()
     {
     }
 #pragma warning restore CS8618
     public long Id { get; set; }
 
     /// <summary>
-    /// The name of the <see cref="LayoutPreset"/> as defined by the user.
+    /// The name of the <see cref="Layout"/> as defined by the user.
     /// </summary>
     public string Name { get; set; }
 
