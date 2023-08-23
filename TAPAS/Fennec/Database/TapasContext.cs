@@ -11,12 +11,11 @@ public interface ITapasContext
 {
     DbSet<LayoutPreset> LayoutPresets { get; }
     DbSet<GraphNode> GraphNodes { get; }
-    DbSet<DeviceNode> DeviceNodes { get; }
+    DbSet<HostNode> DeviceNodes { get; }
     DbSet<IslandGroup> IslandGroups { get; }
     DbSet<CompressedGroup> CompressedGroups { get; }
 
     DbSet<NetworkHost> NetworkHosts { get; }
-    DbSet<NetworkDevice> NetworkDevices { get; }
     DbSet<SingleTrace> SingleTraces { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
@@ -34,12 +33,11 @@ public class TapasContext : DbContext, ITapasContext
 
     public DbSet<LayoutPreset> LayoutPresets => Set<LayoutPreset>();
     public DbSet<GraphNode> GraphNodes => Set<GraphNode>();
-    public DbSet<DeviceNode> DeviceNodes => Set<DeviceNode>();
+    public DbSet<HostNode> DeviceNodes => Set<HostNode>();
     public DbSet<IslandGroup> IslandGroups => Set<IslandGroup>();
     public DbSet<CompressedGroup> CompressedGroups => Set<CompressedGroup>();
 
     public DbSet<NetworkHost> NetworkHosts => Set<NetworkHost>();
-    public DbSet<NetworkDevice> NetworkDevices => Set<NetworkDevice>();
     public DbSet<SingleTrace> SingleTraces => Set<SingleTrace>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
