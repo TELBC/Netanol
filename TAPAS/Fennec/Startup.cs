@@ -28,6 +28,7 @@ public class Startup
 
         // Database services
         services.AddScoped<ITraceImportService, TraceImportService>();
+        services.AddScoped<ILayoutPresetRepository, LayoutPresetRepository>();
         services.AddScoped<ITraceRepository, TraceRepository>();
         services.AddDbContext<TapasContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));
@@ -38,7 +39,11 @@ public class Startup
         // Web services
         services.AddControllers();
         services.AddAutoMapper(typeof(Program).Assembly);
-        services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "Fennec API", Version = "v1" }); });
+        services.AddSwaggerGen(c =>
+        {
+            c.EnableAnnotations();
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Fennec API", Version = "v1" });
+        });
     }
 
     public void ConfigureHost(ConfigureHostBuilder host, IConfiguration configuration)
