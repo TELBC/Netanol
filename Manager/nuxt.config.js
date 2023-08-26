@@ -1,5 +1,5 @@
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: {enabled: false},
   head: {
     titleTemplate: '%s - Manager',
     title: 'Manager',
@@ -53,8 +53,9 @@ export default defineNuxtConfig({
       }
     }
   },
-  build: { transpile: ['@fortawesome/vue-fontawesome'], },
+  build: {transpile: ['@fortawesome/vue-fontawesome']},
   css: [
-    '@fortawesome/fontawesome-svg-core/styles.css'
-  ],
+    '@fortawesome/fontawesome-svg-core/styles.css',
+    'v-network-graph/lib/style.css'
+  ]
 })
