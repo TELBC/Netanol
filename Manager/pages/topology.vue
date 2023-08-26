@@ -1,3 +1,12 @@
+<template>
+  <v-network-graph
+    class="graph"
+    :nodes="nodes"
+    :edges="edges"
+    :configs="networkGraphConfigs"
+  />
+</template>
+
 <script setup lang="ts">
 import { VNetworkGraph} from "v-network-graph"
 import {networkGraphConfigs} from "assets/v-network-graph-configs";
@@ -25,15 +34,6 @@ const jsonData = `{
 const { nodes, edges } = parseJsonData(jsonData);
 
 </script>
-
-<template>
-  <v-network-graph
-    class="graph"
-    :nodes="nodes"
-    :edges="edges"
-    :configs="networkGraphConfigs"
-  />
-</template>
 
 <style scoped>
 .graph{
