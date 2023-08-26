@@ -73,7 +73,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
   background: #537B87;
   color: white;
   font-size: 2rem;
-  //font-family: 'Open Sans', sans-serif;
+  font-family: 'Open Sans', sans-serif;
   transition: 0.2s ease-in-out;
   user-select: none;
   z-index: 1;
