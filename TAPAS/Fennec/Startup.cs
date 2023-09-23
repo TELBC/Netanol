@@ -98,7 +98,7 @@ public class Startup
         });
     }
 
-    public void Configure(WebApplication app, IWebHostEnvironment env)
+    public async Task Configure(WebApplication app, IWebHostEnvironment env)
     {
         if (env.IsDevelopment())
         {
@@ -115,7 +115,7 @@ public class Startup
             var ctx = scope.ServiceProvider.GetRequiredService<TapasContext>();
 
             // TODO: switch this for .Migrate and add migration support
-            ctx.Database.EnsureCreated();
+            await ctx.Database.MigrateAsync();
         }
 
         app.MapControllers();
