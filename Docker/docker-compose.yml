@@ -2,15 +2,17 @@ version: '3.9'
 services:
   fennec:
     build:
-      context: ../
-      dockerfile: Docker/Dockerfile
+      context: ../TAPAS
+      dockerfile: ../Docker/Dockerfile
     ports:
-      - "8000:80"
-      - "2055:2055"
+      - "8000:80/tcp"
+      - "2055:2055/udp"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
     depends_on:
       - postgres
+    networks: 
+      - netanol-network
     profiles:
       - dev
       - prod
@@ -24,6 +26,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - netanol-network
     profiles:
       - dev
       - prod
@@ -39,7 +43,7 @@ services:
     ports:
       - "9200:9200"
     networks:
-      - tapas-network
+      - netanol-network
     profiles:
       - dev
       - prod
@@ -49,7 +53,7 @@ services:
     ports:
       - "5601:5601"
     networks:
-      - tapas-network
+      - netanol-network
     profiles:
       - dev
       - prod
@@ -67,5 +71,5 @@ volumes:
   elasticsearch_data:
     
 networks:
-  tapas-network:
+  netanol-network:
     driver: bridge
