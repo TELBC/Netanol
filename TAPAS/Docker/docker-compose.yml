@@ -1,11 +1,12 @@
 version: '3.9'
 services:
-  tapas:
+  fennec:
     build:
       context: ../
       dockerfile: Docker/Dockerfile
     ports:
       - "8000:80"
+      - "2055:2055"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
     depends_on:
