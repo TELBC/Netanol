@@ -30,7 +30,7 @@ public class Startup
         services.AddScoped<ITraceImportService, TraceImportService>();
         services.AddScoped<ILayoutPresetRepository, LayoutPresetRepository>();
         services.AddScoped<ITraceRepository, TraceRepository>();
-        services.AddDbContext<TapasContext>(options =>
+        services.AddDbContext<ITapasContext, TapasContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));
 
         // Collector services

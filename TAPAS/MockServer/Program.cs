@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using DotNetFlow.Netflow9;
 
 var udpClient = new UdpClient();
-var endPoint = new IPEndPoint(IPAddress.Loopback, 22055);
+var endPoint = new IPEndPoint(IPAddress.Loopback, 2055);
 
 var addresses = new[]
 {
