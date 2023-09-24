@@ -1,4 +1,9 @@
-﻿namespace Fennec.Database.Domain.Layout;
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Fennec.Database.Domain.Layout;
+
+[Owned]
+public record PositionInfo(int X, int Y);
 
 /// <summary>
 /// On the frontend this represents a single node to be drawn on the graph. It
@@ -7,10 +12,10 @@
 public class GraphNode
 {
 #pragma warning disable CS8618
-    public GraphNode(long layoutResetId, string displayName)
+    public GraphNode(long layoutId, string displayName)
 #pragma warning restore CS8618
     {
-        LayoutResetId = layoutResetId;
+        LayoutId = layoutId;
         DisplayName = displayName;
     }
 
@@ -25,6 +30,7 @@ public class GraphNode
     {
     }
 #pragma warning restore CS8618
+
     public long Id { get; set; }
 
     /// <summary>
@@ -32,10 +38,20 @@ public class GraphNode
     /// </summary>
     public Layout Layout { get; set; }
 
-    public long LayoutResetId { get; set; }
+    public long LayoutId { get; set; }
 
     /// <summary>
     /// A name given by the user to this <see cref="GraphNode"/>.
     /// </summary>
     public string DisplayName { get; set; }
+
+    /// <summary>
+    ///     The position of this <see cref="GraphNode" /> on the graph.
+    /// </summary>
+    public PositionInfo? Position { get; set; }
+
+    /// <summary>
+    ///     Whether this <see cref="GraphNode" /> is hidden on the graph.
+    /// </summary>
+    public bool IsVisible { get; set; } = true;
 }

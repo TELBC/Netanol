@@ -7,7 +7,7 @@ namespace Fennec.Database;
 public interface ILayoutRepository
 {
     /// <summary>
-    ///     Lists all layout presets.
+    ///     Lists all layouts.
     /// </summary>
     /// <returns></returns>
     Task<List<Layout>> ListLayouts();
@@ -98,6 +98,6 @@ public class LayoutRepository : ILayoutRepository
         var layout = await _context.Layouts.FirstOrDefaultAsync(l => l.Name == name);
 
         if (layout != null)
-            throw new DuplicateNameException($"A layout with the name {name} does not exist.");
+            throw new DuplicateNameException($"A layout with the name {name} already exists.");
     }
 }

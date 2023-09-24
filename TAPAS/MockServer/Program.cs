@@ -51,7 +51,6 @@ while (true)
         await udpClient.SendAsync(packet, packet.Length, endPoint);
     }
 
-    // wait 10 seconds
     await Task.Delay(TimeSpan.FromSeconds(1));
     Console.WriteLine("Sending packet information");
 }

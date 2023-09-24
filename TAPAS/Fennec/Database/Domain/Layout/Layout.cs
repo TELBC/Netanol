@@ -19,6 +19,7 @@ public class Layout
     {
     }
 #pragma warning restore CS8618
+
     public long Id { get; set; }
 
     /// <summary>
@@ -29,5 +30,5 @@ public class Layout
     /// <summary>
     /// All <see cref="GraphNodes"/> that are part of this layout.
     /// </summary>
-    public ICollection<GraphNode> GraphNodes { get; set; } = default!;
+    public List<GraphNode> GraphNodes { get; set; } = default!;
 }

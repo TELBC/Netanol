@@ -2,7 +2,7 @@
 
 package "Technical Storage" {
     class SingleTrace {
-        + long Id [Key]
+        + long Id 
     
         + DateTime StartTimeStamp
         + DateTime EndTimeStamp
@@ -22,7 +22,7 @@ package "Technical Storage" {
     SingleTrace-> NetworkHost
     
     class NetworkHost {
-        + long Id [Key]
+        + long Id 
     
         + IpAddress IpAddress [Unique]
         
@@ -34,31 +34,32 @@ package "Technical Storage" {
 }
 
 package "Layout Storage" {
-    class LayoutPreset {
-        + long Id [Key]
+    class Layout {
+        + long Id
         + string Name [Unique]
     }
 
     class GraphNode {
-        + long Id [Key]
+        + long Id
         + int LayoutId
-        
         + string DisplayName
+        + bool Hidden
     }
-    GraphNode -> LayoutPreset
+    GraphNode -> Layout
     
     class HostNode {
-        + long NetworkHostId
-        + long? IslandId
+        + NetworkHost
+        + long? IslandGroup
     }
     HostNode -* GraphNode
     HostNode --> NetworkHost
     
     class CompressedGroup {
-        + long GraphElementId
-        + long NetworkHostId
+        + long Id
+        + GraphNode
+        + NetworkHost
     }
-    CompressedGroup -* GraphNode
+    CompressedGroup -> GraphNode
     CompressedGroup -> NetworkHost
 }
 

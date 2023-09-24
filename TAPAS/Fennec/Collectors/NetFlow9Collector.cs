@@ -73,8 +73,8 @@ public class NetFlow9Collector : BackgroundService
                 DateTimeOffset.Now, IPAddress.Loopback,
                 record.IPv4SourceAddress, 0,
                 record.IPv4DestinationAddress, 0,
-                0,
-                0);
+                Random.Shared.Next(0, 255),
+                Random.Shared.Next(0, 255));
         }
         catch (Exception ex)
         {

@@ -4,6 +4,11 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Fennec.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        
     </PropertyGroup>
 
     <ItemGroup>

@@ -7,7 +7,7 @@ namespace Fennec.Database.Domain.Layout;
 /// be represented in the graph as one node. This class matches one
 /// <see cref="NetworkHost"/> to one <see cref="GraphNode"/> and thus represents a m:n table.
 /// </summary>
-public class CompressedGroup : GraphNode
+public class CompressedGroup
 {
 #pragma warning disable CS8618
     public CompressedGroup(long graphNodeId, long networkHostId)
@@ -28,6 +28,9 @@ public class CompressedGroup : GraphNode
     {
     }
 #pragma warning restore CS8618
+
+    public long Id { get; set; }
+
     /// <summary>
     /// The <see cref="GraphNode"/> the <see cref="NetworkHost"/> belongs into.
     /// </summary>

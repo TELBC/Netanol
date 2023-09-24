@@ -9,19 +9,19 @@ namespace Fennec.Database.Domain.Layout;
 public class HostNode : GraphNode
 {
 #pragma warning disable CS8618
-    public HostNode(long layoutResetId, string displayName, long networkHostId, long? islandGroup) : base(
-        layoutResetId, displayName)
+    public HostNode(long layoutId, string displayName, long networkHostId) : base(
+        layoutId, displayName)
 #pragma warning restore CS8618
     {
         NetworkHostId = networkHostId;
-        IslandGroup = islandGroup;
+        IslandGroup = null;
     }
 
-    public HostNode(Layout layout, string displayName, NetworkHost networkHost, long? islandGroup) :
+    public HostNode(Layout layout, string displayName, NetworkHost networkHost) :
         base(layout, displayName)
     {
         NetworkHost = networkHost;
-        IslandGroup = islandGroup;
+        IslandGroup = null;
     }
 
 #pragma warning disable CS8618

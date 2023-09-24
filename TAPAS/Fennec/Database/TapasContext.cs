@@ -11,7 +11,7 @@ public interface ITapasContext
 {
     DbSet<Layout> Layouts { get; }
     DbSet<GraphNode> GraphNodes { get; }
-    DbSet<HostNode> DeviceNodes { get; }
+    DbSet<HostNode> HostNodes { get; }
     DbSet<CompressedGroup> CompressedGroups { get; }
 
     DbSet<NetworkHost> NetworkHosts { get; }
@@ -32,7 +32,7 @@ public class TapasContext : DbContext, ITapasContext
 
     public DbSet<Layout> Layouts => Set<Layout>();
     public DbSet<GraphNode> GraphNodes => Set<GraphNode>();
-    public DbSet<HostNode> DeviceNodes => Set<HostNode>();
+    public DbSet<HostNode> HostNodes => Set<HostNode>();
     public DbSet<CompressedGroup> CompressedGroups => Set<CompressedGroup>();
 
     public DbSet<NetworkHost> NetworkHosts => Set<NetworkHost>();
