@@ -21,7 +21,7 @@ public class Startup
 
     private IConfigurationRoot Configuration { get; }
 
-    public void ConfigureServices(IServiceCollection services)
+    public void ConfigureServices(IServiceCollection services, IWebHostEnvironment environment)
     {
         // Options
         services.Configure<Netflow9CollectorOptions>(Configuration.GetSection("Collectors:Netflow9"));
@@ -39,10 +39,17 @@ public class Startup
         // Web services
         services.AddControllers();
         services.AddAutoMapper(typeof(Program).Assembly);
+
+        if (environment.IsProduction())
+            return;
+
         services.AddSwaggerGen(c =>
         {
             c.EnableAnnotations();
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Fennec API", Version = "v1" });
+
+            var filePath = Path.Combine(AppContext.BaseDirectory, "Fennec.xml");
+            c.IncludeXmlComments(filePath);
         });
     }
 
@@ -100,17 +107,6 @@ public class Startup
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fennec API V1");
                 c.RoutePrefix = "swagger";
-            });
-        }
-        else // return 404 for swagger in production
-        {
-            app.MapWhen(context => context.Request.Path.StartsWithSegments("/swagger"), builder =>
-            {
-                builder.Run(async context =>
-                {
-                    context.Response.StatusCode = 404;
-                    await context.Response.WriteAsync("Not found.");
-                });
             });
         }
 
