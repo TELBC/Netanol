@@ -4,12 +4,6 @@ This file includes a full list of services and how to configure them to run in e
 development or production environment.
 
 1. copy the ``.env.example`` file and rename it to be ``.env``
-2. build in dev/prod:
-  - ```docker-compose --profile dev build --no-cache```
-  - ```docker-compose --profile prod build --no-cache```
-3. run in dev/prod:
-  - ```docker-compose --profile dev run -d```
-  - ```docker-compose --profile prod run -d```
 
 ## Services
 ### TAPAS
