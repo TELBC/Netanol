@@ -3,7 +3,7 @@ services:
   fennec:
     build:
       context: ../TAPAS
-      dockerfile: ../Docker/Dockerfile
+      dockerfile: ../Docker/Fennec.Dockerfile
     ports:
       - "8000:80/tcp"
       - "2055:2055/udp"
@@ -12,6 +12,21 @@ services:
     depends_on:
       - postgres
     networks: 
+      - netanol-network
+    profiles:
+      - dev
+      - prod
+
+  manager:
+    build:
+      context: ../Manager
+      dockerfile: ../Docker/Manager.Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - fennec
+    networks:
       - netanol-network
     profiles:
       - dev

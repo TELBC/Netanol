@@ -17,7 +17,5 @@ WORKDIR /app
 # Copy the build output from the previous stage
 COPY --from=build-env /app/out .
 
-EXPOSE 80
-
 # Specify the entry point command to start the app
 ENTRYPOINT ["dotnet", "Fennec.dll"]
