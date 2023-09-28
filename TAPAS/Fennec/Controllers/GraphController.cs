@@ -124,31 +124,31 @@ public class GraphController : ControllerBase
 
             _context.GraphNodes.AddRange(graphNodes);
             await _context.SaveChangesAsync();
-            layout.GraphNodes.AddRange(graphNodes);
         }
 
         // build the translation table from network host id to graph node id
         var translationTable = new Dictionary<long, long>();
-        foreach (var host in await joinedQuery.ToListAsync())
+        foreach (var networkHost in await joinedQuery.ToListAsync())
         {
-            var hn = layout.GraphNodes
+            var graphHostNode = layout.GraphNodes
                 .OfType<HostNode>()
                 .Where(h => h.IsVisible && h.LayoutId == layout.Id)
-                .FirstOrDefault(h => h.Id == host.Id);
+                .FirstOrDefault(h => h.Id == networkHost.Id);
 
-            if (hn != null)
+            if (graphHostNode != null)
             {
-                translationTable.Add(host.Id, host.Id);
+                translationTable.Add(networkHost.Id, graphHostNode.Id);
                 continue;
             }
 
             var cg = await _context.CompressedGroups
-                .FirstOrDefaultAsync(cg => cg.NetworkHostId == host.Id);
+                .FirstOrDefaultAsync(cg => cg.GraphNode.LayoutId == layout.Id &&
+                                           cg.NetworkHostId == networkHost.Id);
 
             if (cg == null)
                 continue;
 
-            translationTable.Add(host.Id, cg.GraphNodeId);
+            translationTable.Add(networkHost.Id, cg.GraphNodeId);
         }
 
         // translate the traces & aggregate them again on the graph node ids
