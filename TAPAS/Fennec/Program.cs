@@ -1,6 +1,10 @@
 using Fennec;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// include environment variables in configuration
+builder.Configuration.AddEnvironmentVariables("FENNEC_");
+
 var startup = new Startup(builder.Configuration);
 
 // TODO: use proper services

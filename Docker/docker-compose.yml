@@ -8,14 +8,12 @@ services:
       - "8000:80/tcp"
       - "2055:2055/udp"
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ASPNETCORE_ENVIRONMENT=${FENNEC_ENVIRONMENT}
+      - FENNEC_STARTUP__ENABLESWAGGER=${FENNEC_SWAGGER}
     depends_on:
       - postgres
     networks: 
       - netanol-network
-    profiles:
-      - dev
-      - prod
 
   manager:
     build:
@@ -28,9 +26,6 @@ services:
       - fennec
     networks:
       - netanol-network
-    profiles:
-      - dev
-      - prod
 
   postgres:
     image: postgres:12
@@ -43,9 +38,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - netanol-network
-    profiles:
-      - dev
-      - prod
   
   elasticsearch:
     image: elasticsearch:8.8.1
@@ -60,7 +52,6 @@ services:
     networks:
       - netanol-network
     profiles:
-      - dev
       - prod
   
   kibana:
@@ -70,14 +61,13 @@ services:
     networks:
       - netanol-network
     profiles:
-      - dev
       - prod
   
   traffic-replay:
     build:
       context: ./traffic-replay
     environment:
-      - TRAFFIC_REPLAY_FILE
+      - REPLAY_FILE
     profiles:
       - dev
     

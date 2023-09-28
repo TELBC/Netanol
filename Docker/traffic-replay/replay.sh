@@ -3,7 +3,7 @@
 echo "Extracting payloads... "
 
 # Extract UDP payloads from the modified pcap file
-tshark -r /captures/"$TRAFFIC_REPLAY_FILE" -T fields -e udp.payload > /tmp/payloads.txt
+tshark -r /captures/"$REPLAY_FILE" -T fields -e udp.payload > /tmp/payloads.txt
 
 echo "Extracted payloads & Starting python script"
 

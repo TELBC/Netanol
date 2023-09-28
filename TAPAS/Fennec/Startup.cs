@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Data;
+using System.Reflection;
 using Fennec.Collectors;
 using Fennec.Database;
 using Fennec.Options;
@@ -17,9 +18,12 @@ public class Startup
     public Startup(IConfigurationRoot configuration)
     {
         Configuration = configuration;
+        StartupOptions = Configuration.GetSection("Startup").Get<StartupOptions>() ??
+                         throw new InvalidConstraintException("The Startup section is not defined in the configuration.");
     }
 
     private IConfigurationRoot Configuration { get; }
+    private StartupOptions StartupOptions { get; }
 
     public void ConfigureServices(IServiceCollection services, IWebHostEnvironment environment)
     {
@@ -31,7 +35,7 @@ public class Startup
         services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddScoped<ITraceRepository, TraceRepository>();
         services.AddDbContext<ITapasContext, TapasContext>(options =>
-            options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));
+            options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection") ?? throw new InvalidOperationException()));
 
         // Collector services
         services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
@@ -40,9 +44,9 @@ public class Startup
         services.AddControllers();
         services.AddAutoMapper(typeof(Program).Assembly);
 
-        if (environment.IsProduction())
+        if (!StartupOptions.EnableSwagger)
             return;
-
+        
         services.AddSwaggerGen(c =>
         {
             c.EnableAnnotations();
@@ -100,7 +104,7 @@ public class Startup
 
     public async Task Configure(WebApplication app, IWebHostEnvironment env)
     {
-        if (env.IsDevelopment())
+        if (StartupOptions.EnableSwagger)
         {
             app.UseSwagger();
             app.UseSwaggerUI(c =>
