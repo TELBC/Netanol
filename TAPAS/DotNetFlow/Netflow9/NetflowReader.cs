@@ -227,6 +227,79 @@ namespace DotNetFlow.Netflow9 {
 
             return retval;
         }
+        
+        /// <summary>
+        /// Reads a template flow set or data flow set from the current location
+        /// in the underlying stream.
+        /// </summary>
+        /// <remarks>
+        /// <para>This method is implemented in such a way that the flow set is
+        /// read in one piece, ie if the data are corrupted, but the flow set ID
+        /// and the length are still correct, only one flow set is lost (if an
+        /// exception is thrown), but the reader can continue processing the
+        /// next flow set.</para>
+        /// </remarks>
+        /// <returns>The flow set that has been read.</returns>
+        /// <exception cref="InvalidOperationException">If the reader is not in
+        /// a stated when it expectes a flow set. This is typically the case if
+        /// the packet header has not yet been read.</exception>
+        /// <exception cref="ObjectDisposedException">If the reader has already
+        /// been disposed.</exception>
+        /// <exception cref="KeyNotFoundException">If a data flow set was read
+        /// which for we do not know a template.</exception>
+        /// <exception cref="FormatException">If the input data are corrupt and
+        /// cannot be processed. The flow set will have been skipped in thi case
+        /// and the next one might be readable if it is OK.</exception>
+        public IFlowSet ReadFlowSet(IEnumerable<TemplateRecord> templateRecords) {
+            this.CheckState(State.Flows);
+            Debug.Assert(this.Reader != null);
+
+            var id = this.Reader.ReadUInt16().ToHostByteOrder();
+            var length = (int) this.Reader.ReadUInt16().ToHostByteOrder();
+            length -= 2 * sizeof(ushort);
+            var data = this.Reader.ReadBytes(length);
+
+            // For the underlying stream, the flow has been consumed at this
+            // point, regardless of whether any problem occurs when parsing it
+            // later on. Therefore, we check whether the end of the packet has
+            // been reached right after reading the contents of the packet.
+            this.CheckEndOfPacket();
+
+            if (id == 0) {
+                // This is a template flow set.
+                var retval = this.ReadTemplateFlowSet(data);
+                Debug.Assert(retval.ID == id);
+                return retval;
+
+            } else if (id == 1) {
+                // This is a option template flow set
+                var retval = this.ReadOptionsTemplateFlowSet(data);
+                Debug.Assert(retval.ID == id);
+                return retval;
+
+            } else if (id >= 256) {
+                // This is a (option) data flow set.
+                try {
+                    var template = templateRecords.First(t => t.ID == id);
+                    var retval = ReadDataFlowSet(data, template);
+                    Debug.Assert(retval.ID == id);
+                    return retval;
+
+                } catch (KeyNotFoundException) {
+                    var template = this.CurrentOptionTemplates[id];
+                    var retval = ReadOptionDataFlowSet(data, template);
+                    Debug.Assert(retval.ID == id);
+                    return retval;
+
+                }
+
+            } else {
+                // This is something we do not understand.
+                Debug.WriteLine($"Skipping {length} byte(s) of data the reader "
+                    + "does not understand.");
+                return null;
+            }
+        }
 
         /// <summary>
         /// Reads a template flow set or data flow set from the current location
@@ -403,6 +476,8 @@ namespace DotNetFlow.Netflow9 {
 
                 length -= f.Length;
             }
+            // ensures that any padding left over will be disposed off and not read as a new field
+            length = 0;
         }
 
         /// <summary>
