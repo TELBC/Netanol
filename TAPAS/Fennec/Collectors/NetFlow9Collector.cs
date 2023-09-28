@@ -14,6 +14,7 @@ public class NetFlow9Collector : BackgroundService
     private readonly Netflow9CollectorOptions _options;
     private readonly IServiceProvider _serviceProvider;
     private readonly UdpClient _udpClient;
+    private readonly List<TemplateRecord> _allTemplateRecords;
 
     public NetFlow9Collector(ILogger log, IOptions<Netflow9CollectorOptions> iOptions,
         IServiceProvider serviceProvider)
@@ -23,6 +24,7 @@ public class NetFlow9Collector : BackgroundService
         _log = log.ForContext<NetFlow9Collector>();
         _udpClient = new UdpClient(_options.ListeningPort);
         _serviceProvider = serviceProvider;
+        _allTemplateRecords = new List<TemplateRecord>();
     }
 
     protected override async Task ExecuteAsync(CancellationToken ct)
@@ -62,19 +64,69 @@ public class NetFlow9Collector : BackgroundService
             var stream = new MemoryStream(result.Buffer);
             using var nr = new NetflowReader(stream);
 
-            _ = nr.ReadPacketHeader();
-            var template = nr.ReadFlowSet() as TemplateFlowSet;
-            var data = nr.ReadFlowSet() as DataFlowSet;
-            var view = new NetflowView(data, template);
+            // How to carry-over Templates through packets 
+            
+            var header = nr.ReadPacketHeader();
+            var allFlowSets = new List<object>();
+            var onlyDataFlowSets = new List<DataFlowSet>();
+
+            for (var i = 0; i < header.Count; i++)
+            {
+                try
+                {
+                    var flowSet = nr.ReadFlowSet(_allTemplateRecords);
+                    allFlowSets.Add(flowSet);
+                }
+                catch (Exception e)
+                {
+                    // ignored :)
+                }
+            }
+
+            foreach (var flowSet in allFlowSets)
+            {
+                if (flowSet is TemplateFlowSet templateFlowSet)
+                {
+                    foreach (var templateRecord in templateFlowSet.Records)
+                    {
+                        if (!_allTemplateRecords.Contains(templateRecord))
+                        {
+                            _allTemplateRecords.Add(templateRecord);
+                            _log.Information($"Template Record added {templateRecord.ID}");
+                        }
+                    }
+                }
+                else if (flowSet is DataFlowSet dataFlowSet)
+                {
+                    onlyDataFlowSets.Add(dataFlowSet);
+                }
+                else
+                {
+                    return null;
+                }
+                // TODO : Decide what to do with non-network data FlowSets (OptionsTemplateFlowSet, OptionsDataFlowSet)
+            }
+
+            NetflowView? view = null;
+            foreach (var dataFlowSet in onlyDataFlowSets)
+            {
+                view = new NetflowView(dataFlowSet, _allTemplateRecords);
+            }
+            
             var record = view[0];
 
             // TODO: read the correct information here
-            return new TraceImportInfo(
-                DateTimeOffset.Now, IPAddress.Loopback,
-                record.IPv4SourceAddress, 0,
-                record.IPv4DestinationAddress, 0,
-                Random.Shared.Next(0, 255),
-                Random.Shared.Next(0, 255));
+            if (record != null)
+            {
+                return new TraceImportInfo(
+                    DateTimeOffset.Now, IPAddress.Loopback,
+                    record.IPv4SourceAddress, 0,
+                    record.IPv4DestinationAddress, 0,
+                    0,
+                    0);
+            }
+
+            return null;
         }
         catch (Exception ex)
         {

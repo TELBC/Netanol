@@ -32,6 +32,7 @@ public class Startup
         services.Configure<Netflow9CollectorOptions>(Configuration.GetSection("Collectors:Netflow9"));
 
         // Database services
+        services.AddScoped<ITapasContext, TapasContext>();
         services.AddScoped<ITraceImportService, TraceImportService>();
         services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddScoped<ITraceRepository, TraceRepository>();
