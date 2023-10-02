@@ -1,0 +1,93 @@
+﻿name: Continuous Deployment to Syde
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build_fennec:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 7.0.x
+
+      - name: Restore NuGet packages
+        working-directory: TAPAS/Fennec.Tests
+        run: |
+          dotnet restore
+
+      - name: Build solution
+        working-directory: TAPAS/Fennec.Tests
+        run: |
+          dotnet build --no-restore
+
+  build_astrapia:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node Env
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Nuxt dependencies
+        working-directory: Astrapia
+        run: npm install
+
+      - name: Build Nuxt
+        working-directory: Astrapia
+        run: npm run build
+
+  deploy_to_syde:
+    needs: [ build_fennec, build_astrapia ]
+    runs-on: ubuntu-latest
+    env:
+      SYDE_HOST: ${{ secrets.SYDE_HOST }}
+      SYDE_USER: ${{ secrets.SYDE_USER }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup SSH Key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SYDE_RSA }}
+  
+      - name: Add SSH key to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t rsa $SYDE_HOST >> ~/.ssh/known_hosts
+  
+      - name: Stop Docker Compose Services
+        continue-on-error: true
+        run: |
+          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && docker compose down"
+          
+      - name: Remove Old Files
+        continue-on-error: true
+        run: |
+          rm -rf ~/netanol
+  
+      - name: SCP Transfer to User's Home Directory
+        run: |
+          ssh $SYDE_USER@$SYDE_HOST "mkdir -p ~/netanol"
+          scp -r $GITHUB_WORKSPACE/* $SYDE_USER@$SYDE_HOST:~/netanol
+  
+      - name: Setup Configurations
+        run: |
+          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && cp syde/.env.syde .env"
+  
+      - name: Run Remote Docker
+        run: |
+          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && docker compose build --no-cache && docker compose --profile prod up -d"
