@@ -15,10 +15,10 @@ services:
     networks: 
       - netanol-network
 
-  manager:
+  astrapia:
     build:
-      context: ../Manager
-      dockerfile: ../Docker/Manager.Dockerfile
+      context: ../Astrapia
+      dockerfile: ../Docker/Astrapia.Dockerfile
     ports:
       - "3000:3000"
     depends_on:

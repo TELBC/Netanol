@@ -1,5 +1,5 @@
 {
-  "name": "Manager",
+  "name": "Astrapia",
   "private": true,
   "scripts": {
     "build": "nuxt build",

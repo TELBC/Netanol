@@ -1,8 +1,8 @@
 export default defineNuxtConfig({
   devtools: {enabled: false},
   head: {
-    titleTemplate: '%s - Manager',
-    title: 'Manager',
+    titleTemplate: '%s - Astrapia',
+    title: 'Astrapia',
     htmlAttrs: {
       lang: 'en'
     },

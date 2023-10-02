@@ -1,4 +1,4 @@
-﻿name: Manager Continuous Integration
+﻿name: Astrapia Continuous Integration
 
 on:
   push:
@@ -19,9 +19,9 @@ jobs:
           node-version: 18
 
       - name: Install Nuxt dependencies
-        working-directory: Manager
+        working-directory: Astrapia
         run: npm install
 
       - name: Build Nuxt
-        working-directory: Manager
+        working-directory: Astrapia
         run: npm run build
