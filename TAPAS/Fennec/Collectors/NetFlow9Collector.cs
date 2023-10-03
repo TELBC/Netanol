@@ -102,6 +102,7 @@ public class NetFlow9Collector : BackgroundService
                 }
                 else
                 {
+                    _log.Error($"Dropping packet OptionsDataFlowSet/OptionsTemplateFlowSet");
                     return null;
                 }
                 // TODO : Decide what to do with non-network data FlowSets (OptionsTemplateFlowSet, OptionsDataFlowSet)
