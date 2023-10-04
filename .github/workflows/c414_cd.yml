@@ -1,0 +1,79 @@
+﻿name: Continuous Deployment to C414
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_fennec:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 7.0.x
+
+      - name: Restore NuGet packages
+        working-directory: TAPAS/Fennec.Tests
+        run: |
+          dotnet restore
+
+      - name: Build solution
+        working-directory: TAPAS/Fennec.Tests
+        run: |
+          dotnet build --no-restore
+
+  build_astrapia:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node Env
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Nuxt dependencies
+        working-directory: Astrapia
+        run: npm install
+
+      - name: Build Nuxt
+        working-directory: Astrapia
+        run: npm run build
+
+  deploy_to_c414:
+    needs: [ build_fennec, build_astrapia ]
+    runs-on: [ self-hosted, c414-label ]
+
+    steps:        
+      - name: Stop Docker Compose Services
+        continue-on-error: true
+        run: |
+          cd ~/netanol/Docker && docker compose down
+          
+      - name: Remove Old Files
+        continue-on-error: true
+        run: |
+          rm -rf ~/netanol
+          
+      - name: Checkout Code
+        uses: actions/checkout@v4
+  
+      - name: Copy Code
+        run: |
+          mkdir ~/netanol && cp -r . ~/netanol
+  
+      - name: Setup Configurations
+        run: |
+          cd ~/netanol/Docker && cp c414/.env.c414 .env
+  
+      - name: Run Remote Docker
+        run: |
+          cd ~/netanol/Docker && docker compose build --no-cache && docker compose --profile prod up -d

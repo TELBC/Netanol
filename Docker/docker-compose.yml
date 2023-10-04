@@ -3,7 +3,7 @@ services:
   fennec:
     build:
       context: ../TAPAS
-      dockerfile: ../Docker/Fennec.Dockerfile
+      dockerfile: ../Docker/fennec.Dockerfile
     ports:
       - "8000:80/tcp"
       - "2055:2055/udp"
@@ -18,7 +18,7 @@ services:
   astrapia:
     build:
       context: ../Astrapia
-      dockerfile: ../Docker/Astrapia.Dockerfile
+      dockerfile: ../Docker/astrapia.Dockerfile
     ports:
       - "3000:3000"
     depends_on:
