@@ -138,7 +138,9 @@ public class NetFlow9Collector : BackgroundService
             if (record != null)
             {
                 // any property you call on record has to be present and therefore match the template it was parsed with
-                // TODO: getting the exporter IP not possible since this is not sent with NetFlow
+                /*TODO: getting the exporter IP not possible since this is not sent with NetFlow
+                    - calculate time readtime from FirstSwitched
+                */ 
                 return new TraceImportInfo(
                     DateTimeOffset.UtcNow, IPAddress.Loopback,
                     record.IPv4SourceAddress, (int)record.Layer4SourcePort,
