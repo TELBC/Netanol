@@ -19,7 +19,8 @@ public class Startup
     {
         Configuration = configuration;
         StartupOptions = Configuration.GetSection("Startup").Get<StartupOptions>() ??
-                         throw new InvalidConstraintException("The Startup section is not defined in the configuration.");
+                         throw new InvalidConstraintException(
+                             "The Startup section is not defined in the configuration.");
     }
 
     private IConfigurationRoot Configuration { get; }
@@ -35,7 +36,8 @@ public class Startup
         services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddScoped<ITraceRepository, TraceRepository>();
         services.AddDbContext<ITapasContext, TapasContext>(options =>
-            options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection") ?? throw new InvalidOperationException()));
+            options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection") ??
+                              throw new InvalidOperationException()));
 
         // Collector services
         services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
@@ -44,9 +46,21 @@ public class Startup
         services.AddControllers();
         services.AddAutoMapper(typeof(Program).Assembly);
 
+        if (StartupOptions.AllowCors)
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.AllowAnyOrigin();
+                    builder.AllowAnyHeader();
+                    builder.AllowAnyMethod();
+                });
+            });
+
+
         if (!StartupOptions.EnableSwagger)
             return;
-        
+
         services.AddSwaggerGen(c =>
         {
             c.EnableAnnotations();
@@ -121,6 +135,8 @@ public class Startup
             // TODO: switch this for .Migrate and add migration support
             await ctx.Database.MigrateAsync();
         }
+
+        if (StartupOptions.AllowCors) app.UseCors();
 
         app.MapControllers();
     }

@@ -9,4 +9,9 @@ public class StartupOptions
     /// Should the swagger ui be reachable with /swagger.
     /// </summary>
     public bool EnableSwagger { get; set; }
+
+    /// <summary>
+    ///     Allow every origin to access the API.
+    /// </summary>
+    public bool AllowCors { get; set; }
 }

@@ -10,6 +10,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${FENNEC_ENVIRONMENT}
       - FENNEC_STARTUP__ENABLESWAGGER=${FENNEC_SWAGGER}
+      - FENNEC_STARTUP__ALLOWCORS=${FENNEC_CORS}
     depends_on:
       - postgres
     networks: 
