@@ -4,7 +4,7 @@ FROM node:18 AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 # Copy the entire project directory to the container
 COPY . .
 RUN npm run build
