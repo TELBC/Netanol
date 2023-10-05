@@ -1,160 +1,49 @@
 <template>
+  <div class="graph">
   <v-network-graph
-    class="graph"
     :nodes="nodes"
     :edges="edges"
     :configs="networkGraphConfigs"
-  />
+  >
+    <template #edge-label="{ edge, hovered, ...slotProps }">
+      <v-edge-label v-if="hovered" :text="edge.label" align="center" vertical-align="above" v-bind="slotProps" />
+    </template>
+  </v-network-graph>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { VNetworkGraph} from "v-network-graph"
-import {networkGraphConfigs} from "assets/v-network-graph-configs";
+import {Edges, Nodes, VEdgeLabel, VNetworkGraph} from 'v-network-graph'
+import { networkGraphConfigs } from 'assets/v-network-graph-configs'
+import { parseJsonData } from "~/utils/networkGraphParsing";
+import { createLayout, fetchGraphData } from "~/services/graphService";
 
-const graphData = `{
-  "nodes": {
-    "1": {
-      "id": 1,
-      "ipAddress": "192.168.1.12"
-    },
-    "2": {
-      "id": 2,
-      "ipAddress": "10.5.12.254"
-    },
-    "3": {
-      "id": 3,
-      "ipAddress": "192.168.1.25"
-    },
-    "4": {
-      "id": 4,
-      "ipAddress": "10.5.12.1"
-    },
-    "5": {
-      "id": 5,
-      "ipAddress": "172.16.8.67"
-    },
-    "6": {
-      "id": 6,
-      "ipAddress": "192.168.2.50"
-    },
-    "7": {
-      "id": 7,
-      "ipAddress": "10.5.14.12"
-    },
-    "8": {
-      "id": 8,
-      "ipAddress": "192.168.3.77"
-    },
-    "9": {
-      "id": 9,
-      "ipAddress": "10.7.1.32"
-    },
-    "10": {
-      "id": 10,
-      "ipAddress": "172.16.10.21"
-    },
-    "11": {
-      "id": 11,
-      "ipAddress": "192.168.4.120"
-    },
-    "12": {
-      "id": 12,
-      "ipAddress": "10.7.2.89"
-    },
-    "13": {
-      "id": 13,
-      "ipAddress": "192.168.5.15"
-    },
-    "14": {
-      "id": 14,
-      "ipAddress": "10.8.1.5"
-    },
-    "15": {
-      "id": 15,
-      "ipAddress": "192.168.6.200"
-    }
-  },
-  "traces": [
-    {
-      "sourceHostId": 1,
-      "destinationHostId": 2,
-      "count": 332
-    },
-    {
-      "sourceHostId": 1,
-      "destinationHostId": 3,
-      "count": 127
-    },
-    {
-      "sourceHostId": 2,
-      "destinationHostId": 4,
-      "count": 215
-    },
-    {
-      "sourceHostId": 3,
-      "destinationHostId": 5,
-      "count": 73
-    },
-    {
-      "sourceHostId": 3,
-      "destinationHostId": 6,
-      "count": 184
-    },
-    {
-      "sourceHostId": 5,
-      "destinationHostId": 6,
-      "count": 94
-    },
-    {
-      "sourceHostId": 6,
-      "destinationHostId": 7,
-      "count": 67
-    },
-    {
-      "sourceHostId": 7,
-      "destinationHostId": 8,
-      "count": 321
-    },
-    {
-      "sourceHostId": 8,
-      "destinationHostId": 10,
-      "count": 55
-    },
-    {
-      "sourceHostId": 9,
-      "destinationHostId": 10,
-      "count": 267
-    },
-    {
-      "sourceHostId": 3,
-      "destinationHostId": 11,
-      "count": 143
-    },
-    {
-      "sourceHostId": 11,
-      "destinationHostId": 12,
-      "count": 98
-    },
-    {
-      "sourceHostId": 12,
-      "destinationHostId": 13,
-      "count": 210
-    },
-    {
-      "sourceHostId": 13,
-      "destinationHostId": 14,
-      "count": 75
-    },
-    {
-      "sourceHostId": 14,
-      "destinationHostId": 15,
-      "count": 183
-    }
-  ]
-}`;
+const nodes = ref<Nodes[]>([])
+const edges = ref<Edges[]>([])
+const layout = "test";
+const dateRange = { from: "2022-01-01", to: "2025-01-01"}//TODO date range UTC.now-2min
 
-const { nodes, edges } = parseJsonData(graphData);
+const fetchGraphDataPeriodically = async () => {
+  try {
+    const data = await fetchGraphData(dateRange, layout)
+    const { nodes: parsedNodes, edges: parsedEdges } = parseJsonData(data.nodes, data.edges)
+    nodes.value = parsedNodes
+    edges.value = parsedEdges
+  } catch (error) {
+    console.error(error)
+  }
+}
 
+onMounted(async () => {
+  await createLayout(layout)
+  await fetchGraphDataPeriodically()
+
+  const fetchInterval = setInterval(fetchGraphDataPeriodically, 5000)
+
+  onBeforeUnmount(() => {
+    clearInterval(fetchInterval)
+  })
+})
 </script>
 
 <style scoped>

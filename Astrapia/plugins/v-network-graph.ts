@@ -1,4 +1,3 @@
-// plugins/v-network-graph.ts
 import { defineNuxtPlugin } from "#app"
 import VNetworkGraph from "v-network-graph"
 

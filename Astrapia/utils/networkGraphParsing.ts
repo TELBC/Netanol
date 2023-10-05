@@ -1,20 +1,24 @@
-import { Nodes, Edges } from "v-network-graph"
-export function parseJsonData(jsonData: string): { nodes: Nodes; edges: Edges } {
-  const data = JSON.parse(jsonData);
+import { Nodes, Edges } from "v-network-graph";
+import { IEdge, INode } from "~/types/GraphData";
 
-  const nodes = {};
-  for (const nodeId in data.nodes) {
-    const node = data.nodes[nodeId];
-    nodes[`node${nodeId}`] = { name: node.ipAddress, ipAddress: node.ipAddress };
+export function parseJsonData(rawNodes: INode[], rawEdges: IEdge[]): { nodes: Nodes; edges: Edges } {
+  const nodes: Nodes = {}
+  const edges: Edges = {}
+
+  for (const [key, rawNode] of Object.entries(rawNodes)) {
+    nodes[key] = {
+      id: rawNode.Id,
+      name: rawNode.displayName,
+    }
   }
-  const edges = {};
-  data.traces.forEach((trace, index) => {
-    edges[`edge${index}`] = {
-      source: `node${trace.sourceHostId}`,
-      target: `node${trace.destinationHostId}`,
-      count: trace.count
-    };
-  });
 
-  return { nodes, edges };
+  for (const [index, rawEdge] of rawEdges.entries()) {
+    edges[index] = {
+      source: rawEdge.sourceHostId.toString(),
+      target: rawEdge.destinationHostId.toString(),
+      label: rawEdge.packetCount,
+    }
+  }
+
+  return { nodes, edges }
 }

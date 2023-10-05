@@ -11,15 +11,32 @@ export const networkGraphConfigs = defineConfigs({
     },
     label: {
       fontFamily: "'Open Sans', sans-serif",
+      directionAutoAdjustment: true,
+      fontSize: 13,
     }
   },
   edge: {
+    hoverable: true,
     normal: {
       color: "#7EA0A9",
     },
     hover: {
       color: "#7095AB",
-    }
+    },
+    label: {
+      background: "transparent",
+      fontFamily: "'Open Sans', sans-serif",
+      directionAutoAdjustment: true,
+      fontSize: 12,
+    },
+    marker: {
+      target: {
+        type: "arrow",
+        width: 6,
+        height: 4,
+        color: "#7095AB",
+      },
+    },
   },
   view: {
     minZoomLevel: 1,
@@ -31,12 +48,12 @@ export const networkGraphConfigs = defineConfigs({
       thickIncrements: 5,
       line: {
         color: "#e0e0e0",
-        width: 2,
+        width: 0.2,
         dasharray: 1,
       },
       thick: {
         color: "#cccccc",
-        width: 1,
+        width: 0.1,
         dasharray: 0,
       },
     },
@@ -44,9 +61,8 @@ export const networkGraphConfigs = defineConfigs({
         createSimulation: (d3, nodes, edges) => {
           const forceLink = d3.forceLink<ForceNodeDatum, ForceEdgeDatum>(edges).id(d => d.id)
           return d3.forceSimulation(nodes)
-            .force("edge", forceLink.distance(100).strength(2))
-            .force("charge", d3.forceManyBody().strength(-500))
-            .alphaMin(0.1)
+            .force("edge", forceLink.distance(400).strength(2))
+            .force("charge", d3.forceManyBody().strength(-400))
         }
       }
     )
