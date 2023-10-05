@@ -77,7 +77,7 @@ jobs:
       - name: Remove Old Files
         continue-on-error: true
         run: |
-          rm -rf ~/netanol
+          ssh $SYDE_USER@$SYDE_HOST "rm -rf ~/netanol"
   
       - name: SCP Transfer to User's Home Directory
         run: |
