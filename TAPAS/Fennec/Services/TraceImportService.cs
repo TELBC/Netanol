@@ -47,9 +47,9 @@ public class TraceImportService : ITraceImportService
                 info.ReadTime,
                 TraceProtocol.Udp,
                 srcHost,
-                0,
+                info.SrcPort,
                 dstHost,
-                0,
+                info.DstPort,
                 info.ByteCount,
                 info.PacketCount));
     }
