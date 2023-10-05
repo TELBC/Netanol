@@ -16,6 +16,11 @@ export default defineNuxtConfig({
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ]
   },
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.BASE_API_URL //|| production api url
+    }
+  },
 
   // Auto import components
   components: true,

@@ -2,9 +2,9 @@
 FROM node:18 AS builder
 # Set the working directory inside the container to /app
 WORKDIR /app
-# Copy the package.json file to the container
-COPY package.json ./
-RUN npm install
+
+COPY package*.json ./
+RUN npm ci --cache .npm
 # Copy the entire project directory to the container
 COPY . .
 RUN npm run build
@@ -13,8 +13,8 @@ RUN npm run build
 # Create a new stage for the final container
 FROM node:18 AS final
 WORKDIR /app
-# Add the package.json from the builder stage to the final stage
-ADD package.json .
+# Copy the package.json from the builder stage to the final stage
+COPY --from=builder /app/package*.json ./
 # Copy the built application files from the builder stage to the final stage
 COPY --from=builder /app/.output ./.output
 CMD ["node", ".output/server/index.mjs"]
