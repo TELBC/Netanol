@@ -1,20 +1,20 @@
 export interface IGraph {
   graphStatistics: {
-    TotalHostCount: number,
-    TotalByteCount: number,
-    TotalPacketCount: number,
-    TotalTraceCount: number
+    totalHostCount: number,
+    totalByteCount: number,
+    totalPacketCount: number,
+    totalTraceCount: number
   },
   requestStatistics: {
-    NewHostCount: number,
-    ProcessingTime: string
+    newHostCount: number,
+    processingTime: string
   },
   nodes: INode[],
   edges: IEdge[]
 }
 
 export interface INode {
-  Id: number,
+  id: number,
   displayName: string
 }
 

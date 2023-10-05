@@ -1,20 +1,17 @@
 import {IDateRange, IGraph, ILayout} from '~/types/GraphData';
 import ApiService from '~/services/apiService';
+import {AxiosError} from "axios";
 
 export async function fetchGraphData(dateRange: IDateRange, layoutName:String): Promise<IGraph> {
   try {
     const response = await ApiService.request({
       method: 'post',
       url: `/graph/${layoutName}`,
-      data: dateRange,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: '*/*',
-      },
+      data: dateRange
     });
 
     return response.data;
-  } catch (error) {
+  } catch (error: AxiosError) {
     throw new Error(`Failed to fetch data: ${error.message}`);
   }
 }
@@ -23,19 +20,15 @@ async function layoutExists(name: String): Promise<boolean> {
   try {
     const response = await ApiService.request({
       method: 'get',
-      url: `/layout`,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: '*/*',
-      },
+      url: `/layout`
     });
-    return response.data.find((layout) => layout.name === name) !== undefined;
+    return response.data.find((layout: { name: String; }) => layout.name === name) !== undefined;
   } catch (error) {
     return false;
   }
 }
 
-export async function createLayout(name: string): Promise<IGraph> {
+export async function createLayout(name: string): Promise<ILayout> {
   try {
     const layoutAlreadyExists = await layoutExists(name);
 
@@ -45,15 +38,11 @@ export async function createLayout(name: string): Promise<IGraph> {
     }
     const response = await ApiService.request({
       method: 'post',
-      url: `/layout/${name}`,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: '*/*',
-      },
+      url: `/layout/${name}`
     });
 
     return response.data;
-  } catch (error) {
+  } catch (error: AxiosError) {
     throw new Error(`Failed to create layout: ${error.message}`);
   }
 }

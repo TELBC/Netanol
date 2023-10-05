@@ -65,14 +65,6 @@ public class GraphController : ControllerBase
         _context = context;
     }
 
-     [HttpOptions]
-     public IActionResult Options()
-     {
-        Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        return Ok();
-     }
-
     /// <summary>
     /// Generate the graph for a given layout within a specified timespan. Unknown nodes are added during this process.
     /// </summary>
