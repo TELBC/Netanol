@@ -8,6 +8,26 @@ using Serilog.Context;
 
 namespace Fennec.Collectors;
 
+//
+//                 |
+//                 |
+//                 |
+//                 |
+// ----------------------------------
+//                 |
+//                 |
+//                 |
+//                 |
+//                 |
+//                 |
+//                 |
+//                 |
+//                 |
+//                 |
+//                 |
+//                 |
+//
+
 public class NetFlow9Collector : BackgroundService
 {
     private readonly ILogger _log;
@@ -63,13 +83,12 @@ public class NetFlow9Collector : BackgroundService
         {
             var stream = new MemoryStream(result.Buffer);
             using var nr = new NetflowReader(stream);
-
-            // How to carry-over Templates through packets 
-            
             var header = nr.ReadPacketHeader();
+            
             var allFlowSets = new List<object>();
             var onlyDataFlowSets = new List<DataFlowSet>();
 
+            // header.Count stores how many FlowSets are contained inside a packet.
             for (var i = 0; i < header.Count; i++)
             {
                 try
@@ -77,9 +96,9 @@ public class NetFlow9Collector : BackgroundService
                     var flowSet = nr.ReadFlowSet(_allTemplateRecords);
                     allFlowSets.Add(flowSet);
                 }
-                catch (Exception e)
+                catch
                 {
-                    // ignored :)
+                    _log.Error($"Could not read/add FlowSet at index {i} in packet with sequence number {header.SequenceNumber}");
                 }
             }
 
@@ -96,16 +115,16 @@ public class NetFlow9Collector : BackgroundService
                         }
                     }
                 }
-                else if (flowSet is DataFlowSet dataFlowSet)
+                else if (flowSet is DataFlowSet dataFlowSet) // check what FlowSet is a DataFlowSet (isn't always the case)
                 {
                     onlyDataFlowSets.Add(dataFlowSet);
                 }
                 else
                 {
-                    _log.Error($"Dropping packet OptionsDataFlowSet/OptionsTemplateFlowSet");
+                    // TODO : Decide what to do with non-network data FlowSets (OptionsTemplateFlowSet, OptionsDataFlowSet)
+                    _log.Error($"Dropping non-network data FlowSet of type {flowSet.GetType().Name}");
                     return null;
                 }
-                // TODO : Decide what to do with non-network data FlowSets (OptionsTemplateFlowSet, OptionsDataFlowSet)
             }
 
             NetflowView? view = null;
@@ -116,17 +135,17 @@ public class NetFlow9Collector : BackgroundService
             
             var record = view[0];
 
-            // TODO: read the correct information here
             if (record != null)
             {
+                // any property you call on record has to be present and therefore match the template it was parsed with
+                // TODO: getting the exporter IP not possible since this is not sent with NetFlow
                 return new TraceImportInfo(
-                    DateTimeOffset.Now, IPAddress.Loopback,
-                    record.IPv4SourceAddress, 0,
-                    record.IPv4DestinationAddress, 0,
-                    0,
-                    0);
+                    DateTimeOffset.UtcNow, IPAddress.Loopback,
+                    record.IPv4SourceAddress, (int)record.Layer4SourcePort,
+                    record.IPv4DestinationAddress, Math.Abs((int)record.Layer4DestinationPort),
+                    (int)record.IncomingPackets,
+                    (int)record.IncomingBytes);
             }
-
             return null;
         }
         catch (Exception ex)
