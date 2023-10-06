@@ -6,7 +6,7 @@ export async function fetchGraphData(dateRange: IDateRange, layoutName:String): 
   try {
     const response = await ApiService.request({
       method: 'post',
-      url: `/graph/${layoutName}`,
+      url: `/api/graph/${layoutName}`,
       data: dateRange
     });
 
@@ -20,7 +20,7 @@ async function layoutExists(name: String): Promise<boolean> {
   try {
     const response = await ApiService.request({
       method: 'get',
-      url: `/layout`
+      url: `/api/layout`
     });
     return response.data.find((layout: { name: String; }) => layout.name === name) !== undefined;
   } catch (error) {
@@ -38,7 +38,7 @@ export async function createLayout(name: string): Promise<ILayout> {
     }
     const response = await ApiService.request({
       method: 'post',
-      url: `/layout/${name}`
+      url: `/api/layout/${name}`
     });
 
     return response.data;

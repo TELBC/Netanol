@@ -72,7 +72,7 @@ jobs:
   
       - name: Setup Configurations
         run: |
-          cd ~/netanol/Docker && cp c414/.env.c414 .env
+          cd ~/netanol/Docker && cp c414/.env.c414 .env && cp c414/.env.astrapia.c414 ../Astrapia/.env
   
       - name: Run Remote Docker
         run: |
