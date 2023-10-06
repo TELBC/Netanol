@@ -65,6 +65,7 @@ services:
       - prod
   
   traffic-replay:
+    extra_hosts: [ "host.docker.internal:host-gateway" ]
     build:
       context: ./traffic-replay
     environment:
