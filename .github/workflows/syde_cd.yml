@@ -90,4 +90,4 @@ jobs:
   
       - name: Run Remote Docker
         run: |
-          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && docker compose build --no-cache && docker compose --profile prod --profile dev up -d"
+          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && docker compose build --no-cache && docker compose --profile dev up -d"

@@ -2,12 +2,16 @@
 
 import socket
 import time
+import os
 
 time.sleep(3)
 
 # Configuration
-UDP_IP = "host.docker.internal"
-UDP_PORT = 2055
+target = os.environ['REPLAY_TARGET'].split(':')
+UDP_IP = target[0]
+UDP_PORT = int(target[1])
+
+print(f"Target: {UDP_IP}:{UDP_PORT}", flush=True)
 
 print("Reading payloads", flush=True)
 # Convert hex payloads to binary
@@ -22,7 +26,14 @@ idx = 0
 while True:
     idx += 1
     payload = payloads[idx % len(payloads)]
-    sock.sendto(payload, (UDP_IP, UDP_PORT))
+    try:
+        sock.sendto(payload, (UDP_IP, UDP_PORT))
+    except Exception as e:
+        print(e, flush=True)
+        print("Failed to send packet -> Retrying in 10 seconds", flush=True)
+        time.sleep(10)
+        continue
+        
     print(f"Sent packet num: {idx}", flush=True)
     time.sleep(1)
     

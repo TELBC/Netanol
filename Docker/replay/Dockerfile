@@ -20,4 +20,4 @@ RUN chmod +x /replay.sh
 COPY captures /captures/
 
 # Set the default command for the container
-ENTRYPOINT ["/replay.sh"]
+ENTRYPOINT ["sh", "/replay.sh"]

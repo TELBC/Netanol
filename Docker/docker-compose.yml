@@ -4,6 +4,11 @@ services:
     build:
       context: ../TAPAS
       dockerfile: ../Docker/fennec.Dockerfile
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
     ports:
       - "8000:80/tcp"
       - "2055:2055/udp"
@@ -20,6 +25,11 @@ services:
     build:
       context: ../Astrapia
       dockerfile: ../Docker/astrapia.Dockerfile
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
     ports:
       - "3000:3000"
     depends_on:
@@ -30,6 +40,11 @@ services:
 
   postgres:
     image: postgres:12
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -42,6 +57,11 @@ services:
   
   elasticsearch:
     image: elasticsearch:8.8.1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -57,6 +77,11 @@ services:
   
   kibana:
     image: kibana:8.8.1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
     ports:
       - "5601:5601"
     networks:
@@ -64,12 +89,20 @@ services:
     profiles:
       - prod
   
-  traffic-replay:
+  replay:
     extra_hosts: [ "host.docker.internal:host-gateway" ]
     build:
-      context: ./traffic-replay
+      context: ./replay
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
     environment:
       - REPLAY_FILE
+      - REPLAY_TARGET
+    networks:
+      - netanol-network
     profiles:
       - dev
     
