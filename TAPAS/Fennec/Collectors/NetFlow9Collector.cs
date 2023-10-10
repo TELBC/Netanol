@@ -133,27 +133,35 @@ public class NetFlow9Collector : BackgroundService
                 view = new NetflowView(dataFlowSet, _allTemplateRecords);
             }
             
-            var record = view[0];
+            var record = view?[0];
 
-            if (record != null)
-            {
-                // any property you call on record has to be present and therefore match the template it was parsed with
-                /*TODO: getting the exporter IP not possible since this is not sent with NetFlow
-                    - calculate time readtime from FirstSwitched
-                */ 
-                return new TraceImportInfo(
-                    DateTimeOffset.UtcNow, IPAddress.Loopback,
-                    record.IPv4SourceAddress, (int)record.Layer4SourcePort,
-                    record.IPv4DestinationAddress, Math.Abs((int)record.Layer4DestinationPort),
-                    (int)record.IncomingPackets,
-                    (int)record.IncomingBytes);
-            }
-            return null;
+            if (record == null) return null;
+            return CreateTraceImportInfo(record);
         }
         catch (Exception ex)
         {
             _log.Error(ex, "Failed to parse bytes to {FlowCollectorType}", CollectorType.Netflow9);
             return null;
         }
+    }
+
+    private static TraceImportInfo CreateTraceImportInfo(dynamic record)
+    {
+        var properties = (IDictionary<string, object>)record;
+        var readTime = DateTimeOffset.UtcNow;
+        var exporterIp = IPAddress.Loopback;
+        var srcIp = properties.TryGetValue("IPv4SourceAddress", out var property) ? (IPAddress)property : IPAddress.None;
+        var srcPort = properties.TryGetValue("Layer4SourcePort", out var property1) ? (int)property1 : 0;
+        var dstIp = properties.TryGetValue("IPv4DestinationAddress", out var property2) ? (IPAddress)property2 : IPAddress.None;
+        var dstPort = properties.TryGetValue("Layer4DestinationPort", out var property3) ? Math.Abs((int)property3) : 0;
+        var packetCount = properties.TryGetValue("IncomingPackets", out var property4) ? (int)property4 : 0;
+        var byteCount = properties.TryGetValue("IncomingBytes", out var property5) ? (int)property5 : 0;
+    
+        return new TraceImportInfo(
+            readTime, exporterIp,
+            srcIp, srcPort,
+            dstIp, dstPort,
+            packetCount, byteCount
+        );
     }
 }
