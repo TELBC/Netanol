@@ -26,9 +26,9 @@ public interface ITraceRepository
 
 public class TraceRepository : ITraceRepository
 {
-    private readonly ITapasContext _context;
+    private readonly IPackratContext _context;
 
-    public TraceRepository(ITapasContext context)
+    public TraceRepository(IPackratContext context)
     {
         _context = context;
     }

@@ -58,9 +58,9 @@ public record CreateGroupResponse(
 [ApiController]
 public class GraphController : ControllerBase
 {
-    private readonly ITapasContext _context;
+    private readonly IPackratContext _context;
 
-    public GraphController(ITapasContext context)
+    public GraphController(IPackratContext context)
     {
         _context = context;
     }

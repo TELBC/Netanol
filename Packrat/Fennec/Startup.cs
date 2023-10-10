@@ -32,11 +32,11 @@ public class Startup
         services.Configure<Netflow9CollectorOptions>(Configuration.GetSection("Collectors:Netflow9"));
 
         // Database services
-        services.AddScoped<ITapasContext, TapasContext>();
+        services.AddScoped<IPackratContext, PackratContext>();
         services.AddScoped<ITraceImportService, TraceImportService>();
         services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddScoped<ITraceRepository, TraceRepository>();
-        services.AddDbContext<ITapasContext, TapasContext>(options =>
+        services.AddDbContext<IPackratContext, PackratContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection") ??
                               throw new InvalidOperationException()));
 
@@ -131,7 +131,7 @@ public class Startup
 
         using (var scope = app.Services.CreateScope())
         {
-            var ctx = scope.ServiceProvider.GetRequiredService<TapasContext>();
+            var ctx = scope.ServiceProvider.GetRequiredService<PackratContext>();
 
             // TODO: switch this for .Migrate and add migration support
             await ctx.Database.MigrateAsync();

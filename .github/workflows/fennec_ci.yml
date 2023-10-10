@@ -11,24 +11,24 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 7.0.x
 
       - name: Restore NuGet packages
-        working-directory: TAPAS/Fennec.Tests
+        working-directory: Packrat/Fennec.Tests
         run: |
           dotnet restore
 
       - name: Build solution
-        working-directory: TAPAS/Fennec.Tests
+        working-directory: Packrat/Fennec.Tests
         run: |
           dotnet build --no-restore
 
       - name: Run tests
-        working-directory: TAPAS/Fennec.Tests
+        working-directory: Packrat/Fennec.Tests
         run: |
           dotnet test --no-build --verbosity normal

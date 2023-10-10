@@ -41,9 +41,9 @@ public interface ILayoutRepository
 
 public class LayoutRepository : ILayoutRepository
 {
-    private readonly TapasContext _context;
+    private readonly PackratContext _context;
 
-    public LayoutRepository(TapasContext context)
+    public LayoutRepository(PackratContext context)
     {
         _context = context;
     }

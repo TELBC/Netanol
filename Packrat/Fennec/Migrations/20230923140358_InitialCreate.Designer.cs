@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Fennec.Migrations
 {
-    [DbContext(typeof(TapasContext))]
+    [DbContext(typeof(PackratContext))]
     [Migration("20230923140358_InitialCreate")]
     partial class InitialCreate
     {

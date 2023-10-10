@@ -7,7 +7,7 @@ namespace Fennec.Database;
 /// <summary>
 /// The <see cref="DbContext"/> storing all data for TAPAS.
 /// </summary>
-public interface ITapasContext
+public interface IPackratContext
 {
     DbSet<Layout> Layouts { get; }
     DbSet<GraphNode> GraphNodes { get; }
@@ -20,13 +20,13 @@ public interface ITapasContext
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
 
-public class TapasContext : DbContext, ITapasContext
+public class PackratContext : DbContext, IPackratContext
 {
-    public TapasContext(DbContextOptions options) : base(options)
+    public PackratContext(DbContextOptions options) : base(options)
     {
     }
 
-    public TapasContext()
+    public PackratContext()
     {
     }
 

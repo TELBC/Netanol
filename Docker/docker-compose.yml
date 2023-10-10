@@ -2,7 +2,7 @@ version: '3.9'
 services:
   fennec:
     build:
-      context: ../TAPAS
+      context: ../Packrat
       dockerfile: ../Docker/fennec.Dockerfile
     logging:
       driver: "json-file"

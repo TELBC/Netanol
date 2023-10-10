@@ -7,16 +7,16 @@ namespace Fennec.Tests.Unit;
 
 public class TraceRepositoryTests
 {
-    private readonly ITapasContext _context;
+    private readonly IPackratContext _context;
     private readonly TraceRepository _repository;
 
     public TraceRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<TapasContext>()
+        var options = new DbContextOptionsBuilder<PackratContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString()) // Unique name ensures a new database for each test
             .Options;
 
-        _context = new TapasContext(options);
+        _context = new PackratContext(options);
         _repository = new TraceRepository(_context);
     }
 
