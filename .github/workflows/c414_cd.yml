@@ -72,8 +72,8 @@ jobs:
   
       - name: Setup Configurations
         run: |
-          cd ~/netanol/Docker && cp c414/.env.c414 .env && cp c414/.env.astrapia.c414 ../Astrapia/.env
-  
+          cd ~/netanol/Docker && cp c414/astrapia.env ../Astrapia/.env
+
       - name: Run Remote Docker
         run: |
-          cd ~/netanol/Docker && docker compose build --no-cache && docker compose --profile prod up -d
+          cd ~/netanol/Docker && docker compose build --no-cache && docker compose --profile prod --env-file c414/docker.env up -d

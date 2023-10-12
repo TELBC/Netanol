@@ -119,6 +119,8 @@ public class Startup
 
     public async Task Configure(WebApplication app, IWebHostEnvironment env)
     {
+        app.UsePathBase("/api");
+        
         if (StartupOptions.EnableSwagger)
         {
             app.UseSwagger();
