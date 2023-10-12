@@ -86,8 +86,8 @@ jobs:
   
       - name: Setup Configurations
         run: |
-          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && cp syde/.env.syde .env && cp syde/.env.astrapia.syde ../Astrapia/.env"
-  
+          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && cp syde/astrapia.env ../Astrapia/.env"
+
       - name: Run Remote Docker
         run: |
-          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && docker compose build --no-cache && docker compose --profile dev up -d"
+          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && docker compose build --no-cache && docker compose --profile dev --env-file syde/docker.env up -d"

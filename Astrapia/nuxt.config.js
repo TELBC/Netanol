@@ -14,12 +14,9 @@ export default defineNuxtConfig({
     ],
     link: [{rel: "icon", type: "image/x-icon", href: "/favicon.ico"}],
   },
-  nitro: {
-    routeRules: {
-      "/api/**": {
-        proxy: process.env.PROXY_DESTINATION,
-      },
-    },
+
+  "server": {
+    port: 80
   },
 
   // Auto import components
