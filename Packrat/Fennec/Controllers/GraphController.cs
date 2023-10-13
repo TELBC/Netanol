@@ -54,7 +54,7 @@ public record CreateGroupResponse(
     GraphNode CreatedGroupNode
 );
 
-[Route("graph")]
+[Route("graph/{name}")]
 [ApiController]
 public class GraphController : ControllerBase
 {
@@ -76,7 +76,7 @@ public class GraphController : ControllerBase
     /// <returns>An object containing the graph layout and its associated traces.</returns>
     /// <response code="200">Successfully returned the graph layout.</response>
     /// <response code="404">The layout specified by the name was not found.</response>
-    [HttpPost("{name}")]
+    [HttpPost("")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GenerateGraph(string name, [FromBody] GraphRequest request)
@@ -96,7 +96,7 @@ public class GraphController : ControllerBase
 
         // this looks like multiple queries but it isn't because of deferred execution
         var rootQuery = _context.SingleTraces
-            .Where(trace => trace.Timestamp >= request.From && trace.Timestamp <= request.To)
+            .Where(trace => trace.Timestamp >= request.From.ToOffset(TimeSpan.Zero) && trace.Timestamp <= request.To.ToOffset(TimeSpan.Zero))
             .GroupBy(trace => new { trace.SourceHostId, trace.DestinationHostId });
         var sourceQuery = rootQuery
             .Select(a => a.Key.SourceHostId)
@@ -192,7 +192,7 @@ public class GraphController : ControllerBase
     /// <response code="200">The group was successfully created.</response>
     /// <response code="400">The subnet or subnet mask was invalid, or the group type is not supported.</response>
     /// <response code="404">The given layout was not found.</response>
-    [HttpPost("{name}/group")]
+    [HttpPost("group")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -285,7 +285,7 @@ public class GraphController : ControllerBase
     /// <response code="200">The group was successfully dissolved.</response>
     /// <response code="400">The given group node is not a compressed group.</response>
     /// <response code="404">The given layout or group node was not found.</response>
-    [HttpDelete("{name}/group/{groupId}")]
+    [HttpDelete("group/{groupId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -54,18 +54,23 @@ services:
   
   nginx:
     image: nginx:latest
-    depends_on: [ fennec, astrapia ]
+    extra_hosts: [ "host.docker.internal:host-gateway" ]
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "1"
+    environment:
+      - NGINX_FENNEC
+      - NGINX_GRAFANA
+      - NGINX_ASTRAPIA
     ports:
       - "80:80"
-    networks: 
+    networks:
       - netanol-network
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx.template.conf:/etc/nginx/nginx.template.conf
+    command: /bin/sh -c "envsubst '$$NGINX_FENNEC,$$NGINX_GRAFANA,$$NGINX_ASTRAPIA' < /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"
   
   elasticsearch:
     image: elasticsearch:8.8.1

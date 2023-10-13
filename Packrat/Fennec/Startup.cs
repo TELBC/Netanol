@@ -126,7 +126,7 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fennec API V1");
+                c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Fennec API V1");
                 c.RoutePrefix = "swagger";
             });
         }
@@ -135,11 +135,11 @@ public class Startup
         {
             var ctx = scope.ServiceProvider.GetRequiredService<PackratContext>();
 
-            // TODO: switch this for .Migrate and add migration support
             await ctx.Database.MigrateAsync();
         }
 
-        if (StartupOptions.AllowCors) app.UseCors();
+        if (StartupOptions.AllowCors) 
+            app.UseCors();
 
         app.MapControllers();
     }
