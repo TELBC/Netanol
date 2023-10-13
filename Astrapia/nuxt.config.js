@@ -14,11 +14,6 @@ export default defineNuxtConfig({
     ],
     link: [{rel: "icon", type: "image/x-icon", href: "/favicon.ico"}],
   },
-
-  "server": {
-    port: 80
-  },
-
   // Auto import components
   components: true,
 
