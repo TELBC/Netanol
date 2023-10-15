@@ -157,8 +157,8 @@ public class GraphController : ControllerBase
             {
                 SourceGraphNodeId = translationTable[grouping.Key.SourceHostId],
                 DestinationGraphNodeId = translationTable[grouping.Key.DestinationHostId],
-                PacketCount = grouping.Sum(st => st.PacketCount),
-                ByteCount = grouping.Sum(st => st.ByteCount)
+                PacketCount = grouping.Sum(st => (long) st.PacketCount),
+                ByteCount = grouping.Sum(st => (long) st.ByteCount)
             })
             .GroupBy(t => new { t.SourceGraphNodeId, t.DestinationGraphNodeId })
             .Select(group => new AggregatedTraceDto(

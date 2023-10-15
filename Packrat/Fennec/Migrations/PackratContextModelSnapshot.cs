@@ -19,7 +19,7 @@ namespace Fennec.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Fennec")
-                .HasAnnotation("ProductVersion", "6.0.22")
+                .HasAnnotation("ProductVersion", "7.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -76,6 +76,8 @@ namespace Fennec.Migrations
                     b.ToTable("GraphNodes", "Fennec");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("GraphNode");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Fennec.Database.Domain.Layout.Layout", b =>
@@ -123,8 +125,8 @@ namespace Fennec.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<int>("ByteCount")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("ByteCount")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<long>("DestinationHostId")
                         .HasColumnType("bigint");
@@ -136,8 +138,8 @@ namespace Fennec.Migrations
                         .IsRequired()
                         .HasColumnType("inet");
 
-                    b.Property<int>("PacketCount")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("PacketCount")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("Protocol")
                         .HasColumnType("integer");

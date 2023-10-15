@@ -150,12 +150,14 @@ public class NetFlow9Collector : BackgroundService
         var properties = (IDictionary<string, object>)record;
         var readTime = DateTimeOffset.UtcNow;
         var exporterIp = IPAddress.Loopback;
-        var srcIp = properties.TryGetValue("IPv4SourceAddress", out var property) ? (IPAddress)property : IPAddress.None;
-        var srcPort = properties.TryGetValue("Layer4SourcePort", out var property1) ? (int)property1 : 0;
-        var dstIp = properties.TryGetValue("IPv4DestinationAddress", out var property2) ? (IPAddress)property2 : IPAddress.None;
-        var dstPort = properties.TryGetValue("Layer4DestinationPort", out var property3) ? Math.Abs((int)property3) : 0;
-        var packetCount = properties.TryGetValue("IncomingPackets", out var property4) ? (int)property4 : 0;
-        var byteCount = properties.TryGetValue("IncomingBytes", out var property5) ? (int)property5 : 0;
+        
+        // Yes! These double casts are necessary. Don't ask me why.
+        var srcIp = properties.TryGetValue("IPv4SourceAddress", out var property) ? (IPAddress) property : IPAddress.None;
+        var srcPort = properties.TryGetValue("Layer4SourcePort", out var property1) ? (ushort) (short) property1 : (ushort) 0;
+        var dstIp = properties.TryGetValue("IPv4DestinationAddress", out var property2) ? (IPAddress) property2 : IPAddress.None;
+        var dstPort = properties.TryGetValue("Layer4DestinationPort", out var property3) ? (ushort) (short) property3 : (ushort) 0;
+        var packetCount = properties.TryGetValue("IncomingPackets", out var property4) ? (ulong) (long) property4 : 0;
+        var byteCount = properties.TryGetValue("IncomingBytes", out var property5) ? (ulong) (long) property5 : 0;
     
         return new TraceImportInfo(
             readTime, exporterIp,
