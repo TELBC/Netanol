@@ -18,9 +18,9 @@ public interface ITraceImportService
 
 public record TraceImportInfo(
     DateTimeOffset ReadTime, IPAddress ExporterIp,
-    IPAddress SrcIp, int SrcPort,
-    IPAddress DstIp, int DstPort,
-    int PacketCount, int ByteCount);
+    IPAddress SrcIp, ushort SrcPort,
+    IPAddress DstIp, ushort DstPort,
+    ulong PacketCount, ulong ByteCount);
 
 public class TraceImportService : ITraceImportService
 {

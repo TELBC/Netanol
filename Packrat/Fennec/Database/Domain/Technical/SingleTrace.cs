@@ -35,26 +35,26 @@ public class SingleTrace
     /// </summary>
     public NetworkHost SourceHost { get; set; }
     public long SourceHostId { get; set; }
-    public int SourcePort { get; set; }
+    public ushort SourcePort { get; set; }
 
     /// <summary>
     /// The destination of the flow set.
     /// </summary>
     public NetworkHost DestinationHost { get; set; }
     public long DestinationHostId { get; set; }
-    public int DestinationPort { get; set; }
+    public ushort DestinationPort { get; set; }
 
     /// <summary>
     /// How many bytes were sent.
     /// </summary>
-    public int ByteCount { get; set; }
+    public ulong ByteCount { get; set; }
     
     /// <summary>
     /// The amount of packets transmitted.
     /// </summary>
-    public int PacketCount { get; set; }
+    public ulong PacketCount { get; set; }
 
-    public SingleTrace(IPAddress exporterIp, DateTimeOffset timestamp, TraceProtocol protocol, NetworkHost sourceHost, int sourcePort, NetworkHost destinationHost, int destinationPort, int byteCount, int packetCount)
+    public SingleTrace(IPAddress exporterIp, DateTimeOffset timestamp, TraceProtocol protocol, NetworkHost sourceHost, ushort sourcePort, NetworkHost destinationHost, ushort destinationPort, ulong byteCount, ulong packetCount)
     {
         ExporterIp = exporterIp;
         Timestamp = timestamp.ToOffset(TimeSpan.Zero);
@@ -68,7 +68,7 @@ public class SingleTrace
     }
 
 #pragma warning disable CS8618
-    public SingleTrace(long id, IPAddress exporterIp, DateTimeOffset timestamp, TraceProtocol protocol, long sourceHostId, int sourcePort, long destinationHostId, int destinationPort, int byteCount, int packetCount)
+    public SingleTrace(long id, IPAddress exporterIp, DateTimeOffset timestamp, TraceProtocol protocol, long sourceHostId, ushort sourcePort, long destinationHostId, ushort destinationPort, ulong byteCount, ulong packetCount)
 #pragma warning restore CS8618
     {
         Id = id;
