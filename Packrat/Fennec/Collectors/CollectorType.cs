@@ -2,5 +2,6 @@
 
 public enum CollectorType
 {
-    Netflow9
+    Netflow9,
+    Ipfix
 }

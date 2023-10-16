@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Reflection;
+using DotNetFlow.Ipfix;
 using Fennec.Collectors;
 using Fennec.Database;
 using Fennec.Options;
@@ -29,7 +30,8 @@ public class Startup
     public void ConfigureServices(IServiceCollection services, IWebHostEnvironment environment)
     {
         // Options
-        services.Configure<Netflow9CollectorOptions>(Configuration.GetSection("Collectors:Netflow9"));
+        // services.Configure<Netflow9CollectorOptions>(Configuration.GetSection("Collectors:Netflow9"));
+        services.Configure<IpfixCollectorOptions>(Configuration.GetSection("Collectors:Ipfix"));
 
         // Database services
         services.AddScoped<IPackratContext, PackratContext>();
@@ -41,7 +43,8 @@ public class Startup
                               throw new InvalidOperationException()));
 
         // Collector services
-        services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
+        services.AddHostedService<IpfixCollector>(); // TODO: set exception behaviour
+        // services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
 
         // Web services
         services.AddControllers();

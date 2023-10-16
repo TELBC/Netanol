@@ -31,6 +31,7 @@ public class TraceImportService : ITraceImportService
         _traceRepository = traceRepository;
     }
 
+    // TODO: alex handle database writing in same task
     public void ImportTrace(TraceImportInfo info)
     {
         _ = Task.Run(async () => await ImportTraceAsync(info));
