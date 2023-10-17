@@ -1,4 +1,4 @@
-﻿name: Continuous Deployment to Syde
+﻿name: Continuous Deployment to Mordor
 
 on:
   push:
@@ -48,42 +48,28 @@ jobs:
         working-directory: Astrapia
         run: npm run build
 
-  deploy_to_syde:
+  deploy_to_mordor:
     needs: [ build_fennec, build_astrapia ]
-    runs-on: ubuntu-latest
-    env:
-      SYDE_HOST: ${{ secrets.SYDE_HOST }}
-      SYDE_USER: ${{ secrets.SYDE_USER }}
+    runs-on: [ self-hosted, mordor-label ]
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup SSH Key
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SYDE_RSA }}
-  
-      - name: Add SSH key to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -t rsa $SYDE_HOST >> ~/.ssh/known_hosts
-  
+    steps:        
       - name: Stop Docker Compose Services
         continue-on-error: true
         run: |
-          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && docker compose down"
+          cd ~/netanol/Docker && docker compose down
           
       - name: Remove Old Files
         continue-on-error: true
         run: |
-          ssh $SYDE_USER@$SYDE_HOST "rm -rf ~/netanol"
+          rm -rf ~/netanol
+          
+      - name: Checkout Code
+        uses: actions/checkout@v4
   
-      - name: SCP Transfer to User's Home Directory
+      - name: Copy Code
         run: |
-          ssh $SYDE_USER@$SYDE_HOST "mkdir -p ~/netanol"
-          scp -r $GITHUB_WORKSPACE/* $SYDE_USER@$SYDE_HOST:~/netanol
+          mkdir ~/netanol && cp -r . ~/netanol
 
       - name: Run Remote Docker
         run: |
-          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && docker compose build --no-cache && docker compose --profile dev --env-file syde/docker.env up -d"
+          cd ~/netanol/Docker && docker compose build --no-cache && docker compose --profile prod --env-file mordor/docker.env up -d

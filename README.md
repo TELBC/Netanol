@@ -20,6 +20,7 @@ An intuitive Flow based Network Traffic Visualizer & Analyzer.
 
 ![Syde](https://github.com/TELBC/Netanol/actions/workflows/syde_cd.yml/badge.svg?label=test&event=push)
 ![C414](https://github.com/TELBC/Netanol/actions/workflows/c414_cd.yml/badge.svg?label=test&event=push)
+![Mordor](https://github.com/TELBC/Netanol/actions/workflows/mordor_cd.yml/badge.svg?label=test&event=push)
 
 ----------
 

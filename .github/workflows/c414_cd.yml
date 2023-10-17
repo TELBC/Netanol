@@ -24,7 +24,7 @@ jobs:
           dotnet restore
 
       - name: Build solution
-        working-directory: Fennec/Fennec
+        working-directory: Packrat/Fennec
         run: |
           dotnet build --no-restore
 
@@ -69,10 +69,6 @@ jobs:
       - name: Copy Code
         run: |
           mkdir ~/netanol && cp -r . ~/netanol
-  
-      - name: Setup Configurations
-        run: |
-          cd ~/netanol/Docker && cp c414/astrapia.env ../Astrapia/.env
 
       - name: Run Remote Docker
         run: |
