@@ -2,54 +2,9 @@
 
 on:
   push:
-    branches:
-      - main
 
 jobs:
-  build_fennec:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 7.0.x
-
-      - name: Restore NuGet packages
-        working-directory: Packrat/Fennec
-        run: |
-          dotnet restore
-
-      - name: Build solution
-        working-directory: Packrat/Fennec
-        run: |
-          dotnet build --no-restore
-
-  build_astrapia:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node Env
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install Nuxt dependencies
-        working-directory: Astrapia
-        run: npm install
-
-      - name: Build Nuxt
-        working-directory: Astrapia
-        run: npm run build
-
   deploy_to_c414:
-    needs: [ build_fennec, build_astrapia ]
     runs-on: [ self-hosted, c414-label ]
 
     steps:        
@@ -72,4 +27,6 @@ jobs:
 
       - name: Run Remote Docker
         run: |
-          cd ~/netanol/Docker && docker compose build --no-cache && docker compose --profile prod --env-file c414/docker.env up -d
+          cd ~/netanol/Docker && 
+          docker compose build --no-cache && 
+          docker compose --profile prod --env-file .env --env-file c414/docker.env up -d
