@@ -65,7 +65,7 @@ services:
       - NGINX_GRAFANA
       - NGINX_ASTRAPIA
     ports:
-      - "80:80"
+      - "${NGINX_EXPOSED_ADDRESS}:80:80"
     networks:
       - netanol-network
     volumes:
