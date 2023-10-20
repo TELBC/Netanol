@@ -7,7 +7,7 @@ export function parseJsonData(rawNodes: INode[], rawEdges: IEdge[]): { nodes: No
 
   for (const [key, rawNode] of Object.entries(rawNodes)) {
     nodes[key] = {
-      id: rawNode.Id,
+      id: rawNode.id,
       name: rawNode.displayName,
     }
   }

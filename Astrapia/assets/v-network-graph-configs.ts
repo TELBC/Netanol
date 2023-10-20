@@ -59,7 +59,7 @@ export const networkGraphConfigs = defineConfigs({
     },
     layoutHandler: new ForceLayout({
         createSimulation: (d3, nodes, edges) => {
-          const forceLink = d3.forceLink<ForceNodeDatum, ForceEdgeDatum>(edges).id(d => d.id)
+          const forceLink = d3.forceLink<ForceNodeDatum, ForceEdgeDatum>(edges).id(_ => _.id)
           return d3.forceSimulation(nodes)
             .force("edge", forceLink.distance(400).strength(2))
             .force("charge", d3.forceManyBody().strength(-400))
@@ -67,4 +67,5 @@ export const networkGraphConfigs = defineConfigs({
       }
     )
   },
+
 })
