@@ -69,7 +69,6 @@ public class IpfixCollector : BackgroundService
             {
                 var set = ipfixReader.ReadFlowSet();
 
-
                 switch (set)
                 {
                     case DataSet dataSet:
@@ -77,57 +76,67 @@ public class IpfixCollector : BackgroundService
                         var template = _templateRecords[key];
                         
                         var view = new IpfixView(dataSet, template);
-                        WriteSingleTrace(view);
+                        WriteSingleTrace(view, result);
                         
-                        _log.Verbose("Read {CollectorType} data with id ", CollectorType.Ipfix);
+                        _log.ForContext("IpfixCollector", CollectorType.Ipfix)
+                            .Verbose("Writing Trace with Collector {CollectorType}.", CollectorType.Ipfix);
+                        
                         break;
                     case TemplateSet templateSet:
-
                         foreach (var templateRecord in templateSet.Records)
                         {
                             _templateRecords.Add((result.RemoteEndPoint.Address, templateRecord.ID), templateRecord);
-                            _log.Information("Added TemplateSet {TemplateRecordId}",
+                            _log.Information("Added TemplateSet {TemplateRecordId}.",
                                 (result.RemoteEndPoint.Address, templateRecord.ID));
                         }
 
                         break;
                 }
             }
-            catch (EndOfStreamException)
+            catch (EndOfStreamException ex) // TODO: include logs for specific Exceptions that we know the meaning of + increase context
             {
-                _log.Debug("Reached end of stream while reading IPFIX template set"); // TODO: more context information
+                _log.ForContext("EndOfStreamException", ex)
+                    .Debug("Reached end of stream while reading IPFIX packet");
                 break;
             }
-            catch (KeyNotFoundException ex) // TODO: include logs for specific Exceptions that we know the meaning of
+            catch (KeyNotFoundException ex)
             {
-                _log.ForContext("Exception", ex)
-                    .Warning("Template for parsing dataset was not found, yet to receive");
+                _log.ForContext("KeyNotFoundException", ex)
+                    .Warning("Could not find template record for data set in packet with sequence number {SequenceNumber} in {ObservationDomain} observation domain.", header.SequenceNumber, header.ObservationDomainID);
             }
-            catch (Exception e)
+            catch (FormatException ex)
             {
-                // TODO: improve logging
-                _log.Error(e.ToString());
+                _log.ForContext("FormatException", ex)
+                    .Error("The input data are corrupt and cannot be processed. The flow set has been skipped.");
+            }
+            catch (Exception ex)
+            {
+                _log.ForContext("Unknown Exception", ex)
+                    .Error("Unknown exception while reading IPFIX packet.");
             }
         }
     }
 
-    private void WriteSingleTrace(IpfixView view)
+    private void WriteSingleTrace(IpfixView view, UdpReceiveResult result)
     {
         var scope = _serviceProvider.CreateScope();
         var importer = scope.ServiceProvider.GetRequiredService<ITraceImportService>();
         
         for (var i = 0; i < view.Count; i++)
         {
-            var info = CreateTraceImportInfo(view[i]);
+            var info = CreateTraceImportInfo(view[i], result);
             importer.ImportTrace(info);
+            _log.ForContext("TraceImportInfo", info)
+                .Verbose("Writing Trace for trace {TraceImportInfo}.", info);
         }
     }
     
-    private static TraceImportInfo CreateTraceImportInfo(dynamic record)
+    private static TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result)
     {
+        // TODO: change readTime to flow duration or include both maybe --> more info for frontend
         var properties = (IDictionary<string, object>)record;
-        var readTime = DateTimeOffset.UtcNow;
-        var exporterIp = IPAddress.Loopback;
+        var readTime = DateTimeOffset.UtcNow; // TODO: handle flows with ex. 2 packets total duration 0.000000000 ms
+        var exporterIp = result.RemoteEndPoint.Address;
         
         // Yes! These double casts are necessary. Don't ask me why.
         var srcIp = properties.TryGetValue("SourceIPv4Address", out var property) ? (IPAddress) property : IPAddress.None;
