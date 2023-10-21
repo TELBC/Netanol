@@ -10,9 +10,10 @@
       </h1>
       <div class="login_form">
         <input
-              type="text"
-              id="username"
-              class="login_inputs"
+          type="text"
+          id="username"
+          class="login_inputs"
+          placeholder=" "
         >
         <label>Username</label>
       </div>
@@ -21,6 +22,7 @@
           type="text"
           id="password"
           class="login_inputs"
+          placeholder=" "
         >
         <label>Password</label>
       </div>
@@ -119,6 +121,13 @@ label {
 }
 
 .login_form input:focus~label {
+  margin-top: 1.7vh;
+  color: black;
+  opacity: 100%;
+  font-size: 1.5vh;
+}
+
+.login_form input:not(:placeholder-shown):not(input:focus)~label {
   margin-top: 1.7vh;
   color: black;
   opacity: 100%;
