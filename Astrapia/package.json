@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
+    "@sidebase/nuxt-auth": "^0.6.0-rc.1",
     "@types/node": "^18.17.1",
     "nuxt": "^3.6.5"
   }
