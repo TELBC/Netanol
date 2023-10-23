@@ -1,5 +1,5 @@
-import { defineConfigs } from "v-network-graph"
-import {ForceEdgeDatum, ForceLayout, ForceNodeDatum} from "v-network-graph/lib/force-layout";
+import {defineConfigs} from "v-network-graph"
+import {ForceLayout} from "v-network-graph/lib/force-layout";
 
 export const networkGraphConfigs = defineConfigs({
   node: {
@@ -21,20 +21,20 @@ export const networkGraphConfigs = defineConfigs({
       color: "#7EA0A9",
     },
     hover: {
-      color: "#7095AB",
+      color: "#ff1500",
     },
     label: {
       background: "transparent",
       fontFamily: "'Open Sans', sans-serif",
+      color: "#ff1500",
       directionAutoAdjustment: true,
-      fontSize: 12,
+      fontSize: 15,
     },
     marker: {
       target: {
         type: "arrow",
         width: 6,
         height: 4,
-        color: "#7095AB",
       },
     },
   },
@@ -42,6 +42,7 @@ export const networkGraphConfigs = defineConfigs({
     minZoomLevel: 1,
     maxZoomLevel: 8,
     scalingObjects: true,
+    autoPanAndZoomOnLoad: "fit-content",
     grid: {
       visible: true,
       interval: 10,
@@ -58,11 +59,14 @@ export const networkGraphConfigs = defineConfigs({
       },
     },
     layoutHandler: new ForceLayout({
-        createSimulation: (d3, nodes, edges) => {
-          const forceLink = d3.forceLink<ForceNodeDatum, ForceEdgeDatum>(edges).id(_ => _.id)
-          return d3.forceSimulation(nodes)
-            .force("edge", forceLink.distance(400).strength(2))
-            .force("charge", d3.forceManyBody().strength(-400))
+      positionFixedByDrag: true,
+      noAutoRestartSimulation: true,
+      createSimulation: (d3, nodes, edges) => {
+        return d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(edges).id(d => d.id).distance(0).strength(1))
+            .force("charge", d3.forceManyBody().strength(-1000))
+            .force("x", d3.forceX())
+            .force("y", d3.forceY());
         }
       }
     )

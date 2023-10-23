@@ -33,7 +33,6 @@ export async function createLayout(name: string): Promise<ILayout> {
     const layoutAlreadyExists = await layoutExists(name);
 
     if (layoutAlreadyExists) {
-      console.log(`Layout '${name}' already exists.`);
       return {} as IGraph;
     }
     const response = await ApiService.request({
