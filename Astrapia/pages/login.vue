@@ -10,6 +10,7 @@
       </h1>
       <div class="login_form">
         <input
+          v-model="username"
           type="text"
           id="username"
           class="login_inputs"
@@ -19,20 +20,30 @@
       </div>
       <div class="login_form">
         <input
-          type="text"
+          v-model="password"
+          type="password"
           id="password"
           class="login_inputs"
           placeholder=" "
         >
         <label>Password</label>
       </div>
-      <button id="login_button">Login</button>
+      <button id="login_button" @click="signIn('credentials', { username: username, password: password })">Login</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  auth: {
+    unauthenticatedOnly: true,
+    navigateAuthenticatedTo: '/',
+  }
+})
 
+const { signIn } = useAuth()
+const username = ref('')
+const password = ref('')
 </script>
 
 <style scoped>
