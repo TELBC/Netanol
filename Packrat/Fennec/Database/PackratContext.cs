@@ -22,7 +22,7 @@ public interface IPackratContext
 
 public class PackratContext : DbContext, IPackratContext
 {
-    public PackratContext(DbContextOptions options) : base(options)
+    public PackratContext(DbContextOptions<PackratContext> options) : base(options)
     {
     }
 
@@ -40,6 +40,6 @@ public class PackratContext : DbContext, IPackratContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("Fennec");
+        modelBuilder.HasDefaultSchema("fennec");
     }
 }
