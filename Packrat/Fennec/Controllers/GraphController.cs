@@ -3,8 +3,10 @@ using System.Net;
 using Fennec.Database;
 using Fennec.Database.Domain.Layout;
 using Fennec.Database.Domain.Technical;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Fennec.Controllers;
 
@@ -54,8 +56,11 @@ public record CreateGroupResponse(
     GraphNode CreatedGroupNode
 );
 
+[Authorize]
 [Route("graph/{name}")]
 [ApiController]
+[Produces("application/json")]
+[SwaggerTag("Generate Graphs")]
 public class GraphController : ControllerBase
 {
     private readonly IPackratContext _context;
@@ -76,7 +81,7 @@ public class GraphController : ControllerBase
     /// <returns>An object containing the graph layout and its associated traces.</returns>
     /// <response code="200">Successfully returned the graph layout.</response>
     /// <response code="404">The layout specified by the name was not found.</response>
-    [HttpPost("")]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GenerateGraph(string name, [FromBody] GraphRequest request)

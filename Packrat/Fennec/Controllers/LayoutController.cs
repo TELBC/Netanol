@@ -1,6 +1,7 @@
 using System.Data;
 using Fennec.Database;
 using Fennec.Database.Domain.Layout;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -9,6 +10,7 @@ namespace Fennec.Controllers;
 /// <summary>
 ///     Create, update and delete <see cref="Layout" />s.
 /// </summary>
+[Authorize]
 [Route("layout")]
 [ApiController]
 [Produces("application/json")]
