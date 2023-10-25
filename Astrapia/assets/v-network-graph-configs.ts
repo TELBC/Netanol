@@ -70,6 +70,5 @@ export const networkGraphConfigs = defineConfigs({
         }
       }
     )
-  },
-
+  }
 })
