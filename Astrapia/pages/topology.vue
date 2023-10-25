@@ -25,8 +25,6 @@ import { isEqual } from 'smob';
 
 const nodes = ref<Nodes[]>([]);
 const edges = ref<Edges[]>([]);
-const oldNodes = ref<Nodes[]>([]);
-const oldEdges = ref<Edges[]>([]);
 const layout = 'test';
 const dateRange: { from: string; to: string } = { from: '2022-01-01', to: '2025-01-01' }; // TODO date range UTC.now-2min
 
@@ -45,10 +43,7 @@ const eventHandlers: vNG.EventHandlers = {
 };
 
 const updateGraphData = (parsedNodes: Nodes[], parsedEdges: Edges[]) => {
-  if (!isEqual(oldNodes.value, parsedNodes) || !isEqual(oldEdges.value, parsedEdges)) {
-    oldNodes.value = parsedNodes;
-    oldEdges.value = parsedEdges;
-
+  if (!isEqual(nodes.value, parsedNodes) || !isEqual(edges.value, parsedEdges)) {
     nodes.value = parsedNodes;
     edges.value = parsedEdges;
   }
