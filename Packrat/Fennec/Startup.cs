@@ -86,11 +86,11 @@ public class Startup
             loggerConfiguration
                 .ReadFrom.Configuration(context.Configuration)
                 .MinimumLevel.Verbose()
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Fatal) // ignore EF logs
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
                 .WriteTo
-                .Console(restrictedToMinimumLevel: LogEventLevel
-                    .Debug) // TODO: behave different in different environments
+                .Console() // TODO: behave different in different environments
                 .WriteTo.Elasticsearch(
                     new ElasticsearchSinkOptions(new Uri(sect["Uri"] ??
                                                          throw new InvalidOperationException(

@@ -22,7 +22,7 @@ public class IpfixCollector : BackgroundService
     // TODO: expand to a service, can be used to display/monitor templates in frontend
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords;
 
-    public IpfixCollector(ILogger log, IOptions<IpfixCollectorOptions> iOptions, IServiceProvider serviceProvider)
+    public IpfixCollector(ILogger log, IOptions<IpfixCollectorOptions> iOptions, IServiceProvider serviceProvider, ITraceImportService importService)
     {
         _options = iOptions.Value;
         _log = log.ForContext<IpfixCollector>();
@@ -125,7 +125,7 @@ public class IpfixCollector : BackgroundService
         for (var i = 0; i < view.Count; i++)
         {
             var info = CreateTraceImportInfo(view[i], result);
-            importer.ImportTrace(info);
+            importer.ImportTraceSync(info);
             _log.ForContext("TraceImportInfo", info)
                 .Verbose("Writing Trace for trace {TraceImportInfo}.", info);
         }

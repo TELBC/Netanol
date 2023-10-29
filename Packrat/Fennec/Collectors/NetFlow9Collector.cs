@@ -73,7 +73,7 @@ public class NetFlow9Collector : BackgroundService
 
             var scope = _serviceProvider.CreateScope();
             var importer = scope.ServiceProvider.GetRequiredService<ITraceImportService>();
-            importer.ImportTrace(info);
+            importer.ImportTraceSync(info);
         }
     }
 

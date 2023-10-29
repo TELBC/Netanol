@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Fennec.Database;
 using Fennec.Database.Domain.Technical;
+using Serilog.Context;
 
 namespace Fennec.Services;
 
@@ -10,10 +11,15 @@ namespace Fennec.Services;
 public interface ITraceImportService
 {
     /// <summary>
-    /// Imports trace information.
+    /// Starts a new task to import the trace and returns immediately.
     /// </summary>
     /// <param name="info"></param>
-    public void ImportTrace(TraceImportInfo info);
+    public void ImportTraceSync(TraceImportInfo info);
+
+    /// <summary>
+    /// Imports the trace and blocks until the trace is imported.
+    /// </summary>
+    public Task ImportTraceAsync(TraceImportInfo info);
 }
 
 public record TraceImportInfo(
@@ -24,25 +30,45 @@ public record TraceImportInfo(
 
 public class TraceImportService : ITraceImportService
 {
-    private readonly ITraceRepository _traceRepository;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger _log;
 
-    public TraceImportService(ITraceRepository traceRepository)
+    public TraceImportService(IServiceProvider serviceProvider, ILogger log)
     {
-        _traceRepository = traceRepository;
+        _serviceProvider = serviceProvider;
+        _log = log.ForContext<TraceImportService>();
     }
 
     // TODO: alex handle database writing in same task
-    public void ImportTrace(TraceImportInfo info)
+    public void ImportTraceSync(TraceImportInfo info)
     {
-        _ = Task.Run(async () => await ImportTraceAsync(info));
+        _ = Task.Run(async () => await TryImportTraceAsync(info));
     }
 
-    private async Task ImportTraceAsync(TraceImportInfo info)
+    private async Task TryImportTraceAsync(TraceImportInfo info)
     {
-        var srcHost = await _traceRepository.GetNetworkHost(info.SrcIp);
-        var dstHost = await _traceRepository.GetNetworkHost(info.DstIp);
+        try
+        {
+            await ImportTraceAsync(info);
+            _log.Verbose("Successfully imported trace");
+        }
+        catch (Exception e)
+        {
+            _log.ForContext("Exception", e)
+                .Error("Failed to import trace due to unhandled exception | {ExceptionName}: {ExceptionMessage}",
+                    e.GetType().Name, e.Message);
+        }
+    }
 
-        await _traceRepository.AddSingleTrace(
+    public async Task ImportTraceAsync(TraceImportInfo info)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var traceRepository = scope.ServiceProvider.GetRequiredService<ITraceRepository>();
+        
+        var srcHost = await traceRepository.GetNetworkHost(info.SrcIp);
+        var dstHost = await traceRepository.GetNetworkHost(info.DstIp);
+
+        await traceRepository.AddSingleTrace(
             new SingleTrace(
                 info.ExporterIp,
                 info.ReadTime,
