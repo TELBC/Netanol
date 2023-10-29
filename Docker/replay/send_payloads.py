@@ -38,6 +38,7 @@ total_packets = len(payloads)
 print(f"Read {total_packets} payloads", flush=True)
 
 # Send payloads
+sleep_time = float(os.environ['REPLAY_SPEED'])
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.settimeout(5)
 idx = 0
@@ -60,6 +61,6 @@ while True:
     print(f"Packet {current_packet_idx + 1}/{total_packets} with {packet_size} bytes, Total Packets: {sent_packets}", flush=True)
     
     idx += 1
-    time.sleep(1)
+    time.sleep(sleep_time)
 
 sock.close()

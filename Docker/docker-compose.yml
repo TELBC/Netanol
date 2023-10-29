@@ -118,6 +118,7 @@ services:
     environment:
       - REPLAY_FILE
       - REPLAY_TARGET
+      - REPLAY_SPEED
     networks:
       - netanol-network
     profiles:
