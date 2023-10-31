@@ -15,6 +15,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: ["auth"]
+})
+
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { Edges, Nodes, VEdgeLabel, VNetworkGraph } from 'v-network-graph';
 import { networkGraphConfigs } from 'assets/v-network-graph-configs';

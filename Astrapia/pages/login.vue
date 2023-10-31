@@ -28,22 +28,36 @@
         >
         <label>Password</label>
       </div>
-      <button id="login_button" @click="signIn('credentials', { username: username, password: password })">Login</button>
+      <button id="login_button" @click="signIn()">Login</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  auth: {
-    unauthenticatedOnly: true,
-    navigateAuthenticatedTo: '/',
-  }
-})
-
-const { signIn } = useAuth()
 const username = ref('')
 const password = ref('')
+
+interface APIResponse {
+  token: string;
+}
+
+async function signIn() {
+  try {
+    const response = await $fetch("http://localhost/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username: username.value, password: password.value }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }) as APIResponse;
+    if (response && response.token) {
+      sessionStorage.setItem('jwtToken', response.token);
+      navigateTo('/')
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
 </script>
 
 <style scoped>

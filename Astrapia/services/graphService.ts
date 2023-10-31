@@ -7,7 +7,8 @@ export async function fetchGraphData(dateRange: IDateRange, layoutName:String): 
     const response = await ApiService.request({
       method: 'post',
       url: `/api/graph/${layoutName}`,
-      data: dateRange
+      data: dateRange,
+      headers: { Authorization: `Bearer ${sessionStorage.getItem('jwtToken')}` }
     });
 
     return response.data;
@@ -20,7 +21,8 @@ async function layoutExists(name: String): Promise<boolean> {
   try {
     const response = await ApiService.request({
       method: 'get',
-      url: `/api/layout`
+      url: `/api/layout`,
+      headers: { Authorization: `Bearer ${sessionStorage.getItem('jwtToken')}` }
     });
     return response.data.find((layout: { name: String; }) => layout.name === name) !== undefined;
   } catch (error) {
@@ -37,7 +39,8 @@ export async function createLayout(name: string): Promise<ILayout> {
     }
     const response = await ApiService.request({
       method: 'post',
-      url: `/api/layout/${name}`
+      url: `/api/layout/${name}`,
+      headers: { Authorization: `Bearer ${sessionStorage.getItem('jwtToken')}` }
     });
 
     return response.data;
