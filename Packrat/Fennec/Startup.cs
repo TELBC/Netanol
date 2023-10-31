@@ -19,6 +19,7 @@ using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
 using OpenApiInfo = Microsoft.OpenApi.Models.OpenApiInfo;
+using Serilog.Sinks.Grafana.Loki;
 
 namespace Fennec;
 
@@ -179,46 +180,19 @@ public class Startup
 
     public void ConfigureHost(ConfigureHostBuilder host, IConfiguration configuration)
     {
-        var options = new ElasticsearchOptions();
-        configuration.GetSection("Elasticsearch").Bind(options);
-
         host.UseSerilog((context, _, loggerConfiguration) =>
         {
-            var sect = Configuration.GetRequiredSection("Elasticsearch");
             loggerConfiguration
                 .ReadFrom.Configuration(context.Configuration)
                 .MinimumLevel.Verbose()
                 .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Fatal) // ignore EF logs
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
+                .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
+                .WriteTo.GrafanaLoki(context.Configuration["ConnectionStrings:Loki"])
                 .WriteTo
-                .Console() // TODO: behave different in different environments
-                .WriteTo.Elasticsearch(
-                    new ElasticsearchSinkOptions(new Uri(sect["Uri"] ??
-                                                         throw new InvalidOperationException(
-                                                             "Elasticsearch:Uri is not defined.")))
-                    {
-                        ModifyConnectionSettings = x =>
-                        {
-                            // TODO: properly establish trust between components
-                            // trust any certificate
-                            x.ServerCertificateValidationCallback((_, _, _, _) => true);
-
-                            if (options.Username == null || options.Password == null)
-                                return x;
-                            x.BasicAuthentication(options.Username, options.Password);
-                            return x;
-                        },
-                        MinimumLogEventLevel = LogEventLevel.Verbose,
-                        DetectElasticsearchVersion = true,
-                        AutoRegisterTemplate = true,
-                        IndexFormat =
-                            $"{Assembly.GetExecutingAssembly().GetName().Name!.ToLower().Replace(".", "-")}-" +
-                            $"{context.HostingEnvironment.EnvironmentName.ToLower()}-" +
-                            $"{DateTime.UtcNow:yyyy-MM}".ToLower(),
-                        NumberOfReplicas = 1,
-                        NumberOfShards = 2
-                    });
+                .Console(restrictedToMinimumLevel: LogEventLevel
+                    .Debug); // TODO: behave different in different environment
         });
     }
 
@@ -247,6 +221,7 @@ public class Startup
         }
         
         app.UsePathBase("/api");
+        app.UseSerilogRequestLogging();
         
         if (StartupOptions.EnableSwagger)
         {
