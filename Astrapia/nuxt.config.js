@@ -55,16 +55,4 @@ export default defineNuxtConfig({
     "@fortawesome/fontawesome-svg-core/styles.css",
     "v-network-graph/lib/style.css",
   ],
-  modules: ['@sidebase/nuxt-auth'],
-  auth: {
-    provider: {
-      type: 'local',
-      pages: {
-        login: '/login'
-      },
-    },
-    globalAppMiddleware: {
-      isEnabled: true
-    }
-  },
 });

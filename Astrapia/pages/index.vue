@@ -1,6 +1,6 @@
 <template>
   <div>
-
+    <h1>TESTTESTTEST</h1>
   </div>
 </template>
 
@@ -11,8 +11,5 @@ definePageMeta({
 </script>
 
 <style scoped>
-button {
-  color:red;
-  padding-left: 100px;
-}
+
 </style>
