@@ -3,6 +3,8 @@ import {ForceLayout} from "v-network-graph/lib/force-layout";
 
 export const networkGraphConfigs = defineConfigs({
   node: {
+    selectable: node => node.selectable,
+    draggable: node => node.draggable,
     normal: {
       color: "#537B87",
     },
@@ -59,12 +61,11 @@ export const networkGraphConfigs = defineConfigs({
       },
     },
     layoutHandler: new ForceLayout({
-      positionFixedByDrag: true,
       noAutoRestartSimulation: true,
       createSimulation: (d3, nodes, edges) => {
         return d3.forceSimulation(nodes)
-            .force("link", d3.forceLink(edges).id(d => d.id).distance(0).strength(1))
-            .force("charge", d3.forceManyBody().strength(-1000))
+            .force("link", d3.forceLink(edges).id((d: { id: any; }) => d.id).distance(100).strength(100))
+            .force("charge", d3.forceManyBody().strength(-500))
             .force("x", d3.forceX())
             .force("y", d3.forceY());
         }
