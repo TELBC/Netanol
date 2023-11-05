@@ -1,11 +1,9 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using DotNetFlow.Ipfix;
-using DotNetFlow.Netflow9;
 using Fennec.Options;
 using Fennec.Services;
 using Microsoft.Extensions.Options;
-using Serilog;
 using Serilog.Context;
 using TemplateRecord = DotNetFlow.Ipfix.TemplateRecord;
 

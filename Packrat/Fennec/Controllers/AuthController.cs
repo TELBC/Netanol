@@ -1,13 +1,7 @@
-﻿using System.Data;
-using Fennec.Database;
-using Fennec.Database.Auth;
-using Fennec.Database.Domain.Layout;
+﻿using Fennec.Database;
 using Fennec.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace Fennec.Controllers;
 
@@ -65,8 +59,8 @@ public class AuthController : ControllerBase
         }
 
         _log.Debug("Login attempt for {Username} succeeded -> Generating JWT token", request.Username);
-        var roles = await _userManager.GetRolesAsync(user!);
-        var token = _jwtService.GenerateJwtToken(user!, roles);
+        var roles = await _userManager.GetRolesAsync(user);
+        var token = _jwtService.GenerateJwtToken(user, roles);
         return Ok(new { token });
     }
 }

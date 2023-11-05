@@ -1,19 +1,18 @@
 ﻿using System.Data;
 using System.Reflection;
 using System.Text;
-using DotNetFlow.Ipfix;
 using Fennec.Collectors;
 using Fennec.Database;
-using Fennec.Database.Auth;
+using Fennec.Database.Domain;
 using Fennec.Options;
 using Fennec.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
@@ -49,14 +48,13 @@ public class Startup
             .ValidateDataAnnotations();
         
         // Database services
-        services.AddScoped<IPackratContext, PackratContext>();
         services.AddScoped<ITraceImportService, TraceImportService>();
-        services.AddScoped<ILayoutRepository, LayoutRepository>();
+        // services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddScoped<ITraceRepository, TraceRepository>();
-        services.AddDbContext<IPackratContext, PackratContext>(options =>
-            options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection") ??
-                              throw new InvalidOperationException()));
-
+        services.AddSingleton<IMongoClient>(_ => new MongoClient(Configuration.GetConnectionString("MongoConnection")));
+        services.AddSingleton<IMongoCollection<SingleTrace>>(
+            s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat").GetCollection<SingleTrace>("singleTraces"));
+        
         // Collector services
         services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
         services.AddHostedService<IpfixCollector>(); // TODO: set exception behaviour
@@ -88,7 +86,7 @@ public class Startup
         
         // Authentication services
         services.AddDbContext<AuthContext>(options =>
-            options.UseNpgsql(Configuration.GetConnectionString("PostgresConnection")));
+            options.UseSqlite("Data Source=Data/Identity.db"));
         services.AddIdentity<NetanolUser, NetanolRole>()
             .AddEntityFrameworkStores<AuthContext>()
             .AddDefaultTokenProviders();
@@ -184,7 +182,7 @@ public class Startup
         {
             var context = scope.ServiceProvider.GetRequiredService<AuthContext>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<NetanolUser>>();
-            await context.Database.MigrateAsync();
+            await context.Database.EnsureCreatedAsync();
 
             var secOpts = scope.ServiceProvider.GetRequiredService<IOptions<SecurityOptions>>().Value;
             if (!userManager.Users.Any(u => u.UserName == secOpts.Access.Username))
@@ -210,13 +208,6 @@ public class Startup
                 c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Fennec API V1");
                 c.RoutePrefix = "swagger";
             });
-        }
-
-        using (var scope = app.Services.CreateScope())
-        {
-            var ctx = scope.ServiceProvider.GetRequiredService<PackratContext>();
-
-            await ctx.Database.MigrateAsync();
         }
 
         if (StartupOptions.AllowCors) 

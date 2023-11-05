@@ -1,7 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Fennec.Database.Auth;
+namespace Fennec.Database;
+
+public class NetanolRole : IdentityRole { }
+
+public class NetanolUser : IdentityUser { }
 
 public class AuthContext : IdentityDbContext<NetanolUser, NetanolRole, string>
 {

@@ -1,19 +1,16 @@
-using System.Data;
-using Fennec.Database.Domain.Layout;
-using Microsoft.EntityFrameworkCore;
-
 namespace Fennec.Database;
 
+/*
 public interface ILayoutRepository
 {
     /// <summary>
-    ///     Lists all layouts.
+    /// Lists all layouts.
     /// </summary>
     /// <returns></returns>
     Task<List<Layout>> ListLayouts();
 
     /// <summary>
-    ///     Creates a new layout with the given name.
+    /// Creates a new layout with the given name.
     /// </summary>
     /// <param name="name"></param>
     /// <returns></returns>
@@ -21,7 +18,7 @@ public interface ILayoutRepository
     Task<Layout> CreateLayout(string name);
 
     /// <summary>
-    ///     Renames a layout with the given name to the new name.
+    /// Renames a layout with the given name to the new name.
     /// </summary>
     /// <param name="oldName"></param>
     /// <param name="newName"></param>
@@ -31,7 +28,7 @@ public interface ILayoutRepository
     Task<Layout> RenameLayout(string oldName, string newName);
 
     /// <summary>
-    ///     Deletes a layout with the given name.
+    ///  Deletes a layout with the given name.
     /// </summary>
     /// <param name="name"></param>
     /// <returns></returns>
@@ -101,3 +98,4 @@ public class LayoutRepository : ILayoutRepository
             throw new DuplicateNameException($"A layout with the name {name} already exists.");
     }
 }
+*/

@@ -1,11 +1,8 @@
 using System.Diagnostics;
 using System.Net;
+using Fennec.Collectors;
 using Fennec.Database;
-using Fennec.Database.Domain.Layout;
-using Fennec.Database.Domain.Technical;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Fennec.Controllers;
@@ -20,54 +17,62 @@ public enum GroupType
 
 public record GroupRequest(GroupType GroupType, string Subnet, string SubnetMask);
 
-public class AggregatedTraceDto
-{
-    public AggregatedTraceDto(long sourceHostId, long destinationHostId, long packetCount, long byteCount,
-        long traceCount)
-    {
-        SourceHostId = sourceHostId;
-        DestinationHostId = destinationHostId;
-        PacketCount = packetCount;
-        ByteCount = byteCount;
-        TraceCount = traceCount;
-    }
-
-    public long SourceHostId { get; set; }
-    public long DestinationHostId { get; set; }
-    public long PacketCount { get; set; }
-    public long ByteCount { get; set; }
-    public long TraceCount { get; set; }
-}
-
 public record GraphStatistics(long TotalHostCount, long TotalByteCount, long TotalPacketCount, long TotalTraceCount);
 
 public record RequestStatistics(long NewHostCount, TimeSpan ProcessingTime);
 
-public record GraphNodeDto(long Id, string DisplayName);
+// TODO: rename to SourceId and DestinationId
+public record LayoutEdgeDto(string SourceHostId, string DestinationHostId, ulong PacketCount, ulong ByteCount, ulong TraceCount)
+{
+    public LayoutEdgeDto(IPAddress sourceIp, IPAddress destinationIp, ulong packetCount, ulong byteCount, ulong traceCount)
+        : this(sourceIp.ToString(), destinationIp.ToString(), packetCount, byteCount, traceCount) { }
+}
+
+public record LayoutNodeDto(string Id, string DisplayName)
+{
+    public LayoutNodeDto(IPAddress ipAddress)
+        : this(ipAddress.ToString(), ipAddress.ToString()) { }
+}
 
 public record GraphResponse(
     GraphStatistics GraphStatistics,
     RequestStatistics RequestStatistics,
-    List<GraphNodeDto> Nodes,
-    List<AggregatedTraceDto> Edges);
+    IDictionary<string, LayoutNodeDto> Nodes,
+    List<LayoutEdgeDto> Edges);
 
-public record CreateGroupResponse(
-    List<NetworkHost> MatchingHosts,
-    GraphNode CreatedGroupNode
-);
+public class ByteArrayComparer : IEqualityComparer<byte[]>
+{
+    public bool Equals(byte[]? x, byte[]? y)
+    {
+        if (ReferenceEquals(x, y)) return true;
+        if (x == null || y == null) return false;
+        return x.SequenceEqual(y);
+    }
 
-[Authorize]
+    public int GetHashCode(byte[]? obj)
+    {
+        if (obj == null) 
+            return 0;
+        
+        unchecked
+        {
+            return obj.Aggregate(17, (current, val) => current * 31 + val);
+        }
+    }
+}
+
+// [Authorize]
 [Route("graph/{name}")]
 [ApiController]
 [Produces("application/json")]
 [SwaggerTag("Generate Graphs")]
 public class GraphController : ControllerBase
 {
-    private readonly IPackratContext _context;
+    private readonly ITraceRepository _traceRepository;
 
-    public GraphController(IPackratContext context)
+    public GraphController(ITraceRepository traceRepository)
     {
-        _context = context;
+        _traceRepository = traceRepository;
     }
 
     /// <summary>
@@ -86,6 +91,32 @@ public class GraphController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GenerateGraph(string name, [FromBody] GraphRequest request)
     {
+        var edges = await _traceRepository.AggregateTraces(request.From, request.To);
+        
+        var nodes = edges
+            .SelectMany<AggregateTrace, byte[]>(trace => new[] { trace.SourceIpBytes, trace.DestinationIpBytes })
+            .GroupBy(t => t, new ByteArrayComparer())
+            .Select(t => t.First())
+            .Select(bytes => new LayoutNodeDto(new IPAddress(bytes)))
+            .ToDictionary(n => n.Id, n => n);
+
+        var dtoEdges = edges.Select(trace => 
+            new LayoutEdgeDto(
+                new IPAddress(trace.SourceIpBytes), 
+                new IPAddress(trace.DestinationIpBytes), 
+                trace.PacketCount, 
+                trace.ByteCount, 
+                0))
+            .ToList();
+        
+        var response = new GraphResponse(
+            null!,
+            null!,
+            nodes,
+            dtoEdges);
+        
+        return Ok(response);
+        /*
         // TODO: build in protection mode and prevent the client from loading more than like 10 000 hosts
         // somehow establish how those hosts are represented in the given layout?
 
@@ -180,9 +211,9 @@ public class GraphController : ControllerBase
             new RequestStatistics(unknownHosts.Count, watch.Elapsed),
             layout.GraphNodes
                 .Where(g => g.IsVisible)
-                .ToDictionary(g => g.Id, g => new GraphNodeDto(g.Id, g.DisplayName))
-                .Values.ToList(),
+                .ToDictionary(g => g.Id, g => new GraphNodeDto(g.Id, g.DisplayName)),
             traces));
+            */
     }
 
     /// <summary>
@@ -204,6 +235,7 @@ public class GraphController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CreateGroup(string name, [FromBody] GroupRequest request)
     {
+        /*
         IPAddress.TryParse(request.Subnet, out var subnet);
         if (subnet == null)
             return BadRequest("Subnet is not a valid IP address.");
@@ -277,8 +309,11 @@ public class GraphController : ControllerBase
 
         // TODO: return statistics
         return Ok();
+        */
+        return Ok();
     }
 
+    
     /// <summary>
     ///     Dissolves a group within a specific layout.
     /// </summary>
@@ -297,6 +332,7 @@ public class GraphController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DissolveGroup(string name, long groupId)
     {
+        /*
         // get the layout and make sure it exists
         var layout = await _context.Layouts
             .Include(layout => layout.GraphNodes)
@@ -331,6 +367,8 @@ public class GraphController : ControllerBase
         await _context.SaveChangesAsync();
 
         // TODO: return statistics
+        return Ok();
+        */
         return Ok();
     }
 }

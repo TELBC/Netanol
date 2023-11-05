@@ -18,8 +18,10 @@ services:
       - FENNEC_SECURITY__ACCESS__USERNAME=${FENNEC_INITIAL_USERNAME}
       - FENNEC_SECURITY__ACCESS__PASSWORD=${FENNEC_INITIAL_PASSWORD}
       - FENNEC_SECURITY__JWT__KEY=${FENNEC_JWT_KEY}
+    volumes:
+      - fennec_data:/app/Data
     depends_on:
-      - postgres
+      - mongo
     networks:
       - netanol-network
 
@@ -32,26 +34,20 @@ services:
       options:
         max-size: "10m"
         max-file: "1"
-    depends_on:
-      - postgres
-      - fennec
     networks:
       - netanol-network
 
-  postgres:
-    image: postgres:12
+  mongo:
+    image: mongo:jammy
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "1"
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongo_data:/data/db
     networks:
       - netanol-network
   
@@ -128,8 +124,10 @@ services:
       - dev
     
 volumes:
+  mongo_data:
   postgres_data:
   elasticsearch_data:
+  fennec_data:
     
 networks:
   netanol-network:

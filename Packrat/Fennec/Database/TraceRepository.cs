@@ -1,56 +1,104 @@
 ﻿using System.Net;
-using Fennec.Database.Domain.Technical;
-using Microsoft.EntityFrameworkCore;
+using Fennec.Database.Domain;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
+using Newtonsoft.Json;
 
 namespace Fennec.Database;
 
 /// <summary>
-///     Database operation abstractions for handling traces.
+/// Database operation abstractions for handling traces.
 /// </summary>
 public interface ITraceRepository
 {
     /// <summary>
-    ///     Add a single trace to the database.
+    /// Add a single trace to the database.
     /// </summary>
     /// <param name="singleTrace"></param>
     /// <returns></returns>
     public Task AddSingleTrace(SingleTrace singleTrace);
 
     /// <summary>
-    /// Get or create a <see cref="NetworkHost"/> by its <see cref="IPAddress"/>.
+    /// Aggregate all traces in the database by their source and destination <see cref="IPAddress"/> and port.
     /// </summary>
-    /// <param name="ipAddress"></param>
     /// <returns></returns>
-    public Task<NetworkHost> GetNetworkHost(IPAddress ipAddress);
+    public Task<List<AggregateTrace>> AggregateTraces(DateTimeOffset start, DateTimeOffset end);
+}
+
+public class AggregateTrace
+{
+    [BsonElement("sourceIpBytes")]
+    public byte[] SourceIpBytes { get; set; }
+    
+    public string SourceIp => new IPAddress(SourceIpBytes).ToString();
+    
+    [BsonElement("destinationIpBytes")]
+    public byte[] DestinationIpBytes { get; set; }
+    public string DestinationIp => new IPAddress(DestinationIpBytes).ToString();
+    
+    // [BsonElement("sourcePort")]
+    // public ushort SourcePort { get; set; }
+    
+    // [BsonElement("destinationPort")]
+    // public ushort DestinationPort { get; set; }
+    
+    [BsonElement("packetCount")]
+    public ulong PacketCount { get; set; }
+    
+    
+    [BsonElement("byteCount")]
+    public ulong ByteCount { get; set; }
+    
+#pragma warning disable CS8618
+    private AggregateTrace() { }
+#pragma warning restore CS8618
 }
 
 public class TraceRepository : ITraceRepository
 {
-    private readonly IPackratContext _context;
+    private readonly IMongoCollection<SingleTrace> _traceCollection;
 
-    public TraceRepository(IPackratContext context)
+    public TraceRepository(IMongoCollection<SingleTrace> traceCollection)
     {
-        _context = context;
+        _traceCollection = traceCollection;
     }
 
     public async Task AddSingleTrace(SingleTrace singleTrace)
     {
-        _context.SingleTraces.Add(singleTrace);
-        await _context.SaveChangesAsync();
+        await _traceCollection.InsertOneAsync(singleTrace);
     }
 
-    public async Task<NetworkHost> GetNetworkHost(IPAddress ipAddress)
+    public async Task<List<AggregateTrace>> AggregateTraces(DateTimeOffset start, DateTimeOffset end)
     {
-        var host = await _context.NetworkHosts
-            .Where(n => n.IpAddress == ipAddress)
-            .FirstOrDefaultAsync();
-
-        if (host != null)
-            return host;
-
-        host = new NetworkHost(ipAddress);
-        _context.NetworkHosts.Add(host);
-        await _context.SaveChangesAsync();
-        return host;
+        return await _traceCollection.Aggregate()
+            .Group(
+                new BsonDocument
+                {
+                    { "_id", new BsonDocument
+                        {
+                            { "sourceIp", "$source.ipBytes" },
+                            // { "sourcePort", "$source.port" },
+                            { "destinationIp", "$destination.ipBytes" }
+                            // { "destinationPort", "$destination.port" }
+                        }
+                    },
+                    { "totalBytes", new BsonDocument("$sum", "$byteCount") },
+                    { "totalPackets", new BsonDocument("$sum", "$packetCount") }
+                }
+            )
+            .Project<AggregateTrace>(
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "sourceIpBytes", "$_id.sourceIp" },
+                    // { "sourcePort", "$_id.sourcePort" },
+                    { "destinationIpBytes", "$_id.destinationIp" },
+                    // { "destinationPort", "$_id.destinationPort" },
+                    { "byteCount", "$totalBytes" },
+                    { "packetCount", "$totalPackets" }
+                }
+            ).ToListAsync();
     }
 }
