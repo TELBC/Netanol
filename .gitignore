@@ -1,3 +1,4 @@
 /.idea/
 /Astrapia/.nuxt/
 dev.env
+identity.db*

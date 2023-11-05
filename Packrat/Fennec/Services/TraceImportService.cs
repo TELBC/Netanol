@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using Fennec.Database;
-using Fennec.Database.Domain.Technical;
-using Serilog.Context;
+using Fennec.Database.Domain;
 
 namespace Fennec.Services;
 
@@ -15,11 +14,6 @@ public interface ITraceImportService
     /// </summary>
     /// <param name="info"></param>
     public void ImportTraceSync(TraceImportInfo info);
-
-    /// <summary>
-    /// Imports the trace and blocks until the trace is imported.
-    /// </summary>
-    public Task ImportTraceAsync(TraceImportInfo info);
 }
 
 public record TraceImportInfo(
@@ -65,19 +59,11 @@ public class TraceImportService : ITraceImportService
         using var scope = _serviceProvider.CreateScope();
         var traceRepository = scope.ServiceProvider.GetRequiredService<ITraceRepository>();
         
-        var srcHost = await traceRepository.GetNetworkHost(info.SrcIp);
-        var dstHost = await traceRepository.GetNetworkHost(info.DstIp);
+        var trace = new SingleTrace(info.ReadTime, TraceProtocol.Udp, 
+            new SingleTraceEndpoint(info.SrcIp, info.SrcPort), 
+            new SingleTraceEndpoint(info.DstIp, info.DstPort),
+            info.ByteCount, info.PacketCount);
 
-        await traceRepository.AddSingleTrace(
-            new SingleTrace(
-                info.ExporterIp,
-                info.ReadTime,
-                TraceProtocol.Udp,
-                srcHost,
-                info.SrcPort,
-                dstHost,
-                info.DstPort,
-                info.ByteCount,
-                info.PacketCount));
+        await traceRepository.AddSingleTrace(trace);
     }
 }

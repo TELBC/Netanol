@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using System.Text;
 using Fennec.Database;
-using Fennec.Database.Auth;
 using Fennec.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
