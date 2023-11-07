@@ -34,22 +34,14 @@
 </template>
 
 <script setup lang="ts">
+import {login} from "~/services/loginService";
+
 const username = ref('')
 const password = ref('')
 
-interface APIResponse {
-  token: string;
-}
-
 async function signIn() {
   try {
-    const response = await $fetch("http://localhost/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ username: username.value, password: password.value }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }) as APIResponse;
+    const response = await login(username.value, password.value);
     if (response && response.token) {
       sessionStorage.setItem('jwtToken', response.token);
       navigateTo('/')
