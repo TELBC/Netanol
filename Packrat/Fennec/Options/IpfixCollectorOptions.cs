@@ -5,10 +5,10 @@ public class IpfixCollectorOptions
     /// <summary>
     ///     Whether the collector is enabled and should be started.
     /// </summary>
-    public bool Enabled { get; set; } = true;
+    public bool Enabled { get; set; } = false;
 
     /// <summary>
     ///     The port on which the collector will listen for Ipfix packets.
     /// </summary>
-    public short ListeningPort { get; set; } = 2055;
+    public short ListeningPort { get; set; } = 2056;
 }
