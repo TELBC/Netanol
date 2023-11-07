@@ -115,8 +115,8 @@ span:nth-child(4) {
 
 .login_inputs {
   border-radius: 4px;
-  border: 1px solid #424242;
-  height: 4vh;
+  border: 0.1vh solid #424242;
+  height: 3.9vh;
   width: 20vw;
   margin-top: 4vh;
   padding-left: 0.5vw;
@@ -127,9 +127,10 @@ span:nth-child(4) {
 label {
   font-family: 'Open Sans', sans-serif;
   font-size: 2.5vh;
+  line-height: 4vh;
   color: #424242;
   opacity: 60%;
-  margin-top: 4.5vh;
+  margin-top: 4.1vh;
   margin-left: 0.5vw;
   user-select: none;
   position: absolute;
@@ -137,18 +138,22 @@ label {
   transition: 0.2s ease all;
 }
 
+.login_form input:focus {
+  outline: none;
+}
+
 .login_form input:focus~label {
-  margin-top: 1.7vh;
+  margin-top: 0.8vh;
   color: black;
   opacity: 100%;
-  font-size: 1.5vh;
+  font-size: 2vh;
 }
 
 .login_form input:not(:placeholder-shown):not(input:focus)~label {
-  margin-top: 1.7vh;
+  margin-top: 0.8vh;
   color: black;
   opacity: 100%;
-  font-size: 1.5vh;
+  font-size: 2vh;
 }
 
 #login_button {
