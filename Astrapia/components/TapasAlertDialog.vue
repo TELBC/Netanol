@@ -5,7 +5,7 @@
       <p style="margin-bottom: 1.5vh; margin-top:0;">{{ message }}</p>
       <div class="alert-buttons">
         <button id="submit-button" v-if=submit>Ok</button>
-        <button @click="showAlert=false">Close</button>
+        <button @click="hideAlert">{{ close_button }}</button>
       </div>
     </div>
   </div>
@@ -18,27 +18,30 @@ const props = defineProps({
   title: String,
   message: String,
 });
+
+const close_button = ref("Close"); // change button from "Close" to "Cancel" if submit is true ?
+
+const hideAlert = inject('hideAlert');
 </script>
 
 <style scoped>
 #alert-box-placement {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 1vh;
+  padding-top: 0.2vh;
+  position: fixed;
+  z-index: 99;
+  left: 43vw;
 }
 
 .alert-box {
-  position: absolute;
   background-color: white;
   border: 1px solid #424242;
   border-radius: 4px;
   padding: 1vh;
-  width: 25vh;
+  width: 14vw;
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 2;
   font-size: 2vh;
   font-family: 'Open Sans', sans-serif;
 }
@@ -63,6 +66,6 @@ button {
 }
 
 #submit-button {
-  margin-right: 3vw;
+  margin-right: 4.5vw;
 }
 </style>
