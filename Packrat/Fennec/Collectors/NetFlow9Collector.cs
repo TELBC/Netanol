@@ -4,29 +4,10 @@ using DotNetFlow.Netflow9;
 using Fennec.Options;
 using Fennec.Services;
 using Microsoft.Extensions.Options;
+using Serilog;
 using Serilog.Context;
 
 namespace Fennec.Collectors;
-
-//
-//                 |
-//                 |
-//                 |
-//                 |
-// ----------------------------------
-//                 |
-//                 |
-//                 |
-//                 |
-//                 |
-//                 |
-//                 |
-//                 |
-//                 |
-//                 |
-//                 |
-//                 |
-//
 
 public class NetFlow9Collector : BackgroundService
 {
@@ -34,17 +15,15 @@ public class NetFlow9Collector : BackgroundService
     private readonly Netflow9CollectorOptions _options;
     private readonly IServiceProvider _serviceProvider;
     private readonly UdpClient _udpClient;
-    private readonly List<TemplateRecord> _allTemplateRecords;
+    private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords; // matches (ExporterIp, TemplateId) to TemplateRecord
 
-    public NetFlow9Collector(ILogger log, IOptions<Netflow9CollectorOptions> iOptions,
-        IServiceProvider serviceProvider)
+    public NetFlow9Collector(ILogger log, IOptions<Netflow9CollectorOptions> iOptions, IServiceProvider serviceProvider)
     {
         _options = iOptions.Value;
-
         _log = log.ForContext<NetFlow9Collector>();
         _udpClient = new UdpClient(_options.ListeningPort);
         _serviceProvider = serviceProvider;
-        _allTemplateRecords = new List<TemplateRecord>();
+        _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
     }
 
     protected override async Task ExecuteAsync(CancellationToken ct)
@@ -67,98 +46,122 @@ public class NetFlow9Collector : BackgroundService
                     result.RemoteEndPoint.ToString(),
                     result.Buffer.Length);
 
-            var info = ReadSingleTrace(result);
-            if (info == null)
-                continue;
-
-            var scope = _serviceProvider.CreateScope();
-            var importer = scope.ServiceProvider.GetRequiredService<ITraceImportService>();
-            importer.ImportTraceSync(info);
+            ReadSingleTraces(result);
         }
     }
 
-    private TraceImportInfo? ReadSingleTrace(UdpReceiveResult result)
+    private void ReadSingleTraces(UdpReceiveResult result)
     {
-        try
+        var stream = new MemoryStream(result.Buffer);
+        using var nr = new NetflowReader(stream, 0, _templateRecords.Values);
+        var header = nr.ReadPacketHeader();
+
+        while (true)
         {
-            var stream = new MemoryStream(result.Buffer);
-            using var nr = new NetflowReader(stream);
-            var header = nr.ReadPacketHeader();
-            
-            var allFlowSets = new List<object>();
-            var onlyDataFlowSets = new List<DataFlowSet>();
-
-            // header.Count stores how many FlowSets are contained inside a packet.
-            for (var i = 0; i < header.Count; i++)
+            try
             {
-                try
-                {
-                    var flowSet = nr.ReadFlowSet(_allTemplateRecords);
-                    allFlowSets.Add(flowSet);
-                }
-                catch
-                {
-                    _log.Error($"Could not read/add FlowSet at index {i} in packet with sequence number {header.SequenceNumber}");
-                }
-            }
+                var dict = _templateRecords.Values.ToDictionary(t => t.ID, t => t);
+                var set = nr.ReadFlowSet(dict);
 
-            foreach (var flowSet in allFlowSets)
-            {
-                if (flowSet is TemplateFlowSet templateFlowSet)
+                switch (set)
                 {
-                    foreach (var templateRecord in templateFlowSet.Records)
-                    {
-                        if (!_allTemplateRecords.Contains(templateRecord))
+                    case DataFlowSet dataFlowSet:
+                        var key = (result.RemoteEndPoint.Address, set.ID);
+                        var template = _templateRecords[key];
+
+                        var view = new NetflowView(dataFlowSet, template);
+                        WriteSingleTrace(view, result);
+
+                        _log.ForContext("Netflow9Collector", CollectorType.Netflow9)
+                            .Verbose("Writing Trace with Collector {CollectorType}; Sequence ID {SequenceID}.", CollectorType.Netflow9, header.SequenceNumber);
+
+                        break;
+                    case TemplateFlowSet templateFlowSet:
+                        foreach (var templateRecord in templateFlowSet.Records)
                         {
-                            _allTemplateRecords.Add(templateRecord);
-                            _log.Information($"Template Record added {templateRecord.ID}");
+                            _templateRecords.Add((result.RemoteEndPoint.Address, templateRecord.ID), templateRecord);
+                            _log.Information("Added TemplateFlowSet {TemplateRecordId}.",
+                                (result.RemoteEndPoint.Address, templateRecord.ID));
                         }
-                    }
-                }
-                else if (flowSet is DataFlowSet dataFlowSet) // check what FlowSet is a DataFlowSet (isn't always the case)
-                {
-                    onlyDataFlowSets.Add(dataFlowSet);
-                }
-                else
-                {
-                    // TODO : Decide what to do with non-network data FlowSets (OptionsTemplateFlowSet, OptionsDataFlowSet)
-                    _log.Error($"Dropping non-network data FlowSet of type {flowSet.GetType().Name}");
-                    return null;
+
+                        break;
+                    case OptionsTemplateFlowSet optionsTemplateFlowSet:
+                        _log.ForContext("OptionsTemplateFlowSet", optionsTemplateFlowSet)
+                            .Debug("OptionsTemplateFlowSet does not contain flow relevant data. Skipping...");
+                        break;
+                    case OptionsDataFlowSet optionsDataFlowSet:
+                        _log.ForContext("OptionsDataFlowSet", optionsDataFlowSet)
+                            .Debug("OptionsDataFlowSet does not contain flow relevant data. Skipping...");
+                        break;
                 }
             }
-
-            NetflowView? view = null;
-            foreach (var dataFlowSet in onlyDataFlowSets)
+            catch (EndOfStreamException ex)
             {
-                view = new NetflowView(dataFlowSet, _allTemplateRecords);
+                _log.ForContext("EndOfStreamException", ex)
+                    .Debug(
+                        "Reached end of stream while Reading {FlowCollectorType} bytes from {TraceExporterIp} with a length of {PacketLength} bytes",
+                        CollectorType.Netflow9, result.RemoteEndPoint.ToString(), result.Buffer.Length);
+                break;
             }
-            
-            var record = view?[0];
-
-            if (record == null) return null;
-            return CreateTraceImportInfo(record);
-        }
-        catch (Exception ex)
-        {
-            _log.Error(ex, "Failed to parse bytes to {FlowCollectorType}", CollectorType.Netflow9);
-            return null;
+            catch (KeyNotFoundException ex)
+            {
+                _log.ForContext("KeyNotFoundException", ex)
+                    .Warning(
+                        "Could not find template record for data set in packet with sequence number {SequenceNumber}",
+                        header.SequenceNumber);
+            }
+            catch (FormatException ex)
+            {
+                _log.ForContext("FormatException", ex)
+                    .Error("The input data are corrupt and cannot be processed. The flow set has been skipped.");
+            }
+            catch (InvalidOperationException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _log.ForContext("Unknown Exception", ex)
+                    .Error("Unknown exception while reading Netflow9 packet.");
+            }
         }
     }
 
-    private static TraceImportInfo CreateTraceImportInfo(dynamic record)
+    private void WriteSingleTrace(NetflowView view, UdpReceiveResult result)
+    {
+        var scope = _serviceProvider.CreateScope();
+        var importer = scope.ServiceProvider.GetRequiredService<ITraceImportService>();
+
+        for (var i = 0; i < view.Count; i++)
+        {
+            var info = CreateTraceImportInfo(view[i], result);
+            importer.ImportTraceSync(info);
+            _log.ForContext("TraceImportInfo", info)
+                .Verbose("Writing Trace for trace {TraceImportInfo}.", info);
+        }
+    }
+
+    private static TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result)
     {
         var properties = (IDictionary<string, object>)record;
         var readTime = DateTimeOffset.UtcNow;
-        var exporterIp = IPAddress.Loopback;
-        
-        // Yes! These double casts are necessary. Don't ask me why.
-        var srcIp = properties.TryGetValue("IPv4SourceAddress", out var property) ? (IPAddress) property : IPAddress.None;
-        var srcPort = properties.TryGetValue("Layer4SourcePort", out var property1) ? (ushort) (short) property1 : (ushort) 0;
-        var dstIp = properties.TryGetValue("IPv4DestinationAddress", out var property2) ? (IPAddress) property2 : IPAddress.None;
-        var dstPort = properties.TryGetValue("Layer4DestinationPort", out var property3) ? (ushort) (short) property3 : (ushort) 0;
-        var packetCount = properties.TryGetValue("IncomingPackets", out var property4) ? (ulong) (long) property4 : 0;
-        var byteCount = properties.TryGetValue("IncomingBytes", out var property5) ? (ulong) (long) property5 : 0;
-    
+        var exporterIp = result.RemoteEndPoint.Address;
+
+        var srcIp = properties.TryGetValue("IPv4SourceAddress", out var property)
+            ? (IPAddress)property
+            : IPAddress.None;
+        var srcPort = properties.TryGetValue("Layer4SourcePort", out var property1)
+            ? (ushort)(short)property1
+            : (ushort)0;
+        var dstIp = properties.TryGetValue("IPv4DestinationAddress", out var property2)
+            ? (IPAddress)property2
+            : IPAddress.None;
+        var dstPort = properties.TryGetValue("Layer4DestinationPort", out var property3)
+            ? (ushort)(short)property3
+            : (ushort)0;
+        var packetCount = properties.TryGetValue("IncomingPackets", out var property4) ? (ulong)(long)property4 : 0;
+        var byteCount = properties.TryGetValue("IncomingBytes", out var property5) ? (ulong)(long)property5 : 0;
+
         return new TraceImportInfo(
             readTime, exporterIp,
             srcIp, srcPort,

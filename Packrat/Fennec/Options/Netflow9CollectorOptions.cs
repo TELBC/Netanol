@@ -10,5 +10,5 @@ public class Netflow9CollectorOptions
     /// <summary>
     ///     The port on which the collector will listen for Netflow v9 packets.
     /// </summary>
-    public short ListeningPort { get; set; } = 2056;
+    public short ListeningPort { get; set; } = 2055;
 }
