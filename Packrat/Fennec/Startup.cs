@@ -58,7 +58,7 @@ public class Startup
         
         // Collector services
         services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
-        services.AddHostedService<IpfixCollector>(); // TODO: set exception behaviour
+        services.AddHostedService<IpFixCollector>(); // TODO: set exception behaviour
         
         // Web services
         services.AddControllers();

@@ -5,11 +5,12 @@ using Fennec.Options;
 using Fennec.Services;
 using Microsoft.Extensions.Options;
 using Serilog.Context;
+using FormatException = System.FormatException;
 using TemplateRecord = DotNetFlow.Ipfix.TemplateRecord;
 
 namespace Fennec.Collectors;
 
-public class IpfixCollector : BackgroundService
+public class IpFixCollector : BackgroundService
 {
     private readonly ILogger _log;
     private readonly IpfixCollectorOptions _options;
@@ -20,10 +21,10 @@ public class IpfixCollector : BackgroundService
     // TODO: expand to a service, can be used to display/monitor templates in frontend
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords;
 
-    public IpfixCollector(ILogger log, IOptions<IpfixCollectorOptions> iOptions, IServiceProvider serviceProvider, ITraceImportService importService)
+    public IpFixCollector(ILogger log, IOptions<IpfixCollectorOptions> iOptions, IServiceProvider serviceProvider, ITraceImportService importService)
     {
         _options = iOptions.Value;
-        _log = log.ForContext<IpfixCollector>();
+        _log = log.ForContext<IpFixCollector>();
         _udpClient = new UdpClient(_options.ListeningPort);
         _serviceProvider = serviceProvider;
         _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
@@ -71,46 +72,45 @@ public class IpfixCollector : BackgroundService
                 {
                     case DataSet dataSet:
                         var key = (result.RemoteEndPoint.Address, set.ID);
-                        var template = _templateRecords[key];
+                        if (!_templateRecords.TryGetValue(key, out var template))
+                        {
+                            _log.Warning("Could not parse data set... " +
+                                         "Reading this set requires a not yet transmitted " +
+                                         "template set with id #{TemplateSetId}", set.ID);
+                            continue;
+                        }
                         
                         var view = new IpfixView(dataSet, template);
                         WriteSingleTrace(view, result);
-                        
-                        _log.ForContext("IpfixCollector", CollectorType.Ipfix)
-                            .Verbose("Writing Trace with Collector {CollectorType}.", CollectorType.Ipfix);
-                        
                         break;
                     case TemplateSet templateSet:
                         foreach (var templateRecord in templateSet.Records)
                         {
                             _templateRecords.Add((result.RemoteEndPoint.Address, templateRecord.ID), templateRecord);
-                            _log.Information("Added TemplateSet {TemplateRecordId}.",
-                                (result.RemoteEndPoint.Address, templateRecord.ID));
+                            _log.Information("Received new template set with id #{TemplateSetId}", templateRecord.ID);
                         }
 
                         break;
                 }
             }
-            catch (EndOfStreamException ex) // TODO: include logs for specific Exceptions that we know the meaning of + increase context
+            catch (EndOfStreamException) // TODO: include logs for specific Exceptions that we know the meaning of + increase context
             {
-                _log.ForContext("EndOfStreamException", ex)
-                    .Debug("Reached end of stream while reading IPFIX packet");
+                _log.Verbose("Reached end of packet");
                 break;
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _log.ForContext("KeyNotFoundException", ex)
-                    .Warning("Could not find template record for data set in packet with sequence number {SequenceNumber} in {ObservationDomain} observation domain.", header.SequenceNumber, header.ObservationDomainID);
             }
             catch (FormatException ex)
             {
-                _log.ForContext("FormatException", ex)
-                    .Error("The input data are corrupt and cannot be processed. The flow set has been skipped.");
+            
+                _log.ForContext("Exception", ex)
+                    .ForContext("PacketBytes", result.Buffer)
+                    .Warning("Could not parse the packet... It is apparently " +
+                             "wrongly formatted | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
             catch (Exception ex)
             {
-                _log.ForContext("Unknown Exception", ex)
-                    .Error("Unknown exception while reading IPFIX packet.");
+                _log.ForContext("Exception", ex)
+                    .Error("Failed to extract data from the packet due to an " +
+                           "unexpected exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
         }
     }
@@ -123,9 +123,11 @@ public class IpfixCollector : BackgroundService
         for (var i = 0; i < view.Count; i++)
         {
             var info = CreateTraceImportInfo(view[i], result);
+            _log.Verbose("Read single trace | {@SingleTraceInfo}",
+                new { Source = $"{info.SrcIp}:{info.SrcPort}", 
+                    Destination = $"{info.DstIp}:{info.DstPort}", 
+                    info.PacketCount, info.ByteCount });
             importer.ImportTraceSync(info);
-            _log.ForContext("TraceImportInfo", info)
-                .Verbose("Writing Trace for trace {TraceImportInfo}.", info);
         }
     }
     
