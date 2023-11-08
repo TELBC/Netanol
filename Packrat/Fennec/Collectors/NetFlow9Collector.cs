@@ -39,8 +39,7 @@ public class NetFlow9Collector : BackgroundService
             var result = await _udpClient.ReceiveAsync(ct);
             using var guidCtx = LogContext.PushProperty("TraceGuid", Guid.NewGuid());
 
-            _log.ForContext("TrafficBytes", result.Buffer)
-                .Debug("Received {FlowCollectorType} bytes from {TraceExporterIp} " +
+            _log.Debug("Received {FlowCollectorType} bytes from {TraceExporterIp} " +
                        "with a length of {PacketLength} bytes",
                     CollectorType.Netflow9,
                     result.RemoteEndPoint.ToString(),
@@ -67,66 +66,54 @@ public class NetFlow9Collector : BackgroundService
                 {
                     case DataFlowSet dataFlowSet:
                         var key = (result.RemoteEndPoint.Address, set.ID);
-                        var template = _templateRecords[key];
+                        if (!_templateRecords.TryGetValue(key, out var template))
+                        {
+                            _log.Warning("Could not parse data set... " +
+                                         "Reading this set requires a not yet transmitted " +
+                                         "template set with id #{TemplateSetId}", set.ID);
+                            continue;
+                        }
 
                         var view = new NetflowView(dataFlowSet, template);
                         WriteSingleTrace(view, result);
-
-                        _log.ForContext("Netflow9Collector", CollectorType.Netflow9)
-                            .Verbose("Writing Trace with Collector {CollectorType}; Sequence ID {SequenceID}.", CollectorType.Netflow9, header.SequenceNumber);
-
                         break;
                     case TemplateFlowSet templateFlowSet:
                         foreach (var templateRecord in templateFlowSet.Records)
                         {
                             _templateRecords.Add((result.RemoteEndPoint.Address, templateRecord.ID), templateRecord);
-                            _log.Information("Added TemplateFlowSet {TemplateRecordId}.",
-                                (result.RemoteEndPoint.Address, templateRecord.ID));
+                            _log.Information("Received new template set with id #{TemplateSetId}", templateRecord.ID);
                         }
 
                         break;
-                    case OptionsTemplateFlowSet optionsTemplateFlowSet:
-                        _log.ForContext("OptionsTemplateFlowSet", optionsTemplateFlowSet)
-                            .Debug("OptionsTemplateFlowSet does not contain flow relevant data. Skipping...");
+                    case OptionsTemplateFlowSet:
+                        _log.Verbose("OptionsTemplateFlowSet does not contain flow relevant data -> Skipping");
                         break;
-                    case OptionsDataFlowSet optionsDataFlowSet:
-                        _log.ForContext("OptionsDataFlowSet", optionsDataFlowSet)
-                            .Debug("OptionsDataFlowSet does not contain flow relevant data. Skipping...");
+                    case OptionsDataFlowSet:
+                        _log.Verbose("OptionsDataFlowSet does not contain flow relevant data -> Skipping");
                         break;
                 }
             }
-            catch (EndOfStreamException ex)
+            catch (EndOfStreamException)
             {
-                _log.ForContext("EndOfStreamException", ex)
-                    .Debug(
-                        "Reached end of stream while Reading {FlowCollectorType} bytes from {TraceExporterIp} with a length of {PacketLength} bytes",
-                        CollectorType.Netflow9, result.RemoteEndPoint.ToString(), result.Buffer.Length);
+                _log.Verbose("Reached end of packet");
                 break;
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _log.ForContext("KeyNotFoundException", ex)
-                    .Warning(
-                        "Could not find template record for data set in packet with sequence number {SequenceNumber}",
-                        header.SequenceNumber);
             }
             catch (FormatException ex)
             {
-                _log.ForContext("FormatException", ex)
-                    .Error("The input data are corrupt and cannot be processed. The flow set has been skipped.");
-            }
-            catch (InvalidOperationException)
-            {
-                break;
+                _log.ForContext("Exception", ex)
+                    .ForContext("PacketBytes", result.Buffer)
+                    .Warning("Could not parse the packet... It is apparently " +
+                             "wrongly formatted | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
             catch (Exception ex)
             {
-                _log.ForContext("Unknown Exception", ex)
-                    .Error("Unknown exception while reading Netflow9 packet.");
+                _log.ForContext("Exception", ex)
+                    .Error("Failed to extract data from the packet due to an " +
+                           "unexpected exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
         }
     }
-
+    
     private void WriteSingleTrace(NetflowView view, UdpReceiveResult result)
     {
         var scope = _serviceProvider.CreateScope();
@@ -135,9 +122,11 @@ public class NetFlow9Collector : BackgroundService
         for (var i = 0; i < view.Count; i++)
         {
             var info = CreateTraceImportInfo(view[i], result);
+            _log.Verbose("Read single trace | {@SingleTraceInfo}",
+                new { Source = $"{info.SrcIp}:{info.SrcPort}", 
+                    Destination = $"{info.DstIp}:{info.DstPort}", 
+                    info.PacketCount, info.ByteCount });
             importer.ImportTraceSync(info);
-            _log.ForContext("TraceImportInfo", info)
-                .Verbose("Writing Trace for trace {TraceImportInfo}.", info);
         }
     }
 
