@@ -48,7 +48,7 @@ public record GraphNodeDto(long Id, string DisplayName);
 public record GraphResponse(
     GraphStatistics GraphStatistics,
     RequestStatistics RequestStatistics,
-    IDictionary<long, GraphNodeDto> Nodes,
+    List<GraphNodeDto> Nodes,
     List<AggregatedTraceDto> Edges);
 
 public record CreateGroupResponse(
@@ -180,7 +180,8 @@ public class GraphController : ControllerBase
             new RequestStatistics(unknownHosts.Count, watch.Elapsed),
             layout.GraphNodes
                 .Where(g => g.IsVisible)
-                .ToDictionary(g => g.Id, g => new GraphNodeDto(g.Id, g.DisplayName)),
+                .ToDictionary(g => g.Id, g => new GraphNodeDto(g.Id, g.DisplayName))
+                .Values.ToList(),
             traces));
     }
 
