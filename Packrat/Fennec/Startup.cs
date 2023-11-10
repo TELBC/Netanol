@@ -24,7 +24,7 @@ namespace Fennec;
 
 public class Startup
 {
-    public Startup(IConfigurationRoot configuration)
+    public Startup(IConfigurationRoot configuration, ILogger log)
     {
         Configuration = configuration;
         StartupOptions = Configuration.GetSection("Startup").Get<StartupOptions>() ??
@@ -33,11 +33,13 @@ public class Startup
         SecurityOptions = Configuration.GetSection("Security").Get<SecurityOptions>() ??
                           throw new InvalidConstraintException(
                               "The `Security` section is not defined in the configuration.");
+        Log = log;
     }
 
     private IConfigurationRoot Configuration { get; }
     private StartupOptions StartupOptions { get; }
     private SecurityOptions SecurityOptions { get; }
+    private ILogger Log { get; }
 
     public void ConfigureServices(IServiceCollection services, IWebHostEnvironment environment)
     {
@@ -67,6 +69,8 @@ public class Startup
         services.AddAutoMapper(typeof(Program).Assembly);
 
         if (StartupOptions.AllowCors)
+        {
+            Log.Information("Adding CORS header which allow all origins, headers and methods");
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(builder =>
@@ -76,8 +80,11 @@ public class Startup
                     builder.AllowAnyMethod();
                 });
             });
+        } else 
+            Log.Information("CORS is disabled... No CORS header will be added");
 
         if (StartupOptions.EnableSwagger)
+        {
             services.AddSwaggerGen(c =>
             {
                 c.EnableAnnotations();
@@ -108,7 +115,8 @@ public class Startup
                     }
                 });
             });
-
+        }  
+        
         // Authentication services
         services.AddDbContext<AuthContext>(options =>
             options.UseSqlite("Data Source=Data/Identity.db"));
@@ -117,10 +125,18 @@ public class Startup
             .AddDefaultTokenProviders();
 
         var strKey = SecurityOptions.Jwt.Key;
-        var bytesKey = strKey != null
-            ? Encoding.UTF8.GetBytes(strKey)
-            : RandomNumberGenerator.GetBytes(16); 
+        byte[] bytesKey;
         
+        if (!string.IsNullOrEmpty(strKey))
+        {
+            Log.Information("Using the JWT key from the configuration");
+            bytesKey = Encoding.UTF8.GetBytes(strKey);
+        }
+        else
+        {
+            Log.Information("No JWT key was supplied... Generating a random key");
+            bytesKey = RandomNumberGenerator.GetBytes(32); 
+        }
         
         services.AddScoped<IJwtService, JwtService>();
         services.AddAuthentication(x =>
@@ -216,35 +232,39 @@ public class Startup
             var secOpts = scope.ServiceProvider.GetRequiredService<IOptions<SecurityOptions>>().Value;
             if (!userManager.Users.Any(u => u.UserName == secOpts.Access.Username))
             {
+                Log.Information("No initial admin user found... Creating one");
                 var adminUser = new NetanolUser { UserName = secOpts.Access.Username };
                 var createAdminUserResult = await userManager.CreateAsync(adminUser, secOpts.Access.Password);
 
                 if (!createAdminUserResult.Succeeded)
                 {
-                    // TODO: log error here
+                    Log.Error("Failed to create initial admin user... Exiting");
                     Environment.Exit(1);
                 }
-            }
+            } else
+                Log.Information("Initial admin user already exists... Skipping creation");
         }
         
         app.UsePathBase("/api");
         
         if (StartupOptions.EnableSwagger)
         {
+            Log.Information("Enabling the Swagger developer interface");
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Fennec API V1");
                 c.RoutePrefix = "swagger";
             });
-        }
+        } else
+            Log.Information("Swagger is disabled... No Swagger UI will be available");
 
         if (StartupOptions.AllowCors) 
             app.UseCors();
         
         app.UseAuthentication();
         app.UseAuthorization();
-
+        
         app.MapControllers();
     }
 }

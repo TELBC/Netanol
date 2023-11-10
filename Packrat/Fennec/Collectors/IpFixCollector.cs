@@ -21,7 +21,7 @@ public class IpFixCollector : BackgroundService
     // TODO: expand to a service, can be used to display/monitor templates in frontend
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords;
 
-    public IpFixCollector(ILogger log, IOptions<IpfixCollectorOptions> iOptions, IServiceProvider serviceProvider, ITraceImportService importService)
+    public IpFixCollector(ILogger log, IOptions<IpfixCollectorOptions> iOptions, IServiceProvider serviceProvider)
     {
         _options = iOptions.Value;
         _log = log.ForContext<IpFixCollector>();
@@ -110,7 +110,7 @@ public class IpFixCollector : BackgroundService
             {
                 _log.ForContext("Exception", ex)
                     .Error("Failed to extract data from the packet due to an " +
-                           "unexpected exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
+                           "unhandled exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
         }
     }
