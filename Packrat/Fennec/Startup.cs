@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using Fennec.Collectors;
 using Fennec.Database;
@@ -37,7 +38,7 @@ public class Startup
     private IConfigurationRoot Configuration { get; }
     private StartupOptions StartupOptions { get; }
     private SecurityOptions SecurityOptions { get; }
-    
+
     public void ConfigureServices(IServiceCollection services, IWebHostEnvironment environment)
     {
         // Options
@@ -47,19 +48,20 @@ public class Startup
             .AddOptions<SecurityOptions>()
             .Bind(Configuration.GetSection("Security"))
             .ValidateDataAnnotations();
-        
+
         // Database services
         services.AddScoped<ITraceImportService, TraceImportService>();
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddScoped<ITraceRepository, TraceRepository>();
         services.AddSingleton<IMongoClient>(_ => new MongoClient(Configuration.GetConnectionString("MongoConnection")));
         services.AddSingleton<IMongoCollection<SingleTrace>>(
-            s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat").GetCollection<SingleTrace>("singleTraces"));
-        
+            s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat")
+                .GetCollection<SingleTrace>("singleTraces"));
+
         // Collector services
         services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
         services.AddHostedService<IpFixCollector>(); // TODO: set exception behaviour
-        
+
         // Web services
         services.AddControllers();
         services.AddAutoMapper(typeof(Program).Assembly);
@@ -83,14 +85,14 @@ public class Startup
 
                 var filePath = Path.Combine(AppContext.BaseDirectory, "Fennec.xml");
                 c.IncludeXmlComments(filePath);
-                c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme()
+                c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.Http,
                     Scheme = "bearer"
                 });
-                
+
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
@@ -106,7 +108,7 @@ public class Startup
                     }
                 });
             });
-        
+
         // Authentication services
         services.AddDbContext<AuthContext>(options =>
             options.UseSqlite("Data Source=Data/Identity.db"));
@@ -114,6 +116,12 @@ public class Startup
             .AddEntityFrameworkStores<AuthContext>()
             .AddDefaultTokenProviders();
 
+        var strKey = SecurityOptions.Jwt.Key;
+        var bytesKey = strKey != null
+            ? Encoding.UTF8.GetBytes(strKey)
+            : RandomNumberGenerator.GetBytes(16); 
+        
+        
         services.AddScoped<IJwtService, JwtService>();
         services.AddAuthentication(x =>
         {
@@ -122,13 +130,11 @@ public class Startup
             x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         }).AddJwtBearer(x =>
         {
-            var bytes = Encoding.UTF8.GetBytes(SecurityOptions.Jwt.Key);
-            
             x.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidIssuer = SecurityOptions.Jwt.Issuer,
                 ValidAudience = SecurityOptions.Jwt.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(bytes),
+                IssuerSigningKey = new SymmetricSecurityKey(bytesKey),
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = true,
