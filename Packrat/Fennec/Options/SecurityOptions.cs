@@ -22,8 +22,6 @@ public class SecurityOptions
     {
         public string Issuer { get; set; } = "netanol";
         public string Audience { get; set; } = "netanol";
-
-        [Required] 
-        public string Key { get; set; } = null!;
+        public string? Key { get; set; }
     }
 }
