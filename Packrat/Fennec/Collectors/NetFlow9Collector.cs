@@ -109,7 +109,7 @@ public class NetFlow9Collector : BackgroundService
             {
                 _log.ForContext("Exception", ex)
                     .Error("Failed to extract data from the packet due to an " +
-                           "unexpected exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
+                           "unhandled exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
         }
     }
