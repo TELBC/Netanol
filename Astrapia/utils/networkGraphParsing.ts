@@ -1,20 +1,24 @@
-import { Node, Edge } from "v-network-graph";
-import { IEdge, INode } from "~/types/GraphData";
+import {IEdge, INode} from "~/types/GraphData";
+import {Edges, Nodes} from "v-network-graph";
 
-export function parseJsonData(rawNodes: INode[], rawEdges: IEdge[]): { nodes: Node[]; edges: Edge[] } {
+export function parseJsonData(rawNodes: INode[], rawEdges: IEdge[]): { nodes: Nodes; edges: Edges } {
+  const nodes: Nodes = {};
+  const edges: Edges = {};
 
-  const nodes = [...rawNodes].map((node: INode) => ({
-    id: node.id,
-    name: node.displayName,
-  }));
+  rawNodes.forEach((rawNode) => {
+    nodes[rawNode.id] = {
+      id: rawNode.id,
+      name: rawNode.displayName,
+    };
+  });
 
-  const edges = [...rawEdges].map((edge: IEdge) => ({
-    source: edge.sourceHostId,
-    target: edge.destinationHostId,
-    label: edge.packetCount,
-    byteCount: edge.byteCount,
-    traceCount: edge.traceCount,
-  }));
+  rawEdges.forEach((rawEdge, index) => {
+    edges[index] = {
+      source: rawEdge.sourceHostId.toString(),
+      target: rawEdge.destinationHostId.toString(),
+      label: rawEdge.packetCount,
+    };
+  });
 
-  return { nodes, edges }
+  return { nodes, edges };
 }

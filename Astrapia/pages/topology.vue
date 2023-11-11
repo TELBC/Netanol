@@ -24,7 +24,8 @@ import { networkGraphConfigs } from 'assets/v-network-graph-configs';
 import { parseJsonData } from '~/utils/networkGraphParsing';
 import { createLayout, fetchGraphData } from '~/services/graphService';
 import * as vNG from 'v-network-graph';
-import TopologySlider from "~/components/TopologySlider.vue";
+import TopologySlider from '~/components/TopologySlider.vue';
+import debounce from 'lodash/debounce';
 
 definePageMeta({
   middleware: ["auth"]
@@ -69,20 +70,22 @@ const fetchGraphDataPeriodically: () => Promise<void> = async () => {
   }
 };
 
+const debouncedFetchGraphData = debounce(fetchGraphDataPeriodically, 100);
+
 watch(rangeValue, async () => {
-  await fetchGraphDataPeriodically();
+  await debouncedFetchGraphData();
 });
 
 onMounted(async () => {
   tooltip = document.getElementById('tooltip');
-  const fetchInterval = setInterval(fetchGraphDataPeriodically, 5000);
+  const fetchInterval = setInterval(debouncedFetchGraphData, 5000);
 
   onBeforeUnmount(() => {
     clearInterval(fetchInterval);
   });
 
   await createLayout(layout);
-  await fetchGraphDataPeriodically();
+  await debouncedFetchGraphData();
 });
 </script>
 
