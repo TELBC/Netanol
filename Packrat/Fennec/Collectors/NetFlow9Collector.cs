@@ -55,7 +55,7 @@ public class NetFlow9Collector : BackgroundService
         using var nr = new NetflowReader(stream, 0, _templateRecords.Values);
         var header = nr.ReadPacketHeader();
 
-        while (true)
+        for (var i = 0; i < header.Count; i++)
         {
             try
             {
