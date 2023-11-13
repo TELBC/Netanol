@@ -45,8 +45,8 @@ public class Startup
     public void ConfigureServices(IServiceCollection services, IWebHostEnvironment environment)
     {
         // Options
-        services.Configure<Netflow9CollectorOptions>(Configuration.GetSection("Collectors:Netflow9"));
-        services.Configure<IpfixCollectorOptions>(Configuration.GetSection("Collectors:Ipfix"));
+        // services.Configure<Netflow9CollectorOptions>(Configuration.GetSection("Collectors:Netflow9"));
+        // services.Configure<IpfixCollectorOptions>(Configuration.GetSection("Collectors:Ipfix"));
         services
             .AddOptions<SecurityOptions>()
             .Bind(Configuration.GetSection("Security"))
@@ -69,6 +69,29 @@ public class Startup
         services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
         services.AddHostedService<IpFixCollector>(); // TODO: set exception behaviour
         
+        // services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
+        // services.AddHostedService<IpFixCollector>(); // TODO: set exception behaviour
+        
+        // Protocol multiplexer
+        var multiplexerConfig = Configuration.GetSection("ProtocolMultiplexerConfig").Get<ProtocolMultiplexerOptions>();
+        
+        // Dynamically register collectors based on configuration
+        if (multiplexerConfig != null)
+            foreach (var collectorType in multiplexerConfig.EnabledCollectors)
+            {
+                switch (collectorType)
+                {
+                    case CollectorType.Netflow9:
+                        services.AddSingleton<ICollector, NetFlow9Collector>();
+                        break;
+                    case CollectorType.Ipfix:
+                        services.AddSingleton<ICollector, IpFixCollector>();
+                        break;
+                }
+            }
+        services.Configure<ProtocolMultiplexerOptions>(Configuration.GetSection("ProtocolMultiplexerConfig"));
+        services.AddHostedService<ProtocolMultiplexerService>();
+
         // Web services
         services.AddControllers().AddNewtonsoftJson();
         services.AddAutoMapper(typeof(Program).Assembly);
@@ -226,7 +249,6 @@ public class Startup
         
         if (StartupOptions.EnableSwagger)
         {
-            Log.Information("Enabling the Swagger developer interface");
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
