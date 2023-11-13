@@ -1,63 +1,32 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using DotNetFlow.Ipfix;
-using Fennec.Options;
 using Fennec.Services;
-using Microsoft.Extensions.Options;
-using Serilog.Context;
 using FormatException = System.FormatException;
 using TemplateRecord = DotNetFlow.Ipfix.TemplateRecord;
 
 namespace Fennec.Collectors;
 
-public class IpFixCollector : BackgroundService
+/// <summary>
+/// Collector for IPFIX packets.
+/// </summary>
+public class IpFixCollector : BaseCollector
 {
     private readonly ILogger _log;
-    private readonly IpfixCollectorOptions _options;
     private readonly IServiceProvider _serviceProvider;
-    private readonly UdpClient _udpClient;
-    private readonly IMetricService _metricService;
-
-    // TODO: expand to a service, can be used to display/monitor templates in frontend
+    // TODO: expand _templateRecords to a service, can be used to display/monitor templates in frontend
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords;
-    public IpFixCollector(ILogger log, IOptions<IpfixCollectorOptions> iOptions, IServiceProvider serviceProvider, IMetricService metricService)
+    private readonly IMetricService _metricService;
+    
+    public IpFixCollector(ILogger log, IServiceProvider serviceProvider, IMetricService metricService)
     {
-        _options = iOptions.Value;
         _log = log.ForContext<IpFixCollector>();
-        _udpClient = new UdpClient(_options.ListeningPort);
         _serviceProvider = serviceProvider;
         _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
         _metricService = metricService;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken ct)
-    {
-        if (!_options.Enabled)
-        {
-            _log.Information("Ipfix collector is disabled... Rerun the application to enable it");
-            return;
-        }
-
-        while (!ct.IsCancellationRequested)
-        {
-            var result = await _udpClient.ReceiveAsync(ct);
-            using var guidCtx = LogContext.PushProperty("TraceGuid", Guid.NewGuid());
-
-            _log.ForContext("TrafficBytes", result.Buffer)
-                .Debug("Received {FlowCollectorType} bytes from {TraceExporterIp} " +
-                       "with a length of {PacketLength} bytes",
-                    CollectorType.Ipfix,
-                    result.RemoteEndPoint.ToString(),
-                    result.Buffer.Length);
-
-            ReadSingleTraces(result);
-            var metrics = _metricService.GetMetrics<CollectorSingleTraceMetrics>("IpFixMetrics");
-            metrics.PacketCount++;
-            metrics.ByteCount += (ulong) result.Buffer.Length;
-        }
-    }
-
-    private void ReadSingleTraces(UdpReceiveResult result)
+    public override void ReadSingleTraces(UdpReceiveResult result)
     {
         // result.RemoteEndPoint.Address --> address of exporter
         var stream = new MemoryStream(result.Buffer);
@@ -65,6 +34,7 @@ public class IpFixCollector : BackgroundService
         using var ipfixReader = new IpfixReader(stream, 0, _templateRecords.Values);
         var header = ipfixReader.ReadPacketHeader();
 
+        // Process each set in the IPFIX message.
         while (true)
         {
             try
@@ -82,7 +52,7 @@ public class IpFixCollector : BackgroundService
                                          "template set with id #{TemplateSetId}", set.ID);
                             continue;
                         }
-                        
+
                         var view = new IpfixView(dataSet, template);
                         WriteSingleTrace(view, result);
                         break;
@@ -100,6 +70,12 @@ public class IpFixCollector : BackgroundService
             {
                 _log.Verbose("Reached end of packet");
                 break;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _log.Warning("Could not parse data set... " +
+                             "Reading this set requires a not yet transmitted " +
+                             "template set with id #{TemplateSetId}", ex.Message);
             }
             catch (FormatException ex)
             {
@@ -131,10 +107,13 @@ public class IpFixCollector : BackgroundService
                     Destination = $"{info.DstIp}:{info.DstPort}", 
                     info.PacketCount, info.ByteCount });
             importer.ImportTraceSync(info);
+            var metrics = _metricService.GetMetrics<CollectorSingleTraceMetrics>("IpFixMetrics");
+            metrics.PacketCount++;
+            metrics.ByteCount += (ulong) result.Buffer.Length;
         }
     }
-    
-    private static TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result)
+
+    public override TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result)
     {
         // TODO: change readTime to flow duration or include both maybe --> more info for frontend
         var properties = (IDictionary<string, object>)record;

@@ -8,52 +8,24 @@ using Serilog.Context;
 
 namespace Fennec.Collectors;
 
-public class NetFlow9Collector : BackgroundService
+/// <summary>
+/// Collector for NetFlow v9 packets.
+/// </summary>
+public class NetFlow9Collector : BaseCollector
 {
     private readonly ILogger _log;
-    private readonly Netflow9CollectorOptions _options;
     private readonly IServiceProvider _serviceProvider;
-    private readonly UdpClient _udpClient;
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords; // matches (ExporterIp, TemplateId) to TemplateRecord
     private readonly IMetricService _metricService;
     
-    public NetFlow9Collector(ILogger log, IOptions<Netflow9CollectorOptions> iOptions, IServiceProvider serviceProvider, IMetricService metricService)
+    public NetFlow9Collector(ILogger log, IServiceProvider serviceProvider, IMetricService metricService)
     {
-        _options = iOptions.Value;
         _log = log.ForContext<NetFlow9Collector>();
-        _udpClient = new UdpClient(_options.ListeningPort);
         _serviceProvider = serviceProvider;
         _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
         _metricService = metricService;
     }
-
-    protected override async Task ExecuteAsync(CancellationToken ct)
-    {
-        if (!_options.Enabled)
-        {
-            _log.Information("Netflow9 collector is disabled... Rerun the application to enable it");
-            return;
-        }
-
-        while (!ct.IsCancellationRequested)
-        {
-            var result = await _udpClient.ReceiveAsync(ct);
-            using var guidCtx = LogContext.PushProperty("TraceGuid", Guid.NewGuid());
-
-            _log.Debug("Received {FlowCollectorType} bytes from {TraceExporterIp} " +
-                       "with a length of {PacketLength} bytes",
-                    CollectorType.Netflow9,
-                    result.RemoteEndPoint.ToString(),
-                    result.Buffer.Length);
-            
-            ReadSingleTraces(result);
-            var metrics = _metricService.GetMetrics<CollectorSingleTraceMetrics>("Netflow9Metrics");
-            metrics.PacketCount++;
-            metrics.ByteCount += (ulong) result.Buffer.Length;
-        }
-    }
-
-    private void ReadSingleTraces(UdpReceiveResult result)
+    public override void ReadSingleTraces(UdpReceiveResult result)
     {
         var stream = new MemoryStream(result.Buffer);
         using var nr = new NetflowReader(stream, 0, _templateRecords.Values);
@@ -131,10 +103,13 @@ public class NetFlow9Collector : BackgroundService
                     Destination = $"{info.DstIp}:{info.DstPort}", 
                     info.PacketCount, info.ByteCount });
             importer.ImportTraceSync(info);
+            var metrics = _metricService.GetMetrics<CollectorSingleTraceMetrics>("Netflow9Metrics");
+            metrics.PacketCount++;
+            metrics.ByteCount += (ulong) result.Buffer.Length;
         }
     }
 
-    private static TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result)
+    public override TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result)
     {
         var properties = (IDictionary<string, object>)record;
         var readTime = DateTimeOffset.UtcNow;
