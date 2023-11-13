@@ -52,7 +52,7 @@ public class Startup
             .ValidateDataAnnotations();
         
         // Metric service
-        services.AddScoped<MetricService, MetricService>();
+        services.AddSingleton<IMetricService, MetricService>();
         
         // Database services
         services.AddScoped<ITraceImportService, TraceImportService>();
