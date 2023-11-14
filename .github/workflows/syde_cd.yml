@@ -45,5 +45,6 @@ jobs:
         run: |
           ssh $SYDE_USER@$SYDE_HOST "
           cd ~/netanol/Docker && 
-          docker compose build --no-cache && 
+          docker compose build --no-cache &&
+          docker system prune -f &&
           docker compose --profile dev --env-file .env --env-file syde/docker.env up -d"

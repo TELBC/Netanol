@@ -31,4 +31,5 @@ jobs:
         run: |
           cd ~/netanol/Docker && 
           docker compose build --no-cache && 
+          docker system prune -f &&
           docker compose --profile prod --env-file .env --env-file mordor/docker.env up -d
