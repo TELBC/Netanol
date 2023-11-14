@@ -25,15 +25,16 @@ public interface IJwtService
 public class JwtService : IJwtService
 {
     private readonly SecurityOptions _securityOptions;
+    private readonly byte[] _keyBytes;
 
-    public JwtService(IOptions<SecurityOptions> securityOptions)
+    public JwtService(IOptions<SecurityOptions> securityOptions, byte[] keyBytesBytes)
     {
         _securityOptions = securityOptions.Value;
+        _keyBytes = keyBytesBytes;
     }
 
     public string GenerateJwtToken(NetanolUser user, IList<string> roles)
     {
-        var key = Encoding.UTF8.GetBytes(_securityOptions.Jwt.Key);
         var issuer = _securityOptions.Jwt.Issuer;
         var audience = _securityOptions.Jwt.Audience;
         var expiry = TimeSpan.FromHours(12); // TODO: implement refresh tokens
@@ -49,7 +50,7 @@ public class JwtService : IJwtService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.Add(expiry),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(_keyBytes), SecurityAlgorithms.HmacSha256Signature),
             Issuer = issuer,
             Audience = audience,
         };

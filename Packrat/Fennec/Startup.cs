@@ -138,7 +138,7 @@ public class Startup
             bytesKey = RandomNumberGenerator.GetBytes(32); 
         }
         
-        services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IJwtService, JwtService>(o => ActivatorUtilities.CreateInstance<JwtService>(o, bytesKey));
         services.AddAuthentication(x =>
         {
             x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
