@@ -1,13 +1,19 @@
 <template>
   <div id="graph">
-    <v-network-graph :nodes="graphData.nodes" :edges="graphData.edges" :configs="networkGraphConfigs"
-      :event-handlers="eventHandlers">
+    <v-network-graph
+      ref="graph"
+        :nodes="graphData.nodes"
+        :edges="graphData.edges"
+        :configs="networkGraphConfigs"
+        :event-handlers="eventHandlers"
+    >
       <template #edge-label="{ edge, hovered, ...slotProps }">
         <v-edge-label v-if="hovered" :text="edge.label" align="center" vertical-align="above" v-bind="slotProps" />
       </template>
     </v-network-graph>
     <div id="tooltip" />
     <div>
+      <TopologyFooter :graph="graph" :metaData="metaData" element-id="graph"/>
       <TopologySlider label="Timeframe" v-model="rangeValue" />
     </div>
   </div>
@@ -20,12 +26,15 @@ import { networkGraphConfigs } from 'assets/v-network-graph-configs';
 import * as vNG from 'v-network-graph';
 import TopologySlider from '~/components/TopologySlider.vue';
 import debounce from 'lodash/debounce';
-import topologyService from '~/services/topology.service';
+import TopologyFooter from "~/components/TopologyFooter.vue";
+import topologyService, {IGraphStatistics} from '~/services/topology.service';
 import { reactive } from 'vue';
 import { ref } from 'vue';
 import { watch } from 'vue';
 
+const graph = ref<vNG.Instance>()
 const graphData = reactive({ nodes: {} as vNG.Nodes, edges: {} as vNG.Edges });
+let metaData = ref<IGraphStatistics | null>(null);
 const layout = 'test';
 let tooltip: HTMLElement | null;
 const rangeValue = ref(2);
@@ -55,6 +64,7 @@ const fetchAndUpdateGraph: () => Promise<void> = async () => {
     };
 
     const data = await topologyService.getTopology('test', dateRange.from, dateRange.to);
+    metaData = data.graphStatistics;
     graphData.nodes = data.nodes;
     graphData.edges = data.edges;
 };
