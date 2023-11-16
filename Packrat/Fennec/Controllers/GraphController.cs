@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Net;
 using Fennec.Database;
 using Microsoft.AspNetCore.Authorization;
@@ -108,9 +107,12 @@ public class GraphController : ControllerBase
                 trace.ByteCount, 
                 0))
             .ToDictionary(dto => $"{dto.Source}-{dto.Target}", dto => dto);
-        
+
+        var totalPackets = dtoEdges.Sum(edge => (int)edge.Value.PacketCount);
+        var totalByteCount = dtoEdges.Sum(edge => (int)edge.Value.ByteCount);
+
         var response = new GraphResponse(
-            null!,
+            new GraphStatistics(nodes.Count,totalByteCount, totalPackets, dtoEdges.Count),
             null!,
             nodes,
             dtoEdges);

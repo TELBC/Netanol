@@ -2,13 +2,20 @@
     <Login v-if="!auth.isAuthenticated" />
 
     <div v-if="auth.isAuthenticated">
-        <Sidebar />
-
+      <Sidebar />
+      <div class="content-with-sidebar">
         <NuxtLayout>
-            <NuxtPage />
+          <NuxtPage />
         </NuxtLayout>
+      </div>
     </div>
 </template>
+
+<style scoped>
+.content-with-sidebar {
+  margin-left: 3vw;
+}
+</style>
 
 <script setup lang="ts">
 import Login from "~/components/Login.vue"
