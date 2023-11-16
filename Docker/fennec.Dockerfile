@@ -4,9 +4,6 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build-env
 WORKDIR /app
 
 # Copy the project files to the working directory of the docker image
-COPY Fennec/Fennec.csproj ./
-RUN dotnet restore
-
 COPY . ./
 RUN dotnet publish Fennec/Fennec.csproj -c Release -o out
 

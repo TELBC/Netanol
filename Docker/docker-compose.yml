@@ -70,35 +70,29 @@ services:
       - ./nginx/nginx.template.conf:/etc/nginx/nginx.template.conf
     command: /bin/sh -c "envsubst '$$NGINX_FENNEC,$$NGINX_GRAFANA,$$NGINX_ASTRAPIA' < /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"
   
-  elasticsearch:
-    image: elasticsearch:8.8.1
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "1"
-    environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+  grafana:
+    image: grafana/grafana
     volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
-    networks:
-      - netanol-network
+      - grafana_data:/var/lib/grafana
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources/
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards/
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USERNAME}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_SERVER_ROOT_URL=http://$NGINX_EXPOSED_ADDRESS/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    depends_on:
+      - loki
     profiles:
       - prod
+    networks:
+      - netanol-network
   
-  kibana:
-    image: kibana:8.8.1
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "1"
+  loki:
+    image: grafana/loki:master
+    command: -config.file=/etc/loki/local-config.yaml
     ports:
-      - "5601:5601"
+      - "3100:3100"
     networks:
       - netanol-network
     profiles:
@@ -123,11 +117,12 @@ services:
       - dev
     
 volumes:
-  mongo_data:
   postgres_data:
   elasticsearch_data:
   fennec_data:
-    
+  grafana_data:
+  mongo_data:
+
 networks:
   netanol-network:
     driver: bridge
