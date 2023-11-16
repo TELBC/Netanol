@@ -50,7 +50,10 @@ public class Startup
             .AddOptions<SecurityOptions>()
             .Bind(Configuration.GetSection("Security"))
             .ValidateDataAnnotations();
-
+        
+        // Metric service
+        services.AddSingleton<IMetricService, MetricService>();
+        
         // Database services
         services.AddScoped<ITraceImportService, TraceImportService>();
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
@@ -63,7 +66,7 @@ public class Startup
         // Collector services
         services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
         services.AddHostedService<IpFixCollector>(); // TODO: set exception behaviour
-
+        
         // Web services
         services.AddControllers();
         services.AddAutoMapper(typeof(Program).Assembly);
@@ -84,7 +87,6 @@ public class Startup
             Log.Information("CORS is disabled... No CORS header will be added");
 
         if (StartupOptions.EnableSwagger)
-        {
             services.AddSwaggerGen(c =>
             {
                 c.EnableAnnotations();
@@ -115,7 +117,6 @@ public class Startup
                     }
                 });
             });
-        }  
         
         // Authentication services
         services.AddDbContext<AuthContext>(options =>
