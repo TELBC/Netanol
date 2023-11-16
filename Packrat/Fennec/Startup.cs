@@ -7,6 +7,7 @@ using Fennec.Database;
 using Fennec.Database.Domain;
 using Fennec.Options;
 using Fennec.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -110,28 +111,6 @@ public class Startup
 
                 var filePath = Path.Combine(AppContext.BaseDirectory, "Fennec.xml");
                 c.IncludeXmlComments(filePath);
-                c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
-                {
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer"
-                });
-
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Id = JwtBearerDefaults.AuthenticationScheme,
-                                Type = ReferenceType.SecurityScheme
-                            }
-                        },
-                        new List<string>()
-                    }
-                });
             });
         
         // Authentication services
@@ -141,40 +120,36 @@ public class Startup
             .AddEntityFrameworkStores<AuthContext>()
             .AddDefaultTokenProviders();
 
-        var strKey = SecurityOptions.Jwt.Key;
-        byte[] bytesKey;
-        
-        if (!string.IsNullOrEmpty(strKey))
+        // Cookie configuration
+        /*
+        services.Configure<CookiePolicyOptions>(options =>
         {
-            Log.Information("Using the JWT key from the configuration");
-            bytesKey = Encoding.UTF8.GetBytes(strKey);
-        }
-        else
-        {
-            Log.Information("No JWT key was supplied... Generating a random key");
-            bytesKey = RandomNumberGenerator.GetBytes(32); 
-        }
-        
-        services.AddScoped<IJwtService, JwtService>(o => ActivatorUtilities.CreateInstance<JwtService>(o, bytesKey));
-        services.AddAuthentication(x =>
-        {
-            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(x =>
-        {
-            x.TokenValidationParameters = new TokenValidationParameters
+            options.OnAppendCookie = cookieContext =>
             {
-                ValidIssuer = SecurityOptions.Jwt.Issuer,
-                ValidAudience = SecurityOptions.Jwt.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(bytesKey),
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true
+                cookieContext.CookieOptions.Secure = true;
+                cookieContext.CookieOptions.SameSite = SameSiteMode.Strict;
             };
-        });
-        services.AddAuthorization();
+        }); */
+
+        services
+            .AddAuthentication(o =>
+            {
+                o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                o.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                o.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                o.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie(o =>
+            {
+                o.Events.OnRedirectToLogin = context =>
+                {
+                    context.RedirectUri = "/";
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    return Task.CompletedTask;
+                };
+            });
+        
+        // services.AddAuthorization();
         
         // Identity services
         services.Configure<IdentityOptions>(opts =>
@@ -251,10 +226,10 @@ public class Startup
 
         if (StartupOptions.AllowCors) 
             app.UseCors();
-        
+
+        app.UseCookiePolicy();
         app.UseAuthentication();
         app.UseAuthorization();
-        
         app.MapControllers();
     }
 }

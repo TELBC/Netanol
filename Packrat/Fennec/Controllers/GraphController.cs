@@ -23,13 +23,13 @@ public record GraphStatistics(long TotalHostCount, long TotalByteCount, long Tot
 public record RequestStatistics(long NewHostCount, TimeSpan ProcessingTime);
 
 // TODO: rename to SourceId and DestinationId
-public record LayoutEdgeDto(string SourceHostId, string DestinationHostId, ulong PacketCount, ulong ByteCount, ulong TraceCount)
+public record LayoutEdgeDto(string Source, string Target, ulong PacketCount, ulong ByteCount, ulong TraceCount)
 {
     public LayoutEdgeDto(IPAddress sourceIp, IPAddress destinationIp, ulong packetCount, ulong byteCount, ulong traceCount)
         : this(sourceIp.ToString(), destinationIp.ToString(), packetCount, byteCount, traceCount) { }
 }
 
-public record LayoutNodeDto(string Id, string DisplayName)
+public record LayoutNodeDto(string Id, string Name)
 {
     public LayoutNodeDto(IPAddress ipAddress)
         : this(ipAddress.ToString(), ipAddress.ToString()) { }
