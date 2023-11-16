@@ -189,7 +189,7 @@ public class Startup
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
                 .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
-                .WriteTo.GrafanaLoki(context.Configuration["ConnectionStrings:Loki"])
+                .WriteTo.GrafanaLoki(context.Configuration.GetConnectionString("Loki"))
                 .WriteTo
                 .Console(restrictedToMinimumLevel: LogEventLevel
                     .Debug); // TODO: behave different in different environment
