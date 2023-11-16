@@ -4,7 +4,9 @@
       :showAlert=alertState.showAlert
       :submit=alertState.submit
       :title=alertState.title
-      :message=alertState.message  />
+      :message=alertState.message
+      :onClick=alertState.onClick
+    />
     <TapasSidebar v-if="$route.path !== '/login'" />
     <NuxtLayout>
       <NuxtPage />
@@ -17,15 +19,17 @@ const alertState = ref({
   showAlert: false,
   submit: false,
   title: '',
-  message: ''
+  message: '',
+  onClick: (() => undefined) as Function,
 });
 
-function showAlert(submit: boolean, title: string, message: string) {
+function showAlert(submit: boolean, title: string, message: string, onClick: Function) {
   alertState.value = {
     showAlert: true,
     submit,
     title,
-    message
+    message,
+    onClick
   };
 }
 
