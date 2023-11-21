@@ -15,19 +15,19 @@ public class IpFixCollector : BackgroundService
     private readonly ILogger _log;
     private readonly IpfixCollectorOptions _options;
     private readonly IServiceProvider _serviceProvider;
-
     private readonly UdpClient _udpClient;
+    private readonly IMetricService _metricService;
 
     // TODO: expand to a service, can be used to display/monitor templates in frontend
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords;
-
-    public IpFixCollector(ILogger log, IOptions<IpfixCollectorOptions> iOptions, IServiceProvider serviceProvider)
+    public IpFixCollector(ILogger log, IOptions<IpfixCollectorOptions> iOptions, IServiceProvider serviceProvider, IMetricService metricService)
     {
         _options = iOptions.Value;
         _log = log.ForContext<IpFixCollector>();
         _udpClient = new UdpClient(_options.ListeningPort);
         _serviceProvider = serviceProvider;
         _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
+        _metricService = metricService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken ct)
@@ -51,6 +51,9 @@ public class IpFixCollector : BackgroundService
                     result.Buffer.Length);
 
             ReadSingleTraces(result);
+            var metrics = _metricService.GetMetrics<CollectorSingleTraceMetrics>("IpFixMetrics");
+            metrics.PacketCount++;
+            metrics.ByteCount += (ulong) result.Buffer.Length;
         }
     }
 

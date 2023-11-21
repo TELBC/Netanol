@@ -1,38 +1,41 @@
-﻿using Fennec.Database.Domain;
-using MongoDB.Bson;
-using MongoDB.Driver;
+﻿namespace Fennec.Services;
 
-namespace Fennec.Services;
 /// <summary>
 /// Provides Metrics to frontend.
 /// </summary>
-public record Metrics(ulong CountTotal, ulong CountLast12Hours, ulong CountLast24Hours, ulong CountLast72Hours);
-
 public interface IMetricService
-{
-    Task<Metrics> GetAllMetrics();
+{    
+    /// <summary>
+    /// Gets object of a specified name from the main dictionary.
+    /// If the object name do not exist, a new instance is created and added to the dictionary.
+    /// </summary>
+    Task<Dictionary<string, object>> GetAllMetrics();
+    
+    /// <summary>
+    /// Gets all metrics from the main dictionary.
+    /// </summary>
+    /// <returns>Dictionary of object names and the object itself.</returns>
+    T GetMetrics<T>(string name) where T: new();
 }
+
 public class MetricService : IMetricService
 {
-    private readonly IMongoCollection<SingleTrace> _singleTraces;
-
-    public MetricService(IMongoCollection<SingleTrace> singleTraces)
+    private readonly Dictionary<string, object> _mainDictionary;
+    
+    public MetricService()
     {
-        _singleTraces = singleTraces;
+        _mainDictionary = new Dictionary<string, object>();
+    }
+
+    public T GetMetrics<T>(string name) where T : new()
+    {
+        if (!_mainDictionary.ContainsKey(name))
+            _mainDictionary.Add(name, new T());
+        return (T) _mainDictionary[name];
     }
     
-    public async Task<Metrics> GetAllMetrics()
+    public async Task<Dictionary<string, object>> GetAllMetrics()
     {
-        var now = DateTimeOffset.UtcNow;
-        var twelveHoursAgo = now.AddHours(-12);
-        var twentyFourHoursAgo = now.AddHours(-24);
-        var seventyTwoHoursAgo = now.AddHours(-72);
-
-        var countTotal = (ulong)await _singleTraces.CountDocumentsAsync(trace => true);
-        var countLast12Hours = (ulong)await _singleTraces.CountDocumentsAsync(trace => trace.Timestamp >= twelveHoursAgo);
-        var countLast24Hours = (ulong)await _singleTraces.CountDocumentsAsync(trace => trace.Timestamp >= twentyFourHoursAgo);
-        var countLast72Hours = (ulong)await _singleTraces.CountDocumentsAsync(trace => trace.Timestamp >= seventyTwoHoursAgo);
-        
-        return new Metrics(countTotal, countLast12Hours, countLast24Hours, countLast72Hours);
+        return _mainDictionary;
     }
 }

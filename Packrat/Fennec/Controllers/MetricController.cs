@@ -1,32 +1,34 @@
-﻿using Fennec.DTOs;
+﻿using Fennec.Database;
 using Fennec.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fennec.Controllers;
 
+/// <summary>
+/// Provides the MetricService Data to frontend to show projects health.
+/// </summary>
 [ApiController]
 [Authorize]
 [Route("metrics")]
 public class MetricController : ControllerBase
 {
     private readonly IMetricService _metricService;
+    private readonly IMetricRepository _metricRepository;
 
-    public MetricController(IMetricService metricService)
+    public MetricController(IMetricService metricService, IMetricRepository metricRepository)
     {
         _metricService = metricService;
+        _metricRepository = metricRepository;
     }
-   
+    
+    /// <summary>
+    /// Gets all metrics.
+    /// </summary>
     [HttpGet("all")]
-    public async Task<MetricsDto> GetAllMetric()
+    public async Task<IActionResult> GetAllMetric()
     {
-        var (countTotal, countLast12Hours, countLast24Hours, countLast72Hours) = await _metricService.GetAllMetrics();
-        return new MetricsDto
-        {
-            CountTotal = countTotal,
-            CountLast12Hours = countLast12Hours,
-            CountLast24Hours = countLast24Hours,
-            CountLast72Hours = countLast72Hours
-        };
+        _metricRepository.GetTotalCountAsync();
+        return Ok(await _metricService.GetAllMetrics());
     }
 }

@@ -4,7 +4,6 @@ using DotNetFlow.Netflow9;
 using Fennec.Options;
 using Fennec.Services;
 using Microsoft.Extensions.Options;
-using Serilog;
 using Serilog.Context;
 
 namespace Fennec.Collectors;
@@ -16,14 +15,16 @@ public class NetFlow9Collector : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly UdpClient _udpClient;
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords; // matches (ExporterIp, TemplateId) to TemplateRecord
-
-    public NetFlow9Collector(ILogger log, IOptions<Netflow9CollectorOptions> iOptions, IServiceProvider serviceProvider)
+    private readonly IMetricService _metricService;
+    
+    public NetFlow9Collector(ILogger log, IOptions<Netflow9CollectorOptions> iOptions, IServiceProvider serviceProvider, IMetricService metricService)
     {
         _options = iOptions.Value;
         _log = log.ForContext<NetFlow9Collector>();
         _udpClient = new UdpClient(_options.ListeningPort);
         _serviceProvider = serviceProvider;
         _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
+        _metricService = metricService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken ct)
@@ -44,8 +45,11 @@ public class NetFlow9Collector : BackgroundService
                     CollectorType.Netflow9,
                     result.RemoteEndPoint.ToString(),
                     result.Buffer.Length);
-
+            
             ReadSingleTraces(result);
+            var metrics = _metricService.GetMetrics<CollectorSingleTraceMetrics>("Netflow9Metrics");
+            metrics.PacketCount++;
+            metrics.ByteCount += (ulong) result.Buffer.Length;
         }
     }
 
