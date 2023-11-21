@@ -59,6 +59,7 @@ public class Startup
         services.AddScoped<ITraceImportService, TraceImportService>();
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddScoped<ITraceRepository, TraceRepository>();
+        services.AddScoped<IMetricRepository, MetricRepository>();
         services.AddSingleton<IMongoClient>(_ => new MongoClient(Configuration.GetConnectionString("MongoConnection")));
         services.AddSingleton<IMongoCollection<SingleTrace>>(
             s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat")
@@ -69,7 +70,7 @@ public class Startup
         services.AddHostedService<IpFixCollector>(); // TODO: set exception behaviour
         
         // Web services
-        services.AddControllers();
+        services.AddControllers().AddNewtonsoftJson();
         services.AddAutoMapper(typeof(Program).Assembly);
 
         if (StartupOptions.AllowCors)
