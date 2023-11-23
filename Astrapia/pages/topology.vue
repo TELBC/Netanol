@@ -1,5 +1,5 @@
 <template>
-  <div class="graph">
+  <div id="graph">
     <v-network-graph :nodes="graphData.nodes" :edges="graphData.edges" :configs="networkGraphConfigs"
       :event-handlers="eventHandlers">
       <template #edge-label="{ edge, hovered, ...slotProps }">
@@ -78,10 +78,11 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.graph {
+#graph{
   position: fixed;
   width: 100vw;
   height: 100vh;
+  background-color: white;
 }
 
 #tooltip {
