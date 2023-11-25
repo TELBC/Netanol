@@ -57,7 +57,7 @@ public class Startup
         
         // Database services
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
-        services.AddScoped<ITraceRepository, TraceRepository>();
+        services.AddSingleton<ITraceRepository, TraceRepository>();
         services.AddScoped<IMetricRepository, MetricRepository>();
         services.AddSingleton<IMongoClient>(_ => new MongoClient(Configuration.GetConnectionString("MongoConnection")));
         services.AddSingleton<IMongoCollection<SingleTrace>>(

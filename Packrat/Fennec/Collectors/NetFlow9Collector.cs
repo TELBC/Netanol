@@ -139,22 +139,4 @@ public class NetFlow9Collector : ICollector
             packetCount, byteCount
         );
     }
-    public ProtocolVersion DetermineProtocolVersion(byte[] buffer)
-    {
-        if (buffer == null || buffer.Length < 2)
-        {
-            throw new ArgumentException("Buffer is too short or null.");
-        }
-
-        // Read the first two bytes from the buffer as a big-endian ushort
-        ushort version = (ushort)((buffer[0] << 8) | buffer[1]);
-
-        switch (version)
-        {
-            case 9:
-                return ProtocolVersion.NetFlow9;
-            default:
-                return ProtocolVersion.Unknown;
-        }
-    }
 }
