@@ -1,33 +1,50 @@
 <template>
-  <div id="alert-box-placement" v-if=showAlert>
+  <div id="alert-box-placement" v-if=alertState.showAlert>
     <div class="alert-box">
-      <p style="font-weight: bold; margin-bottom:0;">{{ title }}</p>
-      <p style="margin-bottom: 1.5vh; margin-top:0;">{{ message }}</p>
+      <p style="font-weight: bold; margin: 0.5vh 0 0 0;">{{ alertState.title }}</p>
+      <p style="margin-bottom: 1.5vh; margin-top:0;">{{ alertState.message }}</p>
       <div class="alert-buttons">
-        <button id="submit-button" v-if=submit @click="handleClick">Ok</button>
-        <button @click="hideAlert">{{ close_button }}</button>
+        <button id="close-button" @click="hideAlert">{{ close_button }}</button>
+        <button id="submit-button" v-if=alertState.submit @click="handleClick">Ok</button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const props = defineProps({
-  showAlert: Boolean,
-  submit: Boolean,
-  title: String,
-  message: String,
-  onClick: Function
+const alertState = ref({
+  showAlert: false,
+  submit: false,
+  title: '',
+  message: '',
+  onClick: (() => undefined) as Function,
 });
 
 const close_button = ref("Close"); // change button from "Close" to "Cancel" if submit is true ?
 
-const hideAlert = inject('hideAlert') as () => void;
-
 const handleClick = () => {
   hideAlert();
-  props.onClick!();
+  alertState.value.onClick!();
 }
+
+function showAlertDialog(submit: boolean, title: string, message: string, onClick: Function) {
+  alertState.value = {
+    showAlert: true,
+    submit,
+    title,
+    message,
+    onClick
+  };
+}
+
+function hideAlert() {
+  alertState.value.showAlert = false;
+}
+
+defineExpose({
+  showAlertDialog,
+  hideAlert
+});
 </script>
 
 <style scoped>
@@ -43,11 +60,10 @@ const handleClick = () => {
   background-color: white;
   border: 1px solid #424242;
   border-radius: 4px;
-  padding: 1vh;
+  padding: 0 1vh 1vh 1vh;
   width: 14vw;
   display: flex;
   flex-direction: column;
-  align-items: center;
   font-size: 2vh;
   font-family: 'Open Sans', sans-serif;
 }
@@ -64,9 +80,8 @@ button {
   border: 1px solid #424242;
   border-radius: 4px;
   padding: 0.5vh;
-  width: 10vh;
-  height: 4vh;
-  font-size: 2vh;
+  width: 7.5vh;
+  height: 3vh;
   font-family: 'Open Sans', sans-serif;
   cursor: pointer;
   transition: 0.2s ease-in-out;
@@ -81,8 +96,8 @@ button:active {
 }
 
 #submit-button {
-  margin-right: 4.5vw;
   background-color: #537B87;
+  margin-left: 1vw;
 }
 
 #submit-button:hover {
@@ -91,5 +106,10 @@ button:active {
 
 #submit-button:active {
   background-color: #294D61;
+}
+
+#close-button {
+  background-color: white;
+  color: black;
 }
 </style>
