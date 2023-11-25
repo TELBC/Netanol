@@ -1,7 +1,6 @@
 <template>
   <div>
     <TapasSidebar v-if="$route.path !== '/login'" />
-    <!-- <tapas-alert-dialogue /> -->
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
