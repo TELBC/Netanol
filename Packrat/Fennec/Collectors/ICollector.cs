@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using Fennec.Database;
 using Fennec.Services;
 
 namespace Fennec.Collectors;
@@ -8,7 +9,5 @@ namespace Fennec.Collectors;
 /// </summary>
 public interface ICollector
 {
-    void ReadSingleTraces(UdpReceiveResult result);
-    ProtocolVersion DetermineProtocolVersion(byte[] buffer);
-    TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result);
+    IEnumerable<TraceImportInfo> Parse(ICollector collector, UdpReceiveResult result);
 }

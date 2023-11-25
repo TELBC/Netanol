@@ -1,6 +1,8 @@
-﻿using System.Net;
+﻿using System.Collections;
+using System.Net;
 using System.Net.Sockets;
 using DotNetFlow.Ipfix;
+using Fennec.Database;
 using Fennec.Services;
 using FormatException = System.FormatException;
 using TemplateRecord = DotNetFlow.Ipfix.TemplateRecord;
@@ -10,14 +12,14 @@ namespace Fennec.Collectors;
 /// <summary>
 /// Collector for IPFIX packets.
 /// </summary>
-public class IpFixCollector : BaseCollector
+public class IpFixCollector : ICollector
 {
     private readonly ILogger _log;
     private readonly IServiceProvider _serviceProvider;
     // TODO: expand _templateRecords to a service, can be used to display/monitor templates in frontend
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords;
     private readonly IMetricService _metricService;
-    
+
     public IpFixCollector(ILogger log, IServiceProvider serviceProvider, IMetricService metricService)
     {
         _log = log.ForContext<IpFixCollector>();
@@ -26,7 +28,7 @@ public class IpFixCollector : BaseCollector
         _metricService = metricService;
     }
 
-    public override void ReadSingleTraces(UdpReceiveResult result)
+    public IEnumerable<TraceImportInfo> Parse(ICollector collector, UdpReceiveResult result)
     {
         // result.RemoteEndPoint.Address --> address of exporter
         var stream = new MemoryStream(result.Buffer);
@@ -34,7 +36,7 @@ public class IpFixCollector : BaseCollector
         using var ipfixReader = new IpfixReader(stream, 0, _templateRecords.Values);
         var header = ipfixReader.ReadPacketHeader();
 
-        // Process each set in the IPFIX message.
+        // Process each set in the IPFIX message. Has to be while(true) because header doesn't provide a count of sets.
         while (true)
         {
             try
@@ -47,20 +49,19 @@ public class IpFixCollector : BaseCollector
                         var key = (result.RemoteEndPoint.Address, set.ID);
                         if (!_templateRecords.TryGetValue(key, out var template))
                         {
-                            _log.Warning("Could not parse data set... " +
+                            _log.Warning("[IpFixCollector] Could not parse data set... " +
                                          "Reading this set requires a not yet transmitted " +
                                          "template set with id #{TemplateSetId}", set.ID);
                             continue;
                         }
 
                         var view = new IpfixView(dataSet, template);
-                        WriteSingleTrace(view, result);
-                        break;
+                        return CreateTraceImportInfoList(view, result);
                     case TemplateSet templateSet:
                         foreach (var templateRecord in templateSet.Records)
                         {
                             _templateRecords.Add((result.RemoteEndPoint.Address, templateRecord.ID), templateRecord);
-                            _log.Information("Received new template set with id #{TemplateSetId}", templateRecord.ID);
+                            _log.Information("[IpFixCollector] Received new template set with id #{TemplateSetId}", templateRecord.ID);
                         }
 
                         break;
@@ -68,52 +69,48 @@ public class IpFixCollector : BaseCollector
             }
             catch (EndOfStreamException) // TODO: include logs for specific Exceptions that we know the meaning of + increase context
             {
-                _log.Verbose("Reached end of packet");
+                _log.Verbose("[IpFixCollector] Reached end of packet");
                 break;
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _log.Warning("Could not parse data set... " +
-                             "Reading this set requires a not yet transmitted " +
-                             "template set with id #{TemplateSetId}", ex.Message);
             }
             catch (FormatException ex)
             {
             
                 _log.ForContext("Exception", ex)
                     .ForContext("PacketBytes", result.Buffer)
-                    .Warning("Could not parse the packet... It is apparently " +
+                    .Warning("[IpFixCollector] Could not parse the packet... It is apparently " +
                              "wrongly formatted | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
             catch (Exception ex)
             {
                 _log.ForContext("Exception", ex)
-                    .Error("Failed to extract data from the packet due to an " +
-                           "unhandled exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
+                    .Error("[IpFixCollector] Failed to extract data from the packet due to an " +
+                           "unexpected exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
         }
+        
+        return Enumerable.Empty<TraceImportInfo>();
     }
 
-    private void WriteSingleTrace(IpfixView view, UdpReceiveResult result)
+    private IEnumerable<TraceImportInfo> CreateTraceImportInfoList(IpfixView view, UdpReceiveResult result)
     {
-        var scope = _serviceProvider.CreateScope();
-        var importer = scope.ServiceProvider.GetRequiredService<ITraceImportService>();
-        
+        var traceImportInfos = new List<TraceImportInfo>();
         for (var i = 0; i < view.Count; i++)
         {
             var info = CreateTraceImportInfo(view[i], result);
-            _log.Verbose("Read single trace | {@SingleTraceInfo}",
+            traceImportInfos.Add(info);
+            _log.Verbose("[IpFixCollector] Read single trace | {@SingleTraceInfo}",
                 new { Source = $"{info.SrcIp}:{info.SrcPort}", 
                     Destination = $"{info.DstIp}:{info.DstPort}", 
                     info.PacketCount, info.ByteCount });
-            importer.ImportTraceSync(info);
             var metrics = _metricService.GetMetrics<CollectorSingleTraceMetrics>("IpFixMetrics");
             metrics.PacketCount++;
             metrics.ByteCount += (ulong) result.Buffer.Length;
         }
+
+        return traceImportInfos;
     }
 
-    public override TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result)
+    private TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result)
     {
         // TODO: change readTime to flow duration or include both maybe --> more info for frontend
         var properties = (IDictionary<string, object>)record;
@@ -134,5 +131,24 @@ public class IpFixCollector : BaseCollector
             dstIp, (ushort) dstPort,
             (ulong) packetCount, (ulong) byteCount
         );
+    }
+    
+    public ProtocolVersion DetermineProtocolVersion(byte[] buffer)
+    {
+        if (buffer == null || buffer.Length < 2)
+        {
+            throw new ArgumentException("Buffer is too short or null.");
+        }
+
+        // Read the first two bytes from the buffer as a big-endian ushort
+        ushort version = (ushort)((buffer[0] << 8) | buffer[1]);
+
+        switch (version)
+        {
+            case 10:
+                return ProtocolVersion.Ipfix;
+            default:
+                return ProtocolVersion.Unknown;
+        }
     }
 }
