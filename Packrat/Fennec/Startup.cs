@@ -56,7 +56,6 @@ public class Startup
         services.AddSingleton<IMetricService, MetricService>();
         
         // Database services
-        services.AddScoped<ITraceImportService, TraceImportService>();
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddScoped<ITraceRepository, TraceRepository>();
         services.AddScoped<IMetricRepository, MetricRepository>();
@@ -66,31 +65,23 @@ public class Startup
                 .GetCollection<SingleTrace>("singleTraces"));
 
         // Collector services
-        services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
-        services.AddHostedService<IpFixCollector>(); // TODO: set exception behaviour
-        
         // services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
         // services.AddHostedService<IpFixCollector>(); // TODO: set exception behaviour
         
         // Protocol multiplexer
         var multiplexerConfig = Configuration.GetSection("ProtocolMultiplexerConfig").Get<ProtocolMultiplexerOptions>();
-        
-        // Dynamically register collectors based on configuration
+
         if (multiplexerConfig != null)
-            foreach (var collectorType in multiplexerConfig.EnabledCollectors)
-            {
-                switch (collectorType)
-                {
-                    case CollectorType.Netflow9:
-                        services.AddSingleton<ICollector, NetFlow9Collector>();
-                        break;
-                    case CollectorType.Ipfix:
-                        services.AddSingleton<ICollector, IpFixCollector>();
-                        break;
-                }
-            }
-        services.Configure<ProtocolMultiplexerOptions>(Configuration.GetSection("ProtocolMultiplexerConfig"));
-        services.AddHostedService<ProtocolMultiplexerService>();
+        {
+            // Dynamically register collectors based on configuration
+            ProtocolMultiplexerService.RegisterCollectors(services, multiplexerConfig.EnabledCollectors);
+            
+            // Register multiplexer service
+            services.AddHostedService(provider => 
+                ProtocolMultiplexerService.CreateInstance(provider, multiplexerConfig.EnabledCollectors, multiplexerConfig.ListeningPort));
+            services.Configure<ProtocolMultiplexerOptions>(Configuration.GetSection("ProtocolMultiplexerConfig"));
+        }
+        Log.Information("Protocol multiplexer is disabled... No collectors were registered");
 
         // Web services
         services.AddControllers().AddNewtonsoftJson();
