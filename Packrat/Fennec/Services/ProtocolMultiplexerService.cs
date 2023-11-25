@@ -45,7 +45,7 @@ public class ProtocolMultiplexerService : BackgroundService
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _log.Information("Multiplexer listening on port {ListeningPort}", _listeningPort);
+        _log.Information("[ProtocolMultiplexer] Multiplexer listening on port {ListeningPort}", _listeningPort);
 
         try
         {
@@ -71,7 +71,7 @@ public class ProtocolMultiplexerService : BackgroundService
                     }
                     catch (Exception e)
                     {
-                        _log.Error("Packet of Type {ProtocolVersion} could not be parsed by {CollectorType}", protocolVersion, collector.Key);
+                        _log.Error("[ProtocolMultiplexer] Packet of Type {ProtocolVersion} could not be parsed by {CollectorType}", protocolVersion, collector.Key);
                         throw;
                     }
                 }
@@ -79,7 +79,7 @@ public class ProtocolMultiplexerService : BackgroundService
         }
         catch (Exception ex)
         {
-            _log.Error(ex, "An error occurred in the ProtocolMultiplexerService");
+            _log.Error("[ProtocolMultiplexer] Error while listening for UDP packets: {Message}", ex.Message);
         }
     }
     
@@ -150,7 +150,7 @@ public class ProtocolMultiplexerService : BackgroundService
     {
         if (buffer == null || buffer.Length < 2)
         {
-            throw new ArgumentException("Buffer is too short or null.");
+            throw new ArgumentException("Buffer is too short or null");
         }
 
         // Read the first two bytes from the buffer as a big-endian ushort
