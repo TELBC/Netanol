@@ -1,8 +1,8 @@
 import ApiService from "~/services/restService";
-import {Edge, Node} from "v-network-graph";
+import { type Edge, type Node} from "v-network-graph";
 
 interface GraphNode extends Node {
-  displayName: string
+  name: string
 }
 
 interface GraphEdge extends Edge {
@@ -11,8 +11,8 @@ interface GraphEdge extends Edge {
 }
 
 interface GraphResponse {
-  nodes: GraphNode[],
-  edges: GraphEdge[]
+  nodes: { [key: string]: GraphNode },
+  edges: { [key: string]: GraphEdge }
 }
 
 /**
