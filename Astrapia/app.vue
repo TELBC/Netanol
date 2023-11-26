@@ -18,14 +18,15 @@ import TapasSidebar from "~/components/TapasSidebar.vue";
 import AuthService from "~/services/authService";
 
 const auth = useAuth()
-auth.value.message = 'Loading web page... Whether you are currently authenticated will be tested shortly'
+auth.value.message = 'Loading web page'
 onMounted(async () => {
+  auth.value.message = "Checking authentication status"
   const response = await AuthService.getStatus();
 
   if (response) {
     auth.value.message = 'Authenticated'
+  } else {
+    auth.value.message = 'Not authenticated... Please log in'
   }
-
-  auth.value
 })
 </script>

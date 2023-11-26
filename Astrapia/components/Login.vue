@@ -25,11 +25,14 @@
           id="password"
           class="login_inputs"
           placeholder=" "
+          @keyup.enter="signIn"
         >
         <label>Password</label>
       </div>
+
+      <p class="status_banner"><b>Status: </b><span>{{ auth.message }}</span></p>
+
       <button id="login_button" @click="signIn()">Login</button>
-      <button @click="auth.isAuthenticated = true">Login without Password (Breaks Frontend)</button>
     </div>
   </div>
 </template>
@@ -55,16 +58,18 @@ onMounted(async () => {
 })
 
 async function signIn() {
-  const response = await ApiService.post<any>("/api/auth/login", {
+  const response: any = await ApiService.post<any>("/api/auth/login", {
     username: username.value,
     password: password.value
   });
 
-  if (response.status != 204)
+  if (response.status !== undefined && response.status == 204) {
+    auth.value.isAuthenticated = true
+    auth.value.message = 'Now authenticated'
     return
+  }
 
-  const auth = useAuth()
-  auth.value.isAuthenticated = true
+  auth.value.message = `Failed to log in... Received ${response.response.status}: ${response.response.data}`
 }
 </script>
 
@@ -116,6 +121,10 @@ span:nth-child(4) {
   100% {
     opacity: 1;
   }
+}
+
+.status_banner {
+  font-family: 'Open Sans', sans-serif;
 }
 
 #login_page {
@@ -182,7 +191,6 @@ label {
   font-size: 2.5vh;
   background-color: #537B87;
   color: white;
-  margin-top: 4vh;
   font-family: 'Open Sans', sans-serif;
 }
 

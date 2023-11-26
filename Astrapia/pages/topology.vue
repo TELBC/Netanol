@@ -1,38 +1,37 @@
 <template>
   <div class="graph">
-    <v-network-graph
-      :nodes="graphData.nodes"
-      :edges="graphData.edges"
-      :configs="networkGraphConfigs"
-      :event-handlers="eventHandlers"
-    >
+    <v-network-graph :nodes="graphData.nodes" :edges="graphData.edges" :configs="networkGraphConfigs"
+      :event-handlers="eventHandlers">
       <template #edge-label="{ edge, hovered, ...slotProps }">
-        <v-edge-label v-if="hovered" :text="edge.source" align="center" vertical-align="above" v-bind="slotProps"/>
+        <v-edge-label v-if="hovered" :text="edge.label" align="center" vertical-align="above" v-bind="slotProps" />
       </template>
     </v-network-graph>
-    <div id="tooltip"/>
+    <div id="tooltip" />
     <div>
-      <TopologySlider label="Timeframe" v-model="rangeValue"/>
+      <TopologySlider label="Timeframe" v-model="rangeValue" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {onMounted, onBeforeUnmount, reactive} from 'vue';
-import {type Edge, type Node, VEdgeLabel, VNetworkGraph} from 'v-network-graph';
-import {networkGraphConfigs} from 'assets/v-network-graph-configs';
+import { onMounted, onBeforeUnmount } from 'vue';
+import { VEdgeLabel, VNetworkGraph } from 'v-network-graph';
+import { networkGraphConfigs } from 'assets/v-network-graph-configs';
 import * as vNG from 'v-network-graph';
-import TopologyService from "~/services/topology.service";
-import TopologySlider from "~/components/TopologySlider.vue";
-import { fetch } from 'ofetch';
+import TopologySlider from '~/components/TopologySlider.vue';
+import debounce from 'lodash/debounce';
+import topologyService from '~/services/topology.service';
+import { reactive } from 'vue';
+import { ref } from 'vue';
+import { watch } from 'vue';
 
-const graphData = reactive({nodes: [] as Node[], edges: [] as Edge[]});
+const graphData = reactive({ nodes: {} as vNG.Nodes, edges: {} as vNG.Edges });
 const layout = 'test';
 let tooltip: HTMLElement | null;
 const rangeValue = ref(2);
 
 const eventHandlers: vNG.EventHandlers = {
-  'node:pointerover': ({node, event}) => {
+  'node:pointerover': ({ node, event }) => {
     if (tooltip) {
       tooltip.style.visibility = 'visible';
       tooltip.textContent = `${graphData.nodes[node].name}`;
@@ -47,48 +46,26 @@ const eventHandlers: vNG.EventHandlers = {
   },
 };
 
-const fetchGraphDataPeriodically: () => Promise<void> = async () => {
-  const now = new Date()
-  const dateRange: { from: Date; to: Date } = {
-    from: new Date(now.getTime() - rangeValue.value * 60 * 1000),
-    to: new Date()
-  }
+const fetchAndUpdateGraph: () => Promise<void> = async () => {
+    const now = new Date();
 
-  const response = await TopologyService.getTopology(layout, dateRange.from, dateRange.to)
-  const nodes: Node[] = []
-  const edges: Edge[] = []
+    const dateRange: { from: Date; to: Date } = {
+      from: new Date(now.getTime() - rangeValue.value * 60 * 1000),
+      to: new Date()
+    };
 
-  for (const edge in response.edges) {
-    const e = response.edges[edge]
-    edges.push({
-      source: e.source,
-      target: e.target
-    })
-  }
+    const data = await topologyService.getTopology('test', dateRange.from, dateRange.to);
+    graphData.nodes = data.nodes;
+    graphData.edges = data.edges;
+};
 
-  for (const node in response.nodes) {
-    const n = response.nodes[node]
-    nodes.push({
-      name: n.displayName
-    })
-  }
-
-  graphData.edges = edges
-  graphData.nodes = nodes
-}
-
-/*
-const debouncedFetchGraphData = debounce(fetchGraphDataPeriodically, 100);
+const debouncedFetchGraphData = debounce(fetchAndUpdateGraph, 100);
 
 watch(rangeValue, async () => {
   await debouncedFetchGraphData();
 });
-*/
 
 onMounted(async () => {
-  await fetchGraphDataPeriodically();
-
-  /*
   tooltip = document.getElementById('tooltip');
   const fetchInterval = setInterval(debouncedFetchGraphData, 5000);
 
@@ -96,7 +73,7 @@ onMounted(async () => {
     clearInterval(fetchInterval);
   });
 
-  await debouncedFetchGraphData(); */
+  await fetchAndUpdateGraph();
 });
 </script>
 

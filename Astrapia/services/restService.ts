@@ -35,8 +35,9 @@ class RestService {
     if (error.response.status == 401) {
       const auth = useAuth();
       auth.value.isAuthenticated = false;
+      auth.value.message = 'The server requires a new login'
     }
-    return Promise.reject(error);
+    return error;
   }
 
   /**

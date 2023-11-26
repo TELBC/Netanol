@@ -38,8 +38,8 @@ public record LayoutNodeDto(string Id, string Name)
 public record GraphResponse(
     GraphStatistics GraphStatistics,
     RequestStatistics RequestStatistics,
-    List<LayoutNodeDto> Nodes,
-    List<LayoutEdgeDto> Edges);
+    Dictionary<string, LayoutNodeDto> Nodes,
+    Dictionary<string, LayoutEdgeDto> Edges);
 
 public class ByteArrayComparer : IEqualityComparer<byte[]>
 {
@@ -99,7 +99,7 @@ public class GraphController : ControllerBase
             .GroupBy(t => t, new ByteArrayComparer())
             .Select(t => t.First())
             .Select(bytes => new LayoutNodeDto(new IPAddress(bytes)))
-            .ToList();
+            .ToDictionary(dto => dto.Id, dto => dto);
 
         var dtoEdges = edges.Select(trace => 
             new LayoutEdgeDto(
@@ -108,7 +108,7 @@ public class GraphController : ControllerBase
                 trace.PacketCount, 
                 trace.ByteCount, 
                 0))
-            .ToList();
+            .ToDictionary(dto => $"{dto.Source}-{dto.Target}", dto => dto);
         
         var response = new GraphResponse(
             null!,

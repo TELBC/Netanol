@@ -6,6 +6,8 @@
 </template>
 
 <script setup lang="ts">
+import { watchEffect } from 'vue';
+import { watch } from 'vue';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -84,7 +86,6 @@ watch(value, (newValue) => {
 }
 
 .slider::-moz-range-thumb {
-  -webkit-appearance: media-sliderthumb;
   width: 15px;
   height: 15px;
   background: #424242;
