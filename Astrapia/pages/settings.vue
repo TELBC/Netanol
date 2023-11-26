@@ -5,9 +5,8 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  middleware: ["auth"]
-})
+
+let showAlert = false;
 </script>
 
 <style scoped>

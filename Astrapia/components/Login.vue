@@ -29,26 +29,42 @@
         <label>Password</label>
       </div>
       <button id="login_button" @click="signIn()">Login</button>
+      <button @click="auth.isAuthenticated = true">Login without Password (Breaks Frontend)</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {login} from "~/services/loginService";
+import ApiService from "~/services/restService";
+import {useAuth} from "~/composables/auth";
+import {onMounted, ref} from "vue";
+import AuthService from "~/services/authService";
+import {navigateTo} from "#app";
 
 const username = ref('')
 const password = ref('')
 
-async function signIn() {
-  try {
-    const response = await login(username.value, password.value);
-    if (response && response.token) {
-      sessionStorage.setItem('jwtToken', response.token);
-      navigateTo('/')
-    }
-  } catch (error) {
-    console.error(error);
+const auth = useAuth()
+onMounted(async () => {
+  const authenticated = await AuthService.getStatus();
+
+  if (authenticated) {
+    auth.value.isAuthenticated = true;
+    navigateTo('/');
   }
+})
+
+async function signIn() {
+  const response = await ApiService.post<any>("/api/auth/login", {
+    username: username.value,
+    password: password.value
+  });
+
+  if (response.status != 204)
+    return
+
+  const auth = useAuth()
+  auth.value.isAuthenticated = true
 }
 </script>
 
@@ -68,6 +84,7 @@ async function signIn() {
   transform: scale(0.94);
   animation: scale 3s forwards cubic-bezier(0.5, 1, 0.89, 1);
 }
+
 @keyframes scale {
   100% {
     transform: scale(1);
@@ -94,6 +111,7 @@ span:nth-child(3) {
 span:nth-child(4) {
   animation: fade-in 0.8s 0.4s forwards cubic-bezier(0.11, 0, 0.5, 0);
 }
+
 @keyframes fade-in {
   100% {
     opacity: 1;
@@ -142,14 +160,14 @@ label {
   outline: none;
 }
 
-.login_form input:focus~label {
+.login_form input:focus ~ label {
   margin-top: 0.8vh;
   color: black;
   opacity: 100%;
   font-size: 2vh;
 }
 
-.login_form input:not(:placeholder-shown):not(input:focus)~label {
+.login_form input:not(:placeholder-shown):not(input:focus) ~ label {
   margin-top: 0.8vh;
   color: black;
   opacity: 100%;

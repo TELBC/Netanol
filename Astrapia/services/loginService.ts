@@ -1,4 +1,4 @@
-import ApiService from '~/services/apiService';
+import ApiService from '~/services/restService';
 import {AxiosError} from "axios";
 import {IAPIResponse} from "~/types/Login";
 
