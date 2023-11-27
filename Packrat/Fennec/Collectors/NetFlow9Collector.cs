@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using DotNetFlow.Netflow9;
 using Fennec.Database;
+using Fennec.Database.Domain;
 using Fennec.Options;
 using Fennec.Services;
 using Microsoft.Extensions.Options;
@@ -131,12 +132,19 @@ public class NetFlow9Collector : ICollector
             : (ushort)0;
         var packetCount = properties.TryGetValue("IncomingPackets", out var property4) ? (ulong)(long)property4 : 0;
         var byteCount = properties.TryGetValue("IncomingBytes", out var property5) ? (ulong)(long)property5 : 0;
-
+        var protocol = properties.TryGetValue("Protocol", out var property6) ? (byte)property6 : (byte)0;
+        
         return new TraceImportInfo(
             readTime, exporterIp,
             srcIp, srcPort,
             dstIp, dstPort,
-            packetCount, byteCount
+            packetCount, byteCount,
+            protocol switch
+            {
+                (byte)6 => TraceProtocol.Tcp,
+                (byte)17 => TraceProtocol.Udp,
+                _ => TraceProtocol.Unknown
+            }
         );
     }
 }

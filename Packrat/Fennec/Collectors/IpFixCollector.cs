@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using DotNetFlow.Ipfix;
 using Fennec.Database;
+using Fennec.Database.Domain;
 using Fennec.Services;
 using FormatException = System.FormatException;
 using TemplateRecord = DotNetFlow.Ipfix.TemplateRecord;
@@ -124,12 +125,19 @@ public class IpFixCollector : ICollector
         var dstPort = properties.TryGetValue("DestinationTransportPort", out var property3) ? property3 : (ushort) 0;
         var packetCount = properties.TryGetValue("PacketDeltaCount", out var property4) ? property4 : (ulong) 0;
         var byteCount = properties.TryGetValue("OctetDeltaCount", out var property5) ? property5 : (ulong) 0;
-    
+        var protocolIdentifier = properties.TryGetValue("ProtocolIdentifier", out var property6) ? property6 : (byte) 0;
+        
         return new TraceImportInfo(
             readTime, exporterIp,
             srcIp, (ushort) srcPort,
             dstIp, (ushort) dstPort,
-            (ulong) packetCount, (ulong) byteCount
+            (ulong) packetCount, (ulong) byteCount, 
+            protocolIdentifier switch
+            {
+                (byte)6 => TraceProtocol.Tcp,
+                (byte)17 => TraceProtocol.Udp,
+                _ => TraceProtocol.Unknown
+            }
         );
     }
 }

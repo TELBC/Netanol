@@ -34,7 +34,7 @@ public record TraceImportInfo(
     DateTimeOffset ReadTime, IPAddress ExporterIp,
     IPAddress SrcIp, ushort SrcPort,
     IPAddress DstIp, ushort DstPort,
-    ulong PacketCount, ulong ByteCount);
+    ulong PacketCount, ulong ByteCount, TraceProtocol Protocol);
 
 public class AggregateTrace
 {
@@ -90,7 +90,7 @@ public class TraceRepository : ITraceRepository
             var singleTrace = new SingleTrace
             {
                 Timestamp = traceImportInfo.ReadTime,
-                Protocol = TraceProtocol.Tcp,
+                Protocol = traceImportInfo.Protocol,
                 Source = new SingleTraceEndpoint(traceImportInfo.SrcIp, traceImportInfo.SrcPort),
                 Destination = new SingleTraceEndpoint(traceImportInfo.DstIp, traceImportInfo.DstPort),
                 ByteCount = traceImportInfo.ByteCount,
