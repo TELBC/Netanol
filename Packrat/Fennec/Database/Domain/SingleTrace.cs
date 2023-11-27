@@ -6,6 +6,7 @@ namespace Fennec.Database.Domain;
 
 public enum TraceProtocol
 {
+    Unknown,
     Udp,
     Tcp
 }

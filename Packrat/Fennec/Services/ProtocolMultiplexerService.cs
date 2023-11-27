@@ -93,7 +93,10 @@ public class ProtocolMultiplexerService : BackgroundService
     private async Task ReadPacket(ICollector collector, UdpReceiveResult udpReceiveResult)
     {
         var traceImportInfos = collector.Parse(collector, udpReceiveResult);
-        await _traceRepository.ImportTraceImportInfo(traceImportInfos);
+        if (!traceImportInfos.Equals(Enumerable.Empty<TraceImportInfo>()))
+        {
+            await _traceRepository.ImportTraceImportInfo(traceImportInfos);
+        }
     }
 
     public static ProtocolMultiplexerService CreateInstance(IServiceProvider serviceProvider, IEnumerable<CollectorType> collectors, int listeningPort)
