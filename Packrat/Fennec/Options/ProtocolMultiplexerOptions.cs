@@ -1,4 +1,5 @@
-﻿using Fennec.Collectors;
+﻿using System.Collections;
+using Fennec.Parsers;
 
 namespace Fennec.Options;
 
@@ -20,5 +21,5 @@ public class ProtocolMultiplexerOptions
     /// <summary>
     ///     The collectors that should be added to the multiplexer.
     /// </summary>
-    public List<CollectorType> EnabledCollectors { get; set; }
+    public IEnumerable<ParserType> EnabledParsers { get; set; }
 }

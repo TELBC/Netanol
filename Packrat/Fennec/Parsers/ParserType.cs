@@ -1,6 +1,6 @@
-﻿namespace Fennec.Collectors;
+﻿namespace Fennec.Parsers;
 
-public enum CollectorType
+public enum ParserType
 {
     Netflow9,
     Ipfix
