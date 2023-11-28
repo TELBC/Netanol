@@ -83,7 +83,6 @@ a {
   text-decoration: none;
   display: flex;
   flex-direction: row;
-//flex-wrap: nowrap;
   align-items: center;
   padding-top: 1.5vh;
   padding-bottom: 1.5vh;
@@ -110,7 +109,6 @@ a {
 .faicon {
   cursor: pointer;
   color: white;
-  //margin-left: 0.875vw;
 }
 
 .text-wrap {
@@ -135,7 +133,6 @@ p {
   color: white;
   white-space: nowrap;
   font-size: 1.3rem;
-  //margin-left: 0.875vw;
   transition: 0.1s ease-in-out;
   opacity: 0;
 }

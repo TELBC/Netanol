@@ -25,12 +25,12 @@
           id="password"
           class="login_inputs"
           placeholder=" "
-          @keyup.enter="signIn"
+          @keydown.enter="signIn"
         >
         <label>Password</label>
       </div>
 
-      <p class="status_banner"><b>Status: </b><span>{{ auth.message }}</span></p>
+      <p class="status_banner"><b>Status: </b><span class="status_text">{{ auth.message }}</span></p>
 
       <button id="login_button" @click="signIn()">Login</button>
     </div>
@@ -125,6 +125,10 @@ span:nth-child(4) {
 
 .status_banner {
   font-family: 'Open Sans', sans-serif;
+}
+
+.status_text {
+  color: #EB5050;
 }
 
 #login_page {
