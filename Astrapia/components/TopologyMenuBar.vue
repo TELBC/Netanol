@@ -38,6 +38,8 @@ const toggleMenuBarOptions = (option: string) => {
 .menu-bar {
   display: flex;
   flex-direction: column;
+  position: fixed;
+  z-index: 99;
 }
 
 #topology-menu {

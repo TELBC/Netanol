@@ -1,4 +1,8 @@
 <template>
+  <div class="graph">
+    <div>
+      <TopologyMenuBar />
+    </div>
   <div id="graph">
     <v-network-graph
       ref="graph"
