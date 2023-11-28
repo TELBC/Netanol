@@ -2,7 +2,7 @@
     <Login v-if="!auth.isAuthenticated" />
 
     <div v-if="auth.isAuthenticated">
-        <TapasSidebar v-if="$route.path !== '/login'" />
+        <Sidebar />
 
         <NuxtLayout>
             <NuxtPage />
@@ -14,8 +14,8 @@
 import Login from "~/components/Login.vue"
 import {onMounted} from 'vue'
 import {useAuth} from "~/composables/auth"
-import TapasSidebar from "~/components/TapasSidebar.vue";
 import AuthService from "~/services/authService";
+import Sidebar from "./components/Sidebar.vue";
 
 const auth = useAuth()
 auth.value.message = 'Loading web page'
