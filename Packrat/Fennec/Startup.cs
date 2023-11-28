@@ -2,10 +2,10 @@
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using Fennec.Collectors;
 using Fennec.Database;
 using Fennec.Database.Domain;
 using Fennec.Options;
+using Fennec.Parsers;
 using Fennec.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -46,8 +46,8 @@ public class Startup
     public void ConfigureServices(IServiceCollection services, IWebHostEnvironment environment)
     {
         // Options
-        // services.Configure<Netflow9CollectorOptions>(Configuration.GetSection("Collectors:Netflow9"));
-        // services.Configure<IpfixCollectorOptions>(Configuration.GetSection("Collectors:Ipfix"));
+        // services.Configure<Netflow9ParserOptions>(Configuration.GetSection("Parsers:Netflow9"));
+        // services.Configure<IpfixParserOptions>(Configuration.GetSection("Parsers:Ipfix"));
         services
             .AddOptions<SecurityOptions>()
             .Bind(Configuration.GetSection("Security"))
@@ -65,24 +65,23 @@ public class Startup
             s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat")
                 .GetCollection<SingleTrace>("singleTraces"));
 
-        // Collector services
-        // services.AddHostedService<NetFlow9Collector>(); // TODO: set exception behaviour
-        // services.AddHostedService<IpFixCollector>(); // TODO: set exception behaviour
+        // Parser services
+        services.AddSingleton<NetFlow9Parser>(); // TODO: set exception behaviour
+        services.AddSingleton<IpFixParser>(); // TODO: set exception behaviour
         
         // Protocol multiplexer
         var multiplexerConfig = Configuration.GetSection("ProtocolMultiplexerConfig").Get<ProtocolMultiplexerOptions>();
 
         if (multiplexerConfig != null)
         {
-            // Dynamically register collectors based on configuration
-            ProtocolMultiplexerService.RegisterCollectors(services, multiplexerConfig.EnabledCollectors);
-            
             // Register multiplexer service
             services.AddHostedService(provider => 
-                ProtocolMultiplexerService.CreateInstance(provider, multiplexerConfig.EnabledCollectors, multiplexerConfig.ListeningPort));
-            services.Configure<ProtocolMultiplexerOptions>(Configuration.GetSection("ProtocolMultiplexerConfig"));
+                ProtocolMultiplexerService.CreateInstance(provider, multiplexerConfig.EnabledParsers, multiplexerConfig.ListeningPort));
         }
-        Log.Information("Protocol multiplexer is disabled... No collectors were registered");
+        else
+        {
+            Log.Information("Protocol multiplexer is disabled... No collectors were registered");
+        }
 
         // Web services
         services.AddControllers().AddNewtonsoftJson();

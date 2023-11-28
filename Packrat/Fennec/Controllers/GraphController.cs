@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Net;
-using Fennec.Collectors;
 using Fennec.Database;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

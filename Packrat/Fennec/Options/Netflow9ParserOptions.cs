@@ -1,6 +1,6 @@
 namespace Fennec.Options;
 
-public class Netflow9CollectorOptions
+public class Netflow9ParserOptions
 {
     /// <summary>
     ///     Whether the collector is enabled and should be started.

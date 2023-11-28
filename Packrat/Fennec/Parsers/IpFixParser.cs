@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using DotNetFlow.Ipfix;
 using Fennec.Database;
@@ -8,12 +7,12 @@ using Fennec.Services;
 using FormatException = System.FormatException;
 using TemplateRecord = DotNetFlow.Ipfix.TemplateRecord;
 
-namespace Fennec.Collectors;
+namespace Fennec.Parsers;
 
 /// <summary>
-/// Collector for IPFIX packets.
+/// Parser for IPFIX packets.
 /// </summary>
-public class IpFixCollector : ICollector
+public class IpFixParser : IParser
 {
     private readonly ILogger _log;
     private readonly IServiceProvider _serviceProvider;
@@ -21,15 +20,15 @@ public class IpFixCollector : ICollector
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords;
     private readonly IMetricService _metricService;
 
-    public IpFixCollector(ILogger log, IServiceProvider serviceProvider, IMetricService metricService)
+    public IpFixParser(ILogger log, IServiceProvider serviceProvider, IMetricService metricService)
     {
-        _log = log.ForContext<IpFixCollector>();
+        _log = log.ForContext<IpFixParser>();
         _serviceProvider = serviceProvider;
         _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
         _metricService = metricService;
     }
 
-    public IEnumerable<TraceImportInfo> Parse(ICollector collector, UdpReceiveResult result)
+    public IEnumerable<TraceImportInfo> Parse(UdpReceiveResult result)
     {
         // result.RemoteEndPoint.Address --> address of exporter
         var stream = new MemoryStream(result.Buffer);
@@ -50,7 +49,7 @@ public class IpFixCollector : ICollector
                         var key = (result.RemoteEndPoint.Address, set.ID);
                         if (!_templateRecords.TryGetValue(key, out var template))
                         {
-                            _log.Warning("[IpFixCollector] Could not parse data set... " +
+                            _log.Warning("Could not parse data set... " +
                                          "Reading this set requires a not yet transmitted " +
                                          "template set with id #{TemplateSetId}", set.ID);
                             continue;
@@ -62,7 +61,7 @@ public class IpFixCollector : ICollector
                         foreach (var templateRecord in templateSet.Records)
                         {
                             _templateRecords.Add((result.RemoteEndPoint.Address, templateRecord.ID), templateRecord);
-                            _log.Information("[IpFixCollector] Received new template set with id #{TemplateSetId}", templateRecord.ID);
+                            _log.Information("Received new template set with id #{TemplateSetId}", templateRecord.ID);
                         }
 
                         break;
@@ -70,7 +69,7 @@ public class IpFixCollector : ICollector
             }
             catch (EndOfStreamException) // TODO: include logs for specific Exceptions that we know the meaning of + increase context
             {
-                _log.Verbose("[IpFixCollector] Reached end of packet");
+                _log.Verbose("Reached end of packet");
                 break;
             }
             catch (FormatException ex)
@@ -78,13 +77,13 @@ public class IpFixCollector : ICollector
             
                 _log.ForContext("Exception", ex)
                     .ForContext("PacketBytes", result.Buffer)
-                    .Warning("[IpFixCollector] Could not parse the packet... It is apparently " +
+                    .Warning("Could not parse the packet... It is apparently " +
                              "wrongly formatted | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
             catch (Exception ex)
             {
                 _log.ForContext("Exception", ex)
-                    .Error("[IpFixCollector] Failed to extract data from the packet due to an " +
+                    .Error("Failed to extract data from the packet due to an " +
                            "unexpected exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
         }
@@ -99,7 +98,7 @@ public class IpFixCollector : ICollector
         {
             var info = CreateTraceImportInfo(view[i], result);
             traceImportInfos.Add(info);
-            _log.Verbose("[IpFixCollector] Read single trace | {@SingleTraceInfo}",
+            _log.Verbose("Read single trace | {@SingleTraceInfo}",
                 new { Source = $"{info.SrcIp}:{info.SrcPort}", 
                     Destination = $"{info.DstIp}:{info.DstPort}", 
                     info.PacketCount, info.ByteCount });

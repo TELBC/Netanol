@@ -3,31 +3,28 @@ using System.Net.Sockets;
 using DotNetFlow.Netflow9;
 using Fennec.Database;
 using Fennec.Database.Domain;
-using Fennec.Options;
 using Fennec.Services;
-using Microsoft.Extensions.Options;
-using Serilog.Context;
 
-namespace Fennec.Collectors;
+namespace Fennec.Parsers;
 
 /// <summary>
-/// Collector for NetFlow v9 packets.
+/// Parser for NetFlow v9 packets.
 /// </summary>
-public class NetFlow9Collector : ICollector
+public class NetFlow9Parser : IParser
 {
     private readonly ILogger _log;
     private readonly IServiceProvider _serviceProvider;
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords; // matches (ExporterIp, TemplateId) to TemplateRecord
     private readonly IMetricService _metricService;
     
-    public NetFlow9Collector(ILogger log, IServiceProvider serviceProvider, IMetricService metricService)
+    public NetFlow9Parser(ILogger log, IServiceProvider serviceProvider, IMetricService metricService)
     {
-        _log = log.ForContext<NetFlow9Collector>();
+        _log = log.ForContext<NetFlow9Parser>();
         _serviceProvider = serviceProvider;
         _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
         _metricService = metricService;
     }
-    public IEnumerable<TraceImportInfo> Parse(ICollector collector, UdpReceiveResult result)
+    public IEnumerable<TraceImportInfo> Parse(UdpReceiveResult result)
     {
         var stream = new MemoryStream(result.Buffer);
         using var nr = new NetflowReader(stream, 0, _templateRecords.Values);
@@ -46,7 +43,7 @@ public class NetFlow9Collector : ICollector
                         var key = (result.RemoteEndPoint.Address, set.ID);
                         if (!_templateRecords.TryGetValue(key, out var template))
                         {
-                            _log.Warning("[Netflow9Collector] Could not parse data set... " +
+                            _log.Warning("Could not parse data set... " +
                                          "Reading this set requires a not yet transmitted " +
                                          "template set with id #{TemplateSetId}", set.ID);
                             continue;
@@ -58,34 +55,34 @@ public class NetFlow9Collector : ICollector
                         foreach (var templateRecord in templateFlowSet.Records)
                         {
                             _templateRecords.Add((result.RemoteEndPoint.Address, templateRecord.ID), templateRecord);
-                            _log.Information("[Netflow9Collector] Received new template set with id #{TemplateSetId}", templateRecord.ID);
+                            _log.Information("Received new template set with id #{TemplateSetId}", templateRecord.ID);
                         }
 
                         break;
                     case OptionsTemplateFlowSet:
-                        _log.Verbose("[Netflow9Collector] OptionsTemplateFlowSet does not contain flow relevant data -> Skipping");
+                        _log.Verbose("OptionsTemplateFlowSet does not contain flow relevant data -> Skipping");
                         break;
                     case OptionsDataFlowSet:
-                        _log.Verbose("[Netflow9Collector] OptionsDataFlowSet does not contain flow relevant data -> Skipping");
+                        _log.Verbose("OptionsDataFlowSet does not contain flow relevant data -> Skipping");
                         break;
                 }
             }
             catch (EndOfStreamException)
             {
-                _log.Verbose("[Netflow9Collector] Reached end of packet");
+                _log.Verbose("Reached end of packet");
                 break;
             }
             catch (FormatException ex)
             {
                 _log.ForContext("Exception", ex)
                     .ForContext("PacketBytes", result.Buffer)
-                    .Warning("[Netflow9Collector] Could not parse the packet... It is apparently " +
+                    .Warning("Could not parse the packet... It is apparently " +
                              "wrongly formatted | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
             catch (Exception ex)
             {
                 _log.ForContext("Exception", ex)
-                    .Error("[Netflow9Collector] Failed to extract data from the packet due to an " +
+                    .Error("Failed to extract data from the packet due to an " +
                            "unhandled exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
             }
         }
@@ -100,7 +97,7 @@ public class NetFlow9Collector : ICollector
         {
             var info = CreateTraceImportInfo(view[i], result);
             traceImportInfos.Add(info);
-            _log.Verbose("[Netflow9Collector] Read single trace | {@SingleTraceInfo}",
+            _log.Verbose("Read single trace | {@SingleTraceInfo}",
                 new { Source = $"{info.SrcIp}:{info.SrcPort}", 
                     Destination = $"{info.DstIp}:{info.DstPort}", 
                     info.PacketCount, info.ByteCount });
@@ -112,7 +109,7 @@ public class NetFlow9Collector : ICollector
         return traceImportInfos;
     }
 
-    public TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result)
+    private TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result)
     {
         var properties = (IDictionary<string, object>)record;
         var readTime = DateTimeOffset.UtcNow;

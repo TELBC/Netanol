@@ -45,10 +45,4 @@
     <ItemGroup>
       <Folder Include="Data\" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Services\TraceImportService.cs" />
-      <Compile Remove="Collectors\BaseCollector.cs" />
-    </ItemGroup>
-
 </Project>

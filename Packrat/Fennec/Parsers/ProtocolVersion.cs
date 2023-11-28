@@ -1,4 +1,4 @@
-﻿namespace Fennec.Collectors;
+﻿namespace Fennec.Parsers;
 
 public enum ProtocolVersion
 {
