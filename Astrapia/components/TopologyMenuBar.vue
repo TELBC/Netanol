@@ -48,7 +48,6 @@ const toggleMenuBarOptions = (option: string) => {
   align-items: center;
   width: 88.5vw;
   background-color: #7EA0A9;
-  margin-left: 3vw;
   font-size: 2vh;
   margin-top: -1vh;
   color: white;
@@ -76,7 +75,6 @@ const toggleMenuBarOptions = (option: string) => {
   align-items: center;
   width: 88.4vw;
   border: 0.1vw solid #7EA0A9;
-  margin-left: 3vw;
   font-size: 2vh;
 }
 
