@@ -89,7 +89,7 @@ public class Startup
 
         if (StartupOptions.AllowCors)
         {
-            Log.Information("Adding CORS header which allow all origins, headers and methods");
+            Log.Information("Adding CORS header which allows all origins, headers and methods");
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(builder =>

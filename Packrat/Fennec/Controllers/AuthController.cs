@@ -65,7 +65,7 @@ public class AuthController : ControllerBase
         if (result.IsLockedOut)
         {
             _log.Debug("Login attempt for {Username} failed... Locked out", request.Username);
-            return Unauthorized("Too many failed login attempts, retry later");
+            return Unauthorized($"Too many failed login attempts... Lock out ends at {user.LockoutEnd?.ToString("dd MMMM yyyy HH:mm:ss")}");
         }
 
         if (!result.Succeeded)
