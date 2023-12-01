@@ -47,9 +47,8 @@ const toggleMenuBarOptions = (option: string) => {
   flex-direction: row;
   align-items: center;
   width: 88.5vw;
-  background-color: #7EA0A9;
+  background-color: #537B87;
   font-size: 2vh;
-  margin-top: -1vh;
   color: white;
   font-family: 'Open Sans', sans-serif;
 }
@@ -62,11 +61,11 @@ const toggleMenuBarOptions = (option: string) => {
 }
 
 .topology-menu-options:hover {
-  background-color: #617F87;
+  background-color: #3E6474;
 }
 
 .topology-menu-options:active {
-  background-color: #4B6164;
+  background-color: #294D61;
 }
 
 .menu-bar-options {
@@ -74,7 +73,8 @@ const toggleMenuBarOptions = (option: string) => {
   flex-direction: row;
   align-items: center;
   width: 88.4vw;
-  border: 0.1vw solid #7EA0A9;
+  border: 0.1vw solid #424242;
+  background-color: #e0e0e0;
   font-size: 2vh;
 }
 
@@ -88,7 +88,7 @@ const toggleMenuBarOptions = (option: string) => {
   padding: 0.5vh 0.5vw;
   width: 8vw;
   border-radius: 4px;
-  border: 0.1vh solid #7EA0A9;
+  border: 0.1vh solid #424242;
   background-color: white;
   margin: 1vh 1vw 1vh 2vw;
   cursor: pointer;
@@ -96,11 +96,11 @@ const toggleMenuBarOptions = (option: string) => {
 }
 
 .grouping-buttons:hover {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  background-color: #7EA0A9;
 }
 
 .grouping-buttons:active {
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  background-color: #617F87;
 }
 
 .timeframe-labels {

@@ -14,6 +14,7 @@
 <style scoped>
 .content-with-sidebar {
   margin-left: 3vw;
+  margin-top: -1vh;
 }
 </style>
 
