@@ -46,7 +46,7 @@ const toggleMenuBarOptions = (option: string) => {
   display: flex;
   flex-direction: row;
   align-items: center;
-  width: 88.5vw;
+  width: 100vw;
   background-color: #537B87;
   font-size: 2vh;
   color: white;
