@@ -97,10 +97,12 @@ const toggleMenuBarOptions = (option: string) => {
 
 .grouping-buttons:hover {
   background-color: #7EA0A9;
+  color: white;
 }
 
 .grouping-buttons:active {
   background-color: #617F87;
+  color: white;
 }
 
 .timeframe-labels {
