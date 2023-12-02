@@ -28,9 +28,9 @@ public class MetricRepository : IMetricRepository
     private readonly IMongoCollection<SingleTrace> _singleTraces;
     private readonly IMetricService _metricService;
     
-    public MetricRepository(IMongoCollection<SingleTrace> singleTraces, IMetricService metricService)
+    public MetricRepository(IMongoDatabase database, IMetricService metricService)
     {
-        _singleTraces = singleTraces;
+        _singleTraces = database.GetCollection<SingleTrace>("singleTraces");
         _metricService = metricService;
     }
     

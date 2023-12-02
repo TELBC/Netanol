@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Fennec.Database;
 using Fennec.Database.Domain;
+using Fennec.Database.Domain.Layers;
 using Fennec.Options;
 using Fennec.Parsers;
 using Fennec.Services;
@@ -59,12 +60,11 @@ public class Startup
         // Database services
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddSingleton<ITraceRepository, TraceRepository>();
-        services.AddScoped<IMetricRepository, MetricRepository>();
+        services.AddSingleton<ILayoutRepository, LayoutRepository>();
+        services.AddSingleton<IMetricRepository, MetricRepository>();
         services.AddSingleton<IMongoClient>(_ => new MongoClient(Configuration.GetConnectionString("MongoConnection")));
-        services.AddSingleton<IMongoCollection<SingleTrace>>(
-            s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat")
-                .GetCollection<SingleTrace>("singleTraces"));
-
+        services.AddSingleton<IMongoDatabase>(s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat"));
+     
         // Parser services
         services.AddSingleton<NetFlow9Parser>(); // TODO: set exception behaviour
         services.AddSingleton<IpFixParser>(); // TODO: set exception behaviour

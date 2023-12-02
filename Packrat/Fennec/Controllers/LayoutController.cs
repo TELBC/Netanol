@@ -1,20 +1,12 @@
+using System.Data;
+using Fennec.Database;
+using Fennec.Database.Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Fennec.Controllers;
 
-[Route("layout")]
-[ApiController]
-[Produces("application/json")]
-public class LayoutController : ControllerBase
-{
-    [HttpPost("{name}")]
-    public IActionResult Create(string name)
-    {
-        return Ok();
-    }
-}
-
-/*
 /// <summary>
 /// Create, update and delete <see cref="Layout" />s.
 /// </summary>
@@ -37,7 +29,7 @@ public class LayoutController : ControllerBase
     [SwaggerResponse(StatusCodes.Status200OK, "Layouts listed successfully")]
     public async Task<IActionResult> List()
     {
-        var layouts = await _layoutRepository.ListLayouts();
+        var layouts = await _layoutRepository.GetLayouts();
         return Ok(layouts);
     }
 
@@ -97,4 +89,3 @@ public class LayoutController : ControllerBase
         }
     }
 }
-*/

@@ -1,13 +1,16 @@
+using System.Data;
+using Fennec.Database.Domain;
+using MongoDB.Driver;
+
 namespace Fennec.Database;
 
-/*
 public interface ILayoutRepository
 {
     /// <summary>
     /// Lists all layouts.
     /// </summary>
     /// <returns></returns>
-    Task<List<Layout>> ListLayouts();
+    Task<List<Layout>> GetLayouts();
 
     /// <summary>
     /// Creates a new layout with the given name.
@@ -23,8 +26,8 @@ public interface ILayoutRepository
     /// <param name="oldName"></param>
     /// <param name="newName"></param>
     /// <returns></returns>
-    /// <exception cref="KeyNotFoundException">Thrown if a layout with the name <paramref name="oldName" /> does not exist.</exception>
-    /// <exception cref="DuplicateNameException">Thrown if a layout with the name <paramref name="newName" /> already exists.</exception>
+    /// <exception cref="KeyNotFoundException">Thrown if a layout with the <paramref name="oldName" /> does not exist.</exception>
+    /// <exception cref="DuplicateNameException">Thrown if a layout with the <paramref name="newName" /> already exists.</exception>
     Task<Layout> RenameLayout(string oldName, string newName);
 
     /// <summary>
@@ -38,64 +41,51 @@ public interface ILayoutRepository
 
 public class LayoutRepository : ILayoutRepository
 {
-    private readonly PackratContext _context;
+    private readonly IMongoCollection<Layout> _layouts;
 
-    public LayoutRepository(PackratContext context)
+    public LayoutRepository(IMongoDatabase database)
     {
-        _context = context;
+        _layouts = database.GetCollection<Layout>("layouts");
     }
 
-    public async Task<List<Layout>> ListLayouts()
+    public async Task<List<Layout>> GetLayouts()
     {
-        // TODO: paging?
-        // this should be fine for now, but if we have a lot of layouts this will be a problem
-        return await _context.Layouts
-            .OrderBy(l => l.Name)
-            .ToListAsync();
+        return await _layouts.Find(_ => true).ToListAsync();
     }
 
     public async Task<Layout> CreateLayout(string name)
     {
-        await ThrowIfLayoutExists(name);
+        var existingLayout = await _layouts.Find(l => l.Name == name).FirstOrDefaultAsync();
+        if (existingLayout != null)
+            throw new DuplicateNameException($"A layout with the name {name} already exists.");
 
-        var layout = new Layout(name);
-        _context.Layouts.Add(layout);
-        await _context.SaveChangesAsync();
-        return layout;
+        var newLayout = new Layout { Name = name };
+        await _layouts.InsertOneAsync(newLayout);
+        return newLayout;
     }
 
     public async Task<Layout> RenameLayout(string oldName, string newName)
     {
-        await ThrowIfLayoutExists(newName);
-
-        var layout = await _context.Layouts.FirstOrDefaultAsync(l => l.Name == oldName);
-
+        var layout = await _layouts.Find(l => l.Name == oldName).FirstOrDefaultAsync();
         if (layout == null)
             throw new KeyNotFoundException($"A layout with the name {oldName} does not exist.");
 
+        var existingLayoutWithNewName = await _layouts.Find(l => l.Name == newName).FirstOrDefaultAsync();
+        if (existingLayoutWithNewName != null)
+            throw new DuplicateNameException($"A layout with the name {newName} already exists.");
+
+        var update = Builders<Layout>.Update.Set(l => l.Name, newName);
+        await _layouts.UpdateOneAsync(l => l.Name == oldName, update);
         layout.Name = newName;
-        await _context.SaveChangesAsync();
         return layout;
     }
 
     public async Task<Layout> DeleteLayout(string name)
     {
-        var layout = await _context.Layouts.FirstOrDefaultAsync(l => l.Name == name);
-
+        var layout = await _layouts.FindOneAndDeleteAsync(l => l.Name == name);
         if (layout == null)
             throw new KeyNotFoundException($"A layout with the name {name} does not exist.");
 
-        _context.Layouts.Remove(layout);
-        await _context.SaveChangesAsync();
         return layout;
     }
-
-    private async Task ThrowIfLayoutExists(string name)
-    {
-        var layout = await _context.Layouts.FirstOrDefaultAsync(l => l.Name == name);
-
-        if (layout != null)
-            throw new DuplicateNameException($"A layout with the name {name} already exists.");
-    }
 }
-*/

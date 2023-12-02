@@ -67,16 +67,16 @@ public class AggregateTrace
 
 public class TraceRepository : ITraceRepository
 {
-    private readonly IMongoCollection<SingleTrace> _traceCollection;
+    private readonly IMongoCollection<SingleTrace> _traces;
 
-    public TraceRepository(IMongoCollection<SingleTrace> traceCollection)
+    public TraceRepository(IMongoDatabase database)
     {
-        _traceCollection = traceCollection;
+        _traces = database.GetCollection<SingleTrace>("singleTraces");
     }
 
     public async Task AddSingleTrace(SingleTrace singleTrace)
     {
-        await _traceCollection.InsertOneAsync(singleTrace);
+        await _traces.InsertOneAsync(singleTrace);
     }
 
     /// <summary>
@@ -103,7 +103,7 @@ public class TraceRepository : ITraceRepository
 
     public async Task<List<AggregateTrace>> AggregateTraces(DateTimeOffset start, DateTimeOffset end)
     {
-        return await _traceCollection.Aggregate()
+        return await _traces.Aggregate()
             .Group(
                 new BsonDocument
                 {
