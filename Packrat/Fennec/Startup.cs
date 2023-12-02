@@ -229,6 +229,16 @@ public class Startup
         app.UseCookiePolicy();
         app.UseAuthentication();
         app.UseAuthorization();
-        app.MapControllers();
+        
+        if (SecurityOptions.Enabled)
+        {
+            Log.Information("Security is enabled... To access protected endpoints authorization is required");
+            app.MapControllers();
+        }
+        else
+        {
+            Log.Information("Security is disabled... All endpoints can be accessed without authorization");
+            app.MapControllers().AllowAnonymous();
+        }
     }
 }
