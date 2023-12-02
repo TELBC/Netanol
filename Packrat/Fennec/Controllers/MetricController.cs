@@ -1,4 +1,5 @@
-﻿using Fennec.Database;
+﻿using Fennec.Collectors;
+using Fennec.Database;
 using Fennec.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +16,13 @@ public class MetricController : ControllerBase
 {
     private readonly IMetricService _metricService;
     private readonly IMetricRepository _metricRepository;
+    private readonly IWriteLatencyCollector _writeLatencyCollector;
 
-    public MetricController(IMetricService metricService, IMetricRepository metricRepository)
+    public MetricController(IMetricService metricService, IMetricRepository metricRepository, IWriteLatencyCollector writeLatencyCollector)
     {
         _metricService = metricService;
         _metricRepository = metricRepository;
+        _writeLatencyCollector = writeLatencyCollector;
     }
     
     /// <summary>
@@ -29,6 +32,7 @@ public class MetricController : ControllerBase
     public async Task<IActionResult> GetAllMetric()
     {
         _metricRepository.GetTotalCountAsync();
+        _writeLatencyCollector.GetLatencies();
         return Ok(await _metricService.GetAllMetrics());
     }
 }

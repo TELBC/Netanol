@@ -1,4 +1,6 @@
-﻿using System.Net.Sockets;
+﻿using System.Diagnostics;
+using System.Net.Sockets;
+using Fennec.Collectors;
 using Fennec.Database;
 using Fennec.Options;
 using Fennec.Parsers;
@@ -19,6 +21,7 @@ public class ProtocolMultiplexerService : BackgroundService
     private readonly UdpClient _udpClient;
     private readonly IDictionary<ParserType, IParser> _parsers;
     private readonly int _listeningPort;
+    private readonly IWriteLatencyCollector _writeLatencyCollector;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProtocolMultiplexerService"/>.
@@ -32,13 +35,14 @@ public class ProtocolMultiplexerService : BackgroundService
         ILogger log,
         IOptions<ProtocolMultiplexerOptions> options, 
         IDictionary<ParserType, IParser> parsers,
-        int listeningPort, ITraceRepository traceRepository)
+        int listeningPort, ITraceRepository traceRepository, IWriteLatencyCollector writeLatencyCollector)
     {
         _log = log.ForContext<ProtocolMultiplexerService>();
         _listeningPort = options.Value.ListeningPort;
         _parsers = parsers;
         _traceRepository = traceRepository;
         _udpClient = new UdpClient(_listeningPort);
+        _writeLatencyCollector = writeLatencyCollector;
     }
 
     /// <summary>
@@ -78,9 +82,15 @@ public class ProtocolMultiplexerService : BackgroundService
             if (protocolVersion == ProtocolVersion.Unknown) continue;
             try
             {
+                // If protocol not supported it skips the ReadPacket part of code
                 if ((ParserType)protocolVersion != parser.Key) continue;
                 // not awaited so we can continue listening for packets
+                
+                // TODO : get parser key 
+                var stopwatch = Stopwatch.StartNew();
                 ReadPacket(parser.Value, result);
+                stopwatch.Stop();
+                _writeLatencyCollector.InsertLatencyAndCalculate(stopwatch.ElapsedMilliseconds);
                 break;
             }
             catch (Exception ex)

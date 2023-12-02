@@ -52,6 +52,7 @@ public class Startup
         
         // Metric service
         services.AddSingleton<IMetricService, MetricService>();
+        services.AddSingleton<IWriteLatencyCollector, WriteLatencyCollector>();
         
         // Database services
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
