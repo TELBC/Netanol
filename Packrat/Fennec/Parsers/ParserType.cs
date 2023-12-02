@@ -3,7 +3,8 @@
 public enum ParserType
 {
     Netflow9,
-    Ipfix
+    Ipfix,
+    All
 }
 
 public class CollectorSingleTraceMetrics

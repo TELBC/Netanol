@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using Fennec.Collectors;
 using Fennec.Database;
 using Fennec.Database.Domain.Layers;
 using Fennec.Options;
@@ -52,7 +53,7 @@ public class Startup
         
         // Metric service
         services.AddSingleton<IMetricService, MetricService>();
-        services.AddSingleton<IWriteLatencyCollector, WriteLatencyCollector>();
+        services.AddSingleton<IWriteLatencyMetric, WriteLatencyMetric>();
         
         // Database services
         // services.AddScoped<ILayoutRepository, LayoutRepository>();

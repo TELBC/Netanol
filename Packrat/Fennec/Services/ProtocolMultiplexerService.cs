@@ -21,7 +21,7 @@ public class ProtocolMultiplexerService : BackgroundService
     private readonly UdpClient _udpClient;
     private readonly IDictionary<ParserType, IParser> _parsers;
     private readonly int _listeningPort;
-    private readonly IWriteLatencyCollector _writeLatencyCollector;
+    private readonly IWriteLatencyMetric _writeLatencyMetric;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProtocolMultiplexerService"/>.
@@ -35,14 +35,14 @@ public class ProtocolMultiplexerService : BackgroundService
         ILogger log,
         IOptions<ProtocolMultiplexerOptions> options, 
         IDictionary<ParserType, IParser> parsers,
-        int listeningPort, ITraceRepository traceRepository, IWriteLatencyCollector writeLatencyCollector)
+        int listeningPort, ITraceRepository traceRepository, IWriteLatencyMetric writeLatencyMetric)
     {
         _log = log.ForContext<ProtocolMultiplexerService>();
         _listeningPort = options.Value.ListeningPort;
         _parsers = parsers;
         _traceRepository = traceRepository;
         _udpClient = new UdpClient(_listeningPort);
-        _writeLatencyCollector = writeLatencyCollector;
+        _writeLatencyMetric = writeLatencyMetric;
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public class ProtocolMultiplexerService : BackgroundService
     private void MatchPacket(UdpReceiveResult result)
     {
         var protocolVersion = DetermineProtocolVersion(result.Buffer);
-
+        
         foreach (var parser in _parsers)
         {
             if (protocolVersion == ProtocolVersion.Unknown) continue;
@@ -86,11 +86,10 @@ public class ProtocolMultiplexerService : BackgroundService
                 if ((ParserType)protocolVersion != parser.Key) continue;
                 // not awaited so we can continue listening for packets
                 
-                // TODO : get parser key 
                 var stopwatch = Stopwatch.StartNew();
                 ReadPacket(parser.Value, result);
                 stopwatch.Stop();
-                _writeLatencyCollector.InsertLatencyAndCalculate(stopwatch.ElapsedMilliseconds);
+                _writeLatencyMetric.AddLatency(result.RemoteEndPoint, parser.Key, stopwatch.ElapsedMilliseconds);
                 break;
             }
             catch (Exception ex)

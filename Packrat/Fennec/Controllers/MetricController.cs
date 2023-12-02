@@ -16,23 +16,19 @@ public class MetricController : ControllerBase
 {
     private readonly IMetricService _metricService;
     private readonly IMetricRepository _metricRepository;
-    private readonly IWriteLatencyCollector _writeLatencyCollector;
+    private readonly IWriteLatencyMetric _writeLatencyMetric;
 
-    public MetricController(IMetricService metricService, IMetricRepository metricRepository, IWriteLatencyCollector writeLatencyCollector)
+    public MetricController(IMetricService metricService, IMetricRepository metricRepository, IWriteLatencyMetric writeLatencyMetric)
     {
         _metricService = metricService;
         _metricRepository = metricRepository;
-        _writeLatencyCollector = writeLatencyCollector;
+        _writeLatencyMetric = writeLatencyMetric;
     }
-    
-    /// <summary>
-    /// Gets all metrics.
-    /// </summary>
-    [HttpGet("all")]
-    public async Task<IActionResult> GetAllMetric()
+
+    [HttpGet("writeLatencyMetricsForStats")]
+    public OkObjectResult GetPeriodWriteLatencyMetrics()
     {
-        _metricRepository.GetTotalCountAsync();
-        _writeLatencyCollector.GetLatencies();
-        return Ok(await _metricService.GetAllMetrics());
+        _writeLatencyMetric.UpdateWriteLatencyMetricsForStats();
+        return Ok(_metricService.GetMetrics<WriteLatencyMetricsForStats>("WriteLatencyMetricsForStats"));
     }
 }

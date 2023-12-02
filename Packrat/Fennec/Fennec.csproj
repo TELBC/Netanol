@@ -44,6 +44,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Collectors" />
       <Folder Include="Data\" />
     </ItemGroup>
 </Project>
