@@ -5,6 +5,8 @@ using System.ComponentModel.DataAnnotations;
 // TODO: rework configuration to use validation
 public class SecurityOptions
 {
+    public bool Enabled { get; set; }
+    
     [Required] 
     public AccessOptions Access { get; set; }
 
