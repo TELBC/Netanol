@@ -1,11 +1,14 @@
 <template>
   <div id="graph">
+    <div>
+      <TopologyMenuBar />
+    </div>
     <v-network-graph
       ref="graph"
-        :nodes="graphData.nodes"
-        :edges="graphData.edges"
-        :configs="networkGraphConfigs"
-        :event-handlers="eventHandlers"
+      :nodes="graphData.nodes"
+      :edges="graphData.edges"
+      :configs="networkGraphConfigs"
+      :event-handlers="eventHandlers"
     >
       <template #edge-label="{ edge, hovered, ...slotProps }">
         <v-edge-label v-if="hovered" :text="edge.label" align="center" vertical-align="above" v-bind="slotProps" />
@@ -31,6 +34,7 @@ import topologyService, {IGraphStatistics} from '~/services/topology.service';
 import { reactive } from 'vue';
 import { ref } from 'vue';
 import { watch } from 'vue';
+import TopologyMenuBar from "~/components/TopologyMenuBar.vue";
 
 const graph = ref<vNG.Instance>()
 const graphData = reactive({ nodes: {} as vNG.Nodes, edges: {} as vNG.Edges });
@@ -56,17 +60,17 @@ const eventHandlers: vNG.EventHandlers = {
 };
 
 const fetchAndUpdateGraph: () => Promise<void> = async () => {
-    const now = new Date();
+  const now = new Date();
 
-    const dateRange: { from: Date; to: Date } = {
-      from: new Date(now.getTime() - rangeValue.value * 60 * 1000),
-      to: new Date()
-    };
+  const dateRange: { from: Date; to: Date } = {
+    from: new Date(now.getTime() - rangeValue.value * 60 * 1000),
+    to: new Date()
+  };
 
-    const data = await topologyService.getTopology('test', dateRange.from, dateRange.to);
-    metaData = data.graphStatistics;
-    graphData.nodes = data.nodes;
-    graphData.edges = data.edges;
+  const data = await topologyService.getTopology('test', dateRange.from, dateRange.to);
+  metaData = data.graphStatistics;
+  graphData.nodes = data.nodes;
+  graphData.edges = data.edges;
 };
 
 const debouncedFetchGraphData = debounce(fetchAndUpdateGraph, 100);
