@@ -1,8 +1,9 @@
 <template>
-  <div id="graph">
+  <div>
     <div>
       <TopologyMenuBar />
     </div>
+    <div id="graph">
     <v-network-graph
       ref="graph"
       :nodes="graphData.nodes"
@@ -18,6 +19,7 @@
     <div>
       <TopologyFooter :graph="graph" :metaData="metaData" element-id="graph"/>
       <TopologySlider label="Timeframe" v-model="rangeValue" />
+    </div>
     </div>
   </div>
 </template>
