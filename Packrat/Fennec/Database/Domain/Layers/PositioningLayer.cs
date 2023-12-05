@@ -5,6 +5,7 @@
 /// </summary>
 public class PositioningLayer : ILayoutLayer
 {
+    public LayerType Type { get; set; } = LayerType.Positioning;
     public string? Name { get; set; }
     public bool Enabled { get; set; }
     

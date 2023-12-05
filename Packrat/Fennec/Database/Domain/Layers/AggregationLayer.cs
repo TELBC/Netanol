@@ -5,6 +5,7 @@
 /// </summary>
 public class AggregationLayer : ILayoutLayer
 {
+    public LayerType Type { get; set; } = LayerType.Aggregation;
     public string? Name { get; set; }
     public bool Enabled { get; set; }
     
