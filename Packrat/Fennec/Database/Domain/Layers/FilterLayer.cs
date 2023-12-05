@@ -3,8 +3,9 @@
 /// <summary>
 /// Includes or excludes certain nodes based on their IP address.
 /// </summary>
-public class SelectionLayer : ILayoutLayer
+public class FilterLayer : ILayoutLayer
 {
+    public LayerType Type { get; set; } = LayerType.Filter;
     public string? Name { get; set; }
     public bool Enabled { get; set; }
     
