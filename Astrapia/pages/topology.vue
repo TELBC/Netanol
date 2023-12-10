@@ -30,9 +30,8 @@ import { networkGraphConfigs } from 'assets/v-network-graph-configs';
 import * as vNG from 'v-network-graph';
 import debounce from 'lodash/debounce';
 import TopologyFooter from "~/components/TopologyFooter.vue";
-import topologyService, {IGraphStatistics} from '~/services/topology.service';
-import { reactive } from 'vue';
-import { ref } from 'vue';
+import topologyService from '~/services/topology.service';
+import { reactive, ref, watch } from 'vue';
 import TopologyMenuBar from "~/components/TopologyMenuBar.vue";
 
 const graph = ref<vNG.Instance>()
@@ -93,6 +92,12 @@ onMounted(async () => {
 
   await fetchAndUpdateGraph();
 });
+interface IGraphStatistics {
+  totalHostCount: number,
+  totalByteCount: number,
+  totalPacketCount: number,
+  totalTraceCount: number
+}
 </script>
 
 <style scoped>

@@ -31,14 +31,15 @@
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import VNetworkGraph from "~/plugins/v-network-graph";
-import {IGraphStatistics} from "~/services/topology.service";
 import FullscreenButton from "~/components/FullscreenButton.vue";
+import { ref, watch } from 'vue';
 
 const props = defineProps<{
   elementId: String,
   graph?: typeof VNetworkGraph;
   metaData?: IGraphStatistics;
 }>();
+
 
 const convertedByteCount = ref('');
 const byteHoverText = ref('');
@@ -59,6 +60,13 @@ watch(() => props.metaData?.totalByteCount, (newValue) => {
     byteHoverText.value = `${newValue} bytes`;
   }
 });
+
+interface IGraphStatistics {
+  totalHostCount: number,
+  totalByteCount: number,
+  totalPacketCount: number,
+  totalTraceCount: number
+}
 </script>
 
 <style scoped>
