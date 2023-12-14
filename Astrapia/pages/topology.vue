@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <TopologyMenuBar />
+      <TopologyMenuBar @change="handleTimeframeSelection" :from-value="timeframeSelectorFrom" :to-value="timeframeSelectorTo" />
     </div>
     <div id="graph">
     <v-network-graph
@@ -18,7 +18,6 @@
     <div id="tooltip" />
     <div>
       <TopologyFooter :graph="graph" :metaData="metaData" element-id="graph"/>
-      <TopologySlider label="Timeframe" v-model="rangeValue" />
     </div>
     </div>
   </div>
@@ -29,13 +28,11 @@ import { onMounted, onBeforeUnmount } from 'vue';
 import { VEdgeLabel, VNetworkGraph } from 'v-network-graph';
 import { networkGraphConfigs } from 'assets/v-network-graph-configs';
 import * as vNG from 'v-network-graph';
-import TopologySlider from '~/components/TopologySlider.vue';
 import debounce from 'lodash/debounce';
 import TopologyFooter from "~/components/TopologyFooter.vue";
 import topologyService, {IGraphStatistics} from '~/services/topology.service';
 import { reactive } from 'vue';
 import { ref } from 'vue';
-import { watch } from 'vue';
 import TopologyMenuBar from "~/components/TopologyMenuBar.vue";
 
 const graph = ref<vNG.Instance>()
@@ -43,7 +40,14 @@ const graphData = reactive({ nodes: {} as vNG.Nodes, edges: {} as vNG.Edges });
 let metaData = ref<IGraphStatistics | null>(null);
 const layout = 'test';
 let tooltip: HTMLElement | null;
-const rangeValue = ref(2);
+// const rangeValue = ref(2);
+const timeframeSelectorFrom = ref(new Date(new Date().getTime() - 2 * 60 * 1000).toISOString().slice(0,16))
+const timeframeSelectorTo = ref(new Date().toISOString().slice(0,16))
+
+const handleTimeframeSelection = (from: string, to: string) => {
+  timeframeSelectorFrom.value = from
+  timeframeSelectorTo.value = to
+}
 
 const eventHandlers: vNG.EventHandlers = {
   'node:pointerover': ({ node, event }) => {
@@ -62,11 +66,9 @@ const eventHandlers: vNG.EventHandlers = {
 };
 
 const fetchAndUpdateGraph: () => Promise<void> = async () => {
-  const now = new Date();
-
   const dateRange: { from: Date; to: Date } = {
-    from: new Date(now.getTime() - rangeValue.value * 60 * 1000),
-    to: new Date()
+    from: new Date(timeframeSelectorFrom.value + ':00.000Z'),
+    to: new Date(timeframeSelectorTo.value + ':00.000Z')
   };
 
   const data = await topologyService.getTopology('test', dateRange.from, dateRange.to);
@@ -77,9 +79,9 @@ const fetchAndUpdateGraph: () => Promise<void> = async () => {
 
 const debouncedFetchGraphData = debounce(fetchAndUpdateGraph, 100);
 
-watch(rangeValue, async () => {
-  await debouncedFetchGraphData();
-});
+// watch(rangeValue, async () => {
+//   await debouncedFetchGraphData();
+// });
 
 onMounted(async () => {
   tooltip = document.getElementById('tooltip');
