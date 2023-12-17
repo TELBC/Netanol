@@ -1,6 +1,8 @@
 using System.Data;
+using AutoMapper;
 using Fennec.Database;
 using Fennec.Database.Domain;
+using Fennec.Database.Domain.Layers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -17,75 +19,113 @@ namespace Fennec.Controllers;
 [SwaggerTag("Manage Layouts")]
 public class LayoutController : ControllerBase
 {
+    private readonly IMapper _mapper;
     private readonly ILayoutRepository _layoutRepository;
 
-    public LayoutController(ILayoutRepository layoutRepository)
+    public LayoutController(ILayoutRepository layoutRepository, IMapper mapper)
     {
         _layoutRepository = layoutRepository;
+        _mapper = mapper;
     }
 
+    /// <summary>
+    /// List all layouts, ordered by name.
+    /// </summary>
+    /// <returns></returns>
     [HttpGet]
-    [SwaggerOperation(Summary = "List all layouts, ordered by name")]
-    [SwaggerResponse(StatusCodes.Status200OK, "Layouts listed successfully")]
+    [SwaggerResponse(StatusCodes.Status200OK, "All layouts successfully returned", typeof(List<ShortLayoutDto>))]
     public async Task<IActionResult> List()
     {
         var layouts = await _layoutRepository.GetLayouts();
-        return Ok(layouts);
+        var dtos = layouts.Select(l => _mapper.Map<ShortLayoutDto>(l));
+        return Ok(dtos);
     }
 
+    /// <summary>
+    /// Create a new layout with the given <paramref name="name"/>.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
     [HttpPost("{name}")]
-    [SwaggerOperation(Summary = "Create a new layout")]
-    [SwaggerResponse(StatusCodes.Status201Created, "Layout created successfully")]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "A layout with the same name already exists")]
+    [SwaggerResponse(StatusCodes.Status201Created, "Layout successfully created", typeof(FullLayoutDto))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "A layout with the name already exists")]
     public async Task<IActionResult> Create(string name)
     {
         try
         {
             var layout = await _layoutRepository.CreateLayout(name);
-            return CreatedAtAction(nameof(Create), layout);
+            var dto = _mapper.Map<FullLayoutDto>(layout);
+            return CreatedAtAction(nameof(Create), dto);
         }
-        catch (DuplicateNameException ex)
+        catch (DuplicateNameException)
         {
-            return BadRequest(ex.Message);
+            return BadRequest($"A layout with the same name `{name}` already exists.");
         }
     }
 
-    [HttpPut("{name}")]
-    [SwaggerOperation(Summary = "Rename an existing layout")]
-    [SwaggerResponse(StatusCodes.Status200OK, "Layout renamed successfully")]
-    [SwaggerResponse(StatusCodes.Status404NotFound, "Layout not found")]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "A layout with the new name already exists")]
-    public async Task<IActionResult> Rename(string name, [FromQuery] string newName)
+    /// <summary>
+    /// Get a layout by name.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    [HttpGet("{name}")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Layout successfully returned", typeof(Layout))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "The layout with the name does not exist")]
+    public async Task<IActionResult> Get(string name)
+    {
+        var layout = await _layoutRepository.GetLayout(name);
+        if (layout == null)
+            return NotFound($"The layout with the name `{name}` does not exist.");
+
+        return Ok(_mapper.Map<FullLayoutDto>(layout));
+    }
+
+    /// <summary>
+    /// Rename an existing layout
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="newName"></param>
+    /// <returns></returns>
+    [HttpPut("{name}/{newName}")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Layout successfully renamed", typeof(FullLayoutDto))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "The layout with the name does not exist")]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "A layout with the name already exists")]
+    public async Task<IActionResult> Rename(string name, string newName)
     {
         try
         {
             var layout = await _layoutRepository.RenameLayout(name, newName);
-            return Ok(layout);
+            var dto = _mapper.Map<FullLayoutDto>(layout);
+            return Ok(dto);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(ex.Message);
+            return NotFound($"The layout with the name `{name}` does not exist.");
         }
-        catch (DuplicateNameException ex)
+        catch (DuplicateNameException)
         {
-            return BadRequest(ex.Message);
+            return BadRequest($"A layout with the name `{name}` already exists.");
         }
     }
 
+    /// <summary>
+    /// Delete a layout
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
     [HttpDelete("{name}")]
-    [SwaggerOperation(Summary = "Delete a layout")]
-    [SwaggerResponse(StatusCodes.Status200OK, "Layout deleted successfully")]
-    [SwaggerResponse(StatusCodes.Status404NotFound, "Layout not found")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Layout successfully deleted", typeof(FullLayoutDto))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "The layout with the name does not exist")]
     public async Task<IActionResult> Delete(string name)
     {
         try
         {
             var layout = await _layoutRepository.DeleteLayout(name);
-            return Ok(layout);
+            return Ok(_mapper.Map<FullLayoutDto>(layout));
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(ex.Message);
+            return NotFound($"The layout with the name `{name}` does not exist.");
         }
     }
 }

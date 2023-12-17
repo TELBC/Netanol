@@ -46,6 +46,9 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services, IWebHostEnvironment environment)
     {
+        BsonSerializer.RegisterSerializer(typeof(ILayer), new MongoLayerSerializer());
+        services.AddAutoMapper(typeof(MapperProfile));
+        
         // Options
         // services.Configure<Netflow9ParserOptions>(Configuration.GetSection("Parsers:Netflow9"));
         // services.Configure<IpfixParserOptions>(Configuration.GetSection("Parsers:Ipfix"));

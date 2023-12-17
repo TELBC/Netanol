@@ -13,12 +13,26 @@ public interface ILayoutRepository
     Task<List<Layout>> GetLayouts();
 
     /// <summary>
+    /// Get a single layout by name.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    Task<Layout?> GetLayout(string name);
+
+    /// <summary>
     /// Creates a new layout with the given name.
     /// </summary>
     /// <param name="name"></param>
     /// <returns></returns>
     /// <exception cref="DuplicateNameException">Thrown if a layout with the name <paramref name="name" /> already exists.</exception>
     Task<Layout> CreateLayout(string name);
+
+    /// <summary>
+    /// Update the stored <see cref="Layout"/> with the given one.
+    /// </summary>
+    /// <param name="layout"></param>
+    /// <returns></returns>
+    public Task<Layout> UpdateLayout(Layout layout);
 
     /// <summary>
     /// Renames a layout with the given name to the new name.
@@ -53,13 +67,24 @@ public class LayoutRepository : ILayoutRepository
         return await _layouts.Find(_ => true).ToListAsync();
     }
 
+    public async Task<Layout?> GetLayout(string name)
+    {
+        return await _layouts.Find(l => l.Name == name).FirstOrDefaultAsync();
+    }
+
+    public async Task<Layout> UpdateLayout(Layout layout)
+    {
+        await _layouts.ReplaceOneAsync(old => old.Name == layout.Name, layout);
+        return layout;
+    }
+
     public async Task<Layout> CreateLayout(string name)
     {
         var existingLayout = await _layouts.Find(l => l.Name == name).FirstOrDefaultAsync();
         if (existingLayout != null)
             throw new DuplicateNameException($"A layout with the name {name} already exists.");
 
-        var newLayout = new Layout { Name = name };
+        var newLayout = new Layout(name);
         await _layouts.InsertOneAsync(newLayout);
         return newLayout;
     }

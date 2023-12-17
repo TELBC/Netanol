@@ -14,8 +14,6 @@ public enum GroupType
     Island
 }
 
-public record GroupRequest(GroupType GroupType, string Subnet, string SubnetMask);
-
 public record GraphStatistics(long TotalHostCount, long TotalByteCount, long TotalPacketCount, long TotalTraceCount);
 
 public record RequestStatistics(long NewHostCount, TimeSpan ProcessingTime);
@@ -61,26 +59,25 @@ public class ByteArrayComparer : IEqualityComparer<byte[]>
 }
 
 [Authorize]
-[Route("graph/{name}")]
+[Route("graph/{layoutName}")]
 [ApiController]
 [Produces("application/json")]
 [SwaggerTag("Generate Graphs")]
 public class GraphController : ControllerBase
 {
     private readonly ITraceRepository _traceRepository;
+    private readonly ILayoutRepository _layoutRepository;
 
-    public GraphController(ITraceRepository traceRepository)
+    public GraphController(ITraceRepository traceRepository, ILayoutRepository layoutRepository)
     {
         _traceRepository = traceRepository;
+        _layoutRepository = layoutRepository;
     }
 
     /// <summary>
-    /// Generate the graph for a given layout within a specified timespan. Unknown nodes are added during this process.
+    /// Generate the graph for a given layout within a specified timespan.
     /// </summary>
-    /// <remarks>
-    /// This endpoint fetches the graph layout, adds new nodes that were previously unknown, and returns the graph with its associated traces.
-    /// </remarks>
-    /// <param name="name">The name of the layout.</param>
+    /// <param name="layoutName">The name of the layout.</param>
     /// <param name="request">A JSON body containing the timespan for which the graph is requested.</param>
     /// <returns>An object containing the graph layout and its associated traces.</returns>
     /// <response code="200">Successfully returned the graph layout.</response>
@@ -88,8 +85,12 @@ public class GraphController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GenerateGraph(string name, [FromBody] GraphRequest request)
+    public async Task<IActionResult> GenerateGraph(string layoutName, [FromBody] GraphRequest request)
     {
+        var layout = await _layoutRepository.GetLayout(layoutName);
+        if (layout == null)
+            return NotFound("The given layout could not be found.");
+        
         var edges = await _traceRepository.AggregateTraces(request.From, request.To);
 
         var nodes = edges
@@ -118,49 +119,5 @@ public class GraphController : ControllerBase
             dtoEdges);
         
         return Ok(response);
-   }
-
-    /// <summary>
-    /// Groups nodes in a graph by the specified subnet and subnet mask.
-    /// </summary>
-    /// <remarks>
-    /// This endpoint allows you to create a new group within a layout based on a subnet and a subnet mask.
-    /// The nodes within the subnet will be grouped together and a new graph node will be created to represent them.
-    /// </remarks>
-    /// <param name="name">The name of the layout where the group will be created.</param>
-    /// <param name="request">A JSON body containing the subnet, subnet mask, and group type for the new group.</param>
-    /// <returns>Returns an object with details of the newly created group.</returns>
-    /// <response code="200">The group was successfully created.</response>
-    /// <response code="400">The subnet or subnet mask was invalid, or the group type is not supported.</response>
-    /// <response code="404">The given layout was not found.</response>
-    [HttpPost("group")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> CreateGroup(string name, [FromBody] GroupRequest request)
-    {
-       return Ok();
-    }
-
-    
-    /// <summary>
-    ///     Dissolves a group within a specific layout.
-    /// </summary>
-    /// <remarks>
-    ///     This API removes a group node from a layout based on its ID and makes any corresponding host nodes visible.
-    /// </remarks>
-    /// <param name="name">The name of the layout.</param>
-    /// <param name="groupId">The ID of the group node to be dissolved.</param>
-    /// <returns>Returns Ok if the group is successfully dissolved.</returns>
-    /// <response code="200">The group was successfully dissolved.</response>
-    /// <response code="400">The given group node is not a compressed group.</response>
-    /// <response code="404">The given layout or group node was not found.</response>
-    [HttpDelete("group/{groupId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DissolveGroup(string name, long groupId)
-    {
-       return Ok();
     }
 }
