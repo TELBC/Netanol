@@ -109,8 +109,8 @@ public class AuthController : ControllerBase
     /// </remarks>
     /// <returns></returns>
     [Authorize]
-    [SwaggerResponse(StatusCodes.Status200OK, "The request is authenticated.")]
-    [SwaggerResponse(StatusCodes.Status401Unauthorized, "The request is not authenticated.")]
+    [SwaggerResponse(StatusCodes.Status204NoContent, "The request is authenticated")]
+    [SwaggerResponse(StatusCodes.Status401Unauthorized, "The request is not authenticated")]
     [HttpGet("status")]
     public IActionResult Status()
     {
