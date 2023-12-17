@@ -33,16 +33,21 @@ public class FilterList
                 if (!condition.Match(aggregateTrace))
                     continue;
 
-                if (condition.Include)
-                    break;
-                aggregateTraces.RemoveAt(i);
-                i--;
+                if (!condition.Include)
+                {
+                    aggregateTraces.RemoveAt(i);
+                    i--;
+                }
+                    
+                goto NextTrace;
             }
             
             if (ImplicitInclude)
                 continue;
             aggregateTraces.RemoveAt(i);
             i--;
+            
+            NextTrace: ;
         }
     }
 }
