@@ -1,25 +1,18 @@
 ﻿using System.Data;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using Fennec.Database;
-using Fennec.Database.Domain;
 using Fennec.Database.Domain.Layers;
 using Fennec.Options;
 using Fennec.Parsers;
 using Fennec.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
-using Serilog.Sinks.Elasticsearch;
 using OpenApiInfo = Microsoft.OpenApi.Models.OpenApiInfo;
 using Serilog.Sinks.Grafana.Loki;
 
@@ -64,6 +57,7 @@ public class Startup
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddSingleton<ITraceRepository, TraceRepository>();
         services.AddSingleton<ILayoutRepository, LayoutRepository>();
+        services.AddSingleton<ILayerRepository, LayerRepository>();
         services.AddSingleton<IMetricRepository, MetricRepository>();
         services.AddSingleton<IMongoClient>(_ => new MongoClient(Configuration.GetConnectionString("MongoConnection")));
         services.AddSingleton<IMongoDatabase>(s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat"));
@@ -87,7 +81,10 @@ public class Startup
         }
 
         // Web services
-        services.AddControllers().AddNewtonsoftJson();
+        services.AddControllers(c =>
+        {
+            c.ModelBinderProviders.Insert(0, new LayerModelBinderProvider());
+        }).AddNewtonsoftJson();
         services.AddAutoMapper(typeof(Program).Assembly);
 
         if (StartupOptions.AllowCors)

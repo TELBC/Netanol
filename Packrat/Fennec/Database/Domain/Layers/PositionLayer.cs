@@ -3,23 +3,14 @@
 /// <summary>
 /// Sets and stores the coordinates of nodes to remove the need for rerunning simulations on the frontend.
 /// </summary>
-public class PositioningLayer : ILayoutLayer
+public class PositionLayer : ILayer
 {
-    public LayerType Type { get; set; } = LayerType.Positioning;
+    public string Type { get; set; } = LayerType.Position;
     public string? Name { get; set; }
     public bool Enabled { get; set; }
+    public string Description => "Not implemented";
     
-    public void ExecuteLayer()
-    {
-        throw new NotImplementedException();
-    }
-
-    public object GetPreview()
-    {
-        throw new NotImplementedException();
-    }
-
-    public object GetFullView()
+    public void Execute(ref List<AggregateTrace> aggregateTraces)
     {
         throw new NotImplementedException();
     }
