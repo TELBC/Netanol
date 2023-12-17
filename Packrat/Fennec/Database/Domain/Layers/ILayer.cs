@@ -139,7 +139,7 @@ public class JsonLayerSerializer : JsonConverter<ILayerDto>
     public override ILayerDto? ReadJson(JsonReader reader, Type objectType, ILayerDto? existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
         var jsonObject = JObject.Load(reader);
-        var type = jsonObject["Type"]?.Value<string>();
+        var type = jsonObject["type"]?.Value<string>();
 
         if (type == null)
             throw new FormatException("Can not parse JSON to ILayer without Type attribute to distinguish.");

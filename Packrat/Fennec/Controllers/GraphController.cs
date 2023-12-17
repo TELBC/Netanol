@@ -92,6 +92,8 @@ public class GraphController : ControllerBase
             return NotFound("The given layout could not be found.");
         
         var edges = await _traceRepository.AggregateTraces(request.From, request.To);
+        foreach (var layer in layout.Layers)
+            layer.Execute(ref edges);
 
         var nodes = edges
             .SelectMany<AggregateTrace, byte[]>(trace => new[] { trace.SourceIpBytes, trace.DestinationIpBytes })
