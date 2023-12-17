@@ -17,9 +17,18 @@ public class FilterLayer : ILayer
     [BsonElement("enabled")]
     public bool Enabled { get; set; }
     
-    public void ExecuteLayer()
+    [BsonElement("filterList")]
+    public FilterList FilterList { get; set; }
+    
+    [BsonIgnore]
+    public string Description
     {
-        throw new NotImplementedException();
+        get
+        {
+            var impl = FilterList.ImplicitInclude ? "Include" : "Exclude";
+            var cond = FilterList.Conditions.Count > 1 ? "Conditions" : "Condition";
+            return $"{FilterList.Conditions.Count} <b>{cond}</b>, Implicit <b>{impl}</b>";   
+        }
     }
 
     public FilterLayer(string name, bool enabled, FilterList filterList)
@@ -35,7 +44,7 @@ public class FilterLayer : ILayer
 
     public void Execute(ref List<AggregateTrace> aggregateTraces)
     {
-        throw new NotImplementedException();
+        FilterList.Filter(ref aggregateTraces);
     }
 }
 
