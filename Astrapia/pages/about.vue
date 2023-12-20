@@ -1,67 +1,71 @@
 <template>
   <div id="graph">
     <svg id="graph-svg" width="960" height="600"></svg>
+    <div id="tooltip" style="visibility: hidden;"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import * as d3 from 'd3';
 import topologyService from '~/services/topology.service';
-import { ref } from 'vue';
 
-const layout = 'test';
+let nodes, edges;
 const rangeValue = ref(2);
+let isDragging = false;
 
-const fetchAndUpdateGraph: () => Promise<void> = async () => {
+onMounted(async () => {
+  await fetchAndUpdateGraph();
+  await initGraph();
+});
+
+const fetchAndUpdateGraph = async () => {
   const now = new Date();
-  const dateRange: { from: Date; to: Date } = {
+  const dateRange = {
     from: new Date(now.getTime() - rangeValue.value * 60 * 1000),
     to: new Date()
   };
 
   const data = await topologyService.getTopology('test', dateRange.from, dateRange.to);
-  const nodes = Object.values(data.nodes);
-  const edges = Object.values(data.edges);
+  nodes = Object.values(data.nodes);
+  edges = Object.values(data.edges);
+};
 
+const initGraph = async () => {
   const zoom = d3.zoom().on('zoom', (e) => {
     const transform = e.transform;
     link.attr('transform', transform);
     node.attr('transform', transform);
+    label.attr('transform', transform);
   });
 
   const drag = d3.drag()
-    .on("start", dragstarted)
-    .on("drag", dragged)
-    .on("end", dragended);
+    .on("start", function (event) {
+      isDragging = true;
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      event.subject.fx = null;
+      event.subject.fy = null;
+    })
+    .on("drag", function (event) {
+      event.subject.fx = event.x;
+      event.subject.fy = event.y;
+    })
+    .on("end", function (event) {
+      isDragging = false;
+      if (!event.active) simulation.alphaTarget(0);
+    });
 
   const svg = d3.select("#graph-svg")
     .attr("width", window.innerWidth)
     .attr("height", window.innerHeight)
     .call(zoom);
 
-  function dragstarted(event) {
-    if (!event.active) simulation.alphaTarget(0.3).restart();
-    event.subject.fx = null;
-    event.subject.fy = null;
-  }
-
-  function dragged(event) {
-    event.subject.fx = event.x;
-    event.subject.fy = event.y;
-  }
-
-  function dragended(event) {
-    if (!event.active) simulation.alphaTarget(0);
-  }
-
-
   const simulation = d3.forceSimulation(nodes)
-    .force("link", d3.forceLink(edges).id((d: { id: any; }) => d.id).distance(100).strength(1))
-    .force("charge", d3.forceManyBody().strength(-1000))
+    .force("link", d3.forceLink(edges).id((d: { id: any; }) => d.id).distance(300).strength(1))
+    .force("charge", d3.forceManyBody().strength(-7000))
     .force("center", d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2))
-    .force("x", d3.forceX())
-    .force("y", d3.forceY())
+    .force("x", d3.forceX().strength(0.5))
+    .force("y", d3.forceY().strength(0.5))
     .force("collide", d3.forceCollide(10));
 
   let link = svg.append("g")
@@ -81,6 +85,42 @@ const fetchAndUpdateGraph: () => Promise<void> = async () => {
     .attr("fill", "#537B87")
     .call(drag);
 
+  const tooltip = d3.select("#tooltip");
+
+  node
+    .on("mouseover", function (event, d) {
+      if (!isDragging) {
+        tooltip.style("visibility", "visible");
+        tooltip.html(d.name);
+      }
+    })
+    .on("mousemove", function (event) {
+      if (!isDragging) {
+        tooltip.style("left", (d3.select(this).attr("cx") + event.pageX) + "px")
+          .style("top", (d3.select(this).attr("cy") + event.pageY) + "px");
+      }
+    })
+    .on("mouseout", function () {
+      if (!isDragging) {
+        tooltip.style("visibility", "hidden");
+      }
+    });
+
+  let label = svg.append("g")
+    .selectAll("text")
+    .data(nodes)
+    .enter()
+    .append("text")
+    .attr("x", 0)
+    .attr("dy", "1.5em")
+    .attr("text-anchor", "middle")
+    .attr("font-family", "Arial")
+    .style("fill", "#414141")
+    .text(function (d) {
+      return d.name;
+    });
+
+  simulation.alpha(0.1).alphaTarget(0).restart();
   simulation.on("tick", () => {
     link
       .attr("x1", d => d.source.x)
@@ -91,12 +131,12 @@ const fetchAndUpdateGraph: () => Promise<void> = async () => {
     node
       .attr("cx", d => d.x)
       .attr("cy", d => d.y);
+
+    label
+      .attr("x", d => d.x)
+      .attr("y", d => d.y);
   });
 };
-
-onMounted(async () => {
-  await fetchAndUpdateGraph();
-});
 </script>
 
 <style scoped>
@@ -105,5 +145,16 @@ onMounted(async () => {
   width: 100vw;
   height: 100vh;
   background-color: white;
+}
+#tooltip {
+  position: absolute;
+  visibility: hidden;
+  background-color: #D7DFE7;
+  color: black;
+  padding: 2px;
+  border-radius: 5px;
+  text-align: center;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.8rem;
 }
 </style>
