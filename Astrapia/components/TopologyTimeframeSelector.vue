@@ -47,5 +47,6 @@ watch([from, to], ([newFrom, newTo]) => {
 
 .timeframe-selector-input {
   height: 2vh;
+  font-family: 'Open Sans', sans-serif;
 }
 </style>
