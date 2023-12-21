@@ -2,6 +2,7 @@
   <div id="graph">
     <svg id="graph-svg" width="960" height="600"></svg>
     <div id="tooltip" style="visibility: hidden;"></div>
+    <TopologyFooter @recenter="recenterNodes" :metaData="metaData" element-id="graph"/>
   </div>
 </template>
 
@@ -9,8 +10,10 @@
 import { onMounted, ref } from 'vue';
 import * as d3 from 'd3';
 import topologyService from '~/services/topology.service';
+import TopologyFooter from "~/components/TopologyFooter.vue";
 
-let nodes, edges;
+let nodes, edges, simulation, zoom, svg;
+const metaData = ref();
 const rangeValue = ref(2);
 let isDragging = false;
 
@@ -27,12 +30,20 @@ const fetchAndUpdateGraph = async () => {
   };
 
   const data = await topologyService.getTopology('test', dateRange.from, dateRange.to);
+  metaData.value = data.graphStatistics;
   nodes = Object.values(data.nodes);
   edges = Object.values(data.edges);
 };
 
+function recenterNodes() {
+  const centerX = nodes.reduce((sum, node) => sum + node.x, 0) / nodes.length;
+  const centerY = nodes.reduce((sum, node) => sum + node.y, 0) / nodes.length;
+
+  svg.call(zoom.translateTo, centerX, centerY);
+}
+
 const initGraph = async () => {
-  const zoom = d3.zoom().on('zoom', (e) => {
+  zoom = d3.zoom().on('zoom', (e) => {
     const transform = e.transform;
     link.attr('transform', transform);
     node.attr('transform', transform);
@@ -55,12 +66,12 @@ const initGraph = async () => {
       if (!event.active) simulation.alphaTarget(0);
     });
 
-  const svg = d3.select("#graph-svg")
+  svg = d3.select("#graph-svg")
     .attr("width", window.innerWidth)
     .attr("height", window.innerHeight)
     .call(zoom);
 
-  const simulation = d3.forceSimulation(nodes)
+  simulation = d3.forceSimulation(nodes)
     .force("link", d3.forceLink(edges).id((d: { id: any; }) => d.id).distance(300).strength(1))
     .force("charge", d3.forceManyBody().strength(-7000))
     .force("center", d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2))
@@ -88,7 +99,7 @@ const initGraph = async () => {
   const tooltip = d3.select("#tooltip");
 
   node
-    .on("mouseover", function (event, d) {
+    .on("mouseenter", function (event, d) {
       if (!isDragging) {
         tooltip.style("visibility", "visible");
         tooltip.html(d.name);
@@ -100,7 +111,7 @@ const initGraph = async () => {
           .style("top", (d3.select(this).attr("cy") + event.pageY) + "px");
       }
     })
-    .on("mouseout", function () {
+    .on("mouseleave", function () {
       if (!isDragging) {
         tooltip.style("visibility", "hidden");
       }

@@ -1,6 +1,6 @@
 <template>
   <div class="footer">
-    <button class="icon-button" @click="graph?.panToCenter()">
+    <button class="icon-button" @click="$emit('recenter')">
       <font-awesome-icon icon="fa-solid fa-arrows-to-circle" />
     </button>
     <span class="separator"></span>
@@ -30,16 +30,13 @@
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import VNetworkGraph from "~/plugins/v-network-graph";
 import FullscreenButton from "~/components/FullscreenButton.vue";
 import { ref, watch } from 'vue';
 
 const props = defineProps<{
   elementId: String,
-  graph?: typeof VNetworkGraph;
-  metaData?: IGraphStatistics;
+  metaData: IGraphStatistics
 }>();
-
 
 const convertedByteCount = ref('');
 const byteHoverText = ref('');
