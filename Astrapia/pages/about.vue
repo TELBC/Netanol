@@ -63,7 +63,7 @@ const initGraph = async () => {
     })
     .on("end", function (event) {
       isDragging = false;
-      if (!event.active) simulation.alphaTarget(0);
+      simulation.alphaTarget(0).restart();
     });
 
   svg = d3.select("#graph-svg")
@@ -79,12 +79,38 @@ const initGraph = async () => {
     .force("y", d3.forceY().strength(0.5))
     .force("collide", d3.forceCollide(10));
 
+  let strokeWidthScale = d3.scaleLinear()
+      .domain([0, 50000000])
+      .range([2, 10]);
+
+
   let link = svg.append("g")
-    .attr("stroke", "#999")
-    .attr("stroke-opacity", 0.6)
-    .selectAll("line")
-    .data(edges)
-    .join("line");
+      .attr("stroke", "#999")
+      .attr("stroke-opacity", 0.6)
+      .selectAll("line")
+      .data(edges)
+      .join("line")
+      .attr("stroke-width", d => strokeWidthScale(d.byteCount));
+
+
+  let linkHitArea = svg.append("g")
+      .attr("stroke", "transparent")
+      .attr("stroke-width", 10)
+      .selectAll("line")
+      .data(edges)
+      .join("line")
+      .on("mouseover", function(event, d) {
+        tooltip.style("visibility", "visible");
+        tooltip.html(`Bytes: ${d.byteCount} <br> Traces: ${d.traceCount} <br> Packets: ${d.packetCount}`);
+      })
+      .on("mousemove", function(event) {
+        tooltip.style("left", (event.pageX-80) + "px")
+            .style("top", (event.pageY+20) + "px");
+      })
+
+      .on("mouseleave", function() {
+        tooltip.style("visibility", "hidden");
+      });
 
   let node = svg.append("g")
     .attr("stroke", "#fff")
@@ -138,6 +164,12 @@ const initGraph = async () => {
       .attr("y1", d => d.source.y)
       .attr("x2", d => d.target.x)
       .attr("y2", d => d.target.y);
+
+    linkHitArea
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
 
     node
       .attr("cx", d => d.x)
