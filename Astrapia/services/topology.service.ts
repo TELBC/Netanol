@@ -13,14 +13,14 @@ export interface GraphEdge {
   traceCount: number
 }
 
-interface IGraphStatistics {
+export interface IGraphStatistics {
   totalHostCount: number,
   totalByteCount: number,
   totalPacketCount: number,
   totalTraceCount: number
 }
 
-interface GraphResponse {
+export interface GraphResponse {
   graphStatistics: IGraphStatistics
   nodes: { [key: string]: GraphNode },
   edges: { [key: string]: GraphEdge }
