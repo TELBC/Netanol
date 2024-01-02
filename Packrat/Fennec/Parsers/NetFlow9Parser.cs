@@ -13,14 +13,12 @@ namespace Fennec.Parsers;
 public class NetFlow9Parser : IParser
 {
     private readonly ILogger _log;
-    private readonly IServiceProvider _serviceProvider;
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords; // matches (ExporterIp, TemplateId) to TemplateRecord
     private readonly IMetricService _metricService;
     
-    public NetFlow9Parser(ILogger log, IServiceProvider serviceProvider, IMetricService metricService)
+    public NetFlow9Parser(ILogger log, IMetricService metricService)
     {
         _log = log.ForContext<NetFlow9Parser>();
-        _serviceProvider = serviceProvider;
         _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
         _metricService = metricService;
     }

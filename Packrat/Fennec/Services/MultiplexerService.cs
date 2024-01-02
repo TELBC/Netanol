@@ -1,10 +1,11 @@
 ﻿using System.Net.Sockets;
 using Fennec.Database;
+using Fennec.Metrics;
 using Fennec.Options;
 using Fennec.Parsers;
-using Metrics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using Serilog.Context;
 
 namespace Fennec.Services;
@@ -13,43 +14,47 @@ namespace Fennec.Services;
 /// A service that listens for UDP packets on a specified port and forwards them
 /// to the appropriate parser based on the protocol version.
 /// </summary>
-public class ProtocolMultiplexerService : BackgroundService
+public class MultiplexerService
 {
     private readonly ILogger _log;
     private readonly ITraceRepository _traceRepository;
     private readonly UdpClient _udpClient;
     private readonly IDictionary<ParserType, IParser> _parsers;
-    private readonly int _listeningPort;
+    private readonly MultiplexerOptions _options;
     private readonly IFlowImporterMetric _flowImporterMetric;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ProtocolMultiplexerService"/>.
+    /// Initializes a new instance of the <see cref="MultiplexerService"/>.
     /// </summary>
     /// <param name="log">Logger for logging information and errors.</param>
     /// <param name="options">Configuration options for the service.</param>
     /// <param name="parsers">The collection of data parsers.</param>
-    /// <param name="listeningPort">Port the multiplexer listens on.</param>
     /// <param name="traceRepository"></param>
-    public ProtocolMultiplexerService(
+    public MultiplexerService(
         ILogger log,
-        IOptions<ProtocolMultiplexerOptions> options, 
         IDictionary<ParserType, IParser> parsers,
-        int listeningPort, ITraceRepository traceRepository, IFlowImporterMetric flowImporterMetric)
+        MultiplexerOptions options, ITraceRepository traceRepository, IFlowImporterMetric flowImporterMetric)
     {
-        _log = log.ForContext<ProtocolMultiplexerService>();
-        _listeningPort = options.Value.ListeningPort;
+        _log = log.ForContext<MultiplexerService>().ForContext("MultiplexerName", options.Name);
+        _options = options;
         _parsers = parsers;
         _traceRepository = traceRepository;
-        _udpClient = new UdpClient(_listeningPort);
+        _udpClient = new UdpClient(_options.ListeningPort);
         _flowImporterMetric = flowImporterMetric;
     }
 
     /// <summary>
     /// Executes the background service to listen for UDP packets and process them.
     /// </summary>
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task RunAsync(CancellationToken stoppingToken)
     {
-        _log.Information("Multiplexer listening on port {ListeningPort}", _listeningPort);
+        if (!_options.Enabled)
+        {
+            _log.Information("This multiplexer is disabled");
+            return;
+        }
+        
+        _log.Information("Listening on port {MultiplexerListeningPort} for {MultiplexerParser}", _options.ListeningPort, _options.Parsers);
 
         try
         {
@@ -74,27 +79,22 @@ public class ProtocolMultiplexerService : BackgroundService
     /// <param name="result"></param>
     private void MatchPacket(UdpReceiveResult result)
     {
-        var protocolVersion = DetermineProtocolVersion(result.Buffer);
+        var parserType = DetermineProtocolVersion(result.Buffer);
 
-        foreach (var parser in _parsers)
+        if (parserType == null)
         {
-            if (protocolVersion == ProtocolVersion.Unknown) continue;
-            try
-            {
-                if ((ParserType)protocolVersion != parser.Key) continue;
-                // not awaited so we can continue listening for packets
-                ReadPacket(parser.Value, result);
-                _flowImporterMetric.AddFlowImport(result.RemoteEndPoint);
-                break;
-            }
-            catch (Exception ex)
-            {
-                _log.ForContext("Exception", ex)
-                    .Error("Failed to read packet due to an " +
-                           "unexpected exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
-                throw;
-            }
+            _log.Warning("Failed to determine which parser to use from initial bytes of {InitialBytes}", result.Buffer.Take(2));
+            return;
         }
+
+        if (!_parsers.TryGetValue(parserType.Value, out var parser))
+        {
+            _log.Warning("Received packets of type {ParserType} but this multiplexer is not configured to parse this type", parserType);
+            return;
+        }
+
+        // TODO: we should keep track of this at some point
+        _ = ReadPacket(parser, result);
     }
     
     // ReadPacket(IParser, udpResult) --> calls parser.Parse and the result of it is written to DB
@@ -110,26 +110,27 @@ public class ProtocolMultiplexerService : BackgroundService
         if (!traceImportInfos.IsNullOrEmpty())
         {
             await _traceRepository.ImportTraceImportInfo(traceImportInfos);
+            _flowImporterMetric.AddFlowImport(udpReceiveResult.RemoteEndPoint);
         }
     }
 
-    public static ProtocolMultiplexerService CreateInstance(IServiceProvider serviceProvider, IEnumerable<ParserType> parsers, int listeningPort)
+    public static MultiplexerService CreateInstance(IServiceProvider serviceProvider, MultiplexerOptions options)
     {
         var activeCollectors = new Dictionary<ParserType, IParser>();
     
-        foreach (var parserType in parsers)
+        foreach (var parserType in options.Parsers)
         {
             IParser parser = parserType switch
             {
-                ParserType.Netflow9 => serviceProvider.GetRequiredService<NetFlow9Parser>(),
-                ParserType.Ipfix => serviceProvider.GetRequiredService<IpFixParser>(),
+                ParserType.Netflow9 => ActivatorUtilities.CreateInstance<NetFlow9Parser>(serviceProvider),
+                ParserType.Ipfix => ActivatorUtilities.CreateInstance<IpFixParser>(serviceProvider),
                 _ => throw new ArgumentOutOfRangeException()
             };
             
             activeCollectors.Add(parserType, parser);
         }
     
-        return ActivatorUtilities.CreateInstance<ProtocolMultiplexerService>(serviceProvider, activeCollectors, listeningPort);
+        return ActivatorUtilities.CreateInstance<MultiplexerService>(serviceProvider, activeCollectors, options);
     }
 
     /// <summary>
@@ -138,9 +139,9 @@ public class ProtocolMultiplexerService : BackgroundService
     /// <param name="buffer"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    private ProtocolVersion DetermineProtocolVersion(byte[] buffer)
+    private static ParserType? DetermineProtocolVersion(IReadOnlyList<byte> buffer)
     {
-        if (buffer.Length < 2)
+        if (buffer.Count < 2)
         {
             throw new ArgumentException("Buffer is too short or null");
         }
@@ -150,9 +151,9 @@ public class ProtocolMultiplexerService : BackgroundService
 
         return version switch
         {
-            9 => ProtocolVersion.NetFlow9,
-            10 => ProtocolVersion.Ipfix,
-            _ => ProtocolVersion.Unknown
+            9 => ParserType.Netflow9,
+            10 => ParserType.Ipfix,
+            _ => null
         };
     }
 }

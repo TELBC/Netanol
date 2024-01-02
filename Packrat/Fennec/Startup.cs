@@ -1,10 +1,10 @@
 ﻿using System.Data;
 using Fennec.Database;
 using Fennec.Database.Domain.Layers;
+using Fennec.Metrics;
 using Fennec.Options;
 using Fennec.Parsers;
 using Fennec.Services;
-using Metrics;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -53,7 +53,7 @@ public class Startup
         
         // Metric service
         services.AddSingleton<IMetricService, MetricService>();
-        services.AddSingleton<IFlowImporterMetric,FlowImporterMetric>();
+        services.AddSingleton<IFlowImporterMetric, FlowImporterMetric>();
         
         // Database services
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
@@ -63,23 +63,19 @@ public class Startup
         services.AddSingleton<IMetricRepository, MetricRepository>();
         services.AddSingleton<IMongoClient>(_ => new MongoClient(Configuration.GetConnectionString("MongoConnection")));
         services.AddSingleton<IMongoDatabase>(s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat"));
-
-        // Parser services
-        services.AddSingleton<NetFlow9Parser>(); // TODO: set exception behaviour
-        services.AddSingleton<IpFixParser>(); // TODO: set exception behaviour
         
         // Protocol multiplexer
-        var multiplexerConfig = Configuration.GetSection("ProtocolMultiplexerConfig").Get<ProtocolMultiplexerOptions>();
+        var multiplexerOptions = Configuration.GetSection("Multiplexers").Get<List<MultiplexerOptions>>();
 
-        if (multiplexerConfig != null)
+        if (multiplexerOptions != null)
         {
-            // Register multiplexer service
-            services.AddHostedService(provider => 
-                ProtocolMultiplexerService.CreateInstance(provider, multiplexerConfig.EnabledParsers, multiplexerConfig.ListeningPort));
+
+            services.AddHostedService<MultiplexerMonitorService>(s => 
+                ActivatorUtilities.CreateInstance<MultiplexerMonitorService>(s, multiplexerOptions));
         }
         else
         {
-            Log.Information("Protocol multiplexer is disabled... No collectors were registered");
+            Log.Error("Failed to read multiplexer configuration... If you want to run no multiplexers define an empty list.");
         }
 
         // Web services
@@ -182,8 +178,7 @@ public class Startup
                 .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
                 .WriteTo.GrafanaLoki(context.Configuration.GetConnectionString("Loki"))
                 .WriteTo
-                .Console(restrictedToMinimumLevel: LogEventLevel
-                    .Debug); // TODO: behave different in different environment
+                .Console(restrictedToMinimumLevel: LogEventLevel.Debug); // TODO: behave different in different environment
         });
     }
 
