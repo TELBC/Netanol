@@ -2,6 +2,7 @@
 using Fennec.Database;
 using Fennec.Options;
 using Fennec.Parsers;
+using Metrics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog.Context;
@@ -19,6 +20,7 @@ public class ProtocolMultiplexerService : BackgroundService
     private readonly UdpClient _udpClient;
     private readonly IDictionary<ParserType, IParser> _parsers;
     private readonly int _listeningPort;
+    private readonly IFlowImporterMetric _flowImporterMetric;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProtocolMultiplexerService"/>.
@@ -32,13 +34,14 @@ public class ProtocolMultiplexerService : BackgroundService
         ILogger log,
         IOptions<ProtocolMultiplexerOptions> options, 
         IDictionary<ParserType, IParser> parsers,
-        int listeningPort, ITraceRepository traceRepository)
+        int listeningPort, ITraceRepository traceRepository, IFlowImporterMetric flowImporterMetric)
     {
         _log = log.ForContext<ProtocolMultiplexerService>();
         _listeningPort = options.Value.ListeningPort;
         _parsers = parsers;
         _traceRepository = traceRepository;
         _udpClient = new UdpClient(_listeningPort);
+        _flowImporterMetric = flowImporterMetric;
     }
 
     /// <summary>
@@ -81,6 +84,7 @@ public class ProtocolMultiplexerService : BackgroundService
                 if ((ParserType)protocolVersion != parser.Key) continue;
                 // not awaited so we can continue listening for packets
                 ReadPacket(parser.Value, result);
+                _flowImporterMetric.AddFlowImport(result.RemoteEndPoint);
                 break;
             }
             catch (Exception ex)

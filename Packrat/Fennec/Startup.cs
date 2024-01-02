@@ -4,6 +4,7 @@ using Fennec.Database.Domain.Layers;
 using Fennec.Options;
 using Fennec.Parsers;
 using Fennec.Services;
+using Metrics;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +53,7 @@ public class Startup
         
         // Metric service
         services.AddSingleton<IMetricService, MetricService>();
+        services.AddSingleton<IFlowImporterMetric,FlowImporterMetric>();
         
         // Database services
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
@@ -61,7 +63,7 @@ public class Startup
         services.AddSingleton<IMetricRepository, MetricRepository>();
         services.AddSingleton<IMongoClient>(_ => new MongoClient(Configuration.GetConnectionString("MongoConnection")));
         services.AddSingleton<IMongoDatabase>(s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat"));
-     
+
         // Parser services
         services.AddSingleton<NetFlow9Parser>(); // TODO: set exception behaviour
         services.AddSingleton<IpFixParser>(); // TODO: set exception behaviour

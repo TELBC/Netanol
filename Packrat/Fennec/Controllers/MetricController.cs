@@ -1,5 +1,6 @@
 ﻿using Fennec.Database;
 using Fennec.Services;
+using Metrics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,21 +15,23 @@ namespace Fennec.Controllers;
 public class MetricController : ControllerBase
 {
     private readonly IMetricService _metricService;
-    private readonly IMetricRepository _metricRepository;
+    private readonly IFlowImporterMetric _metricFlowImporter;
 
-    public MetricController(IMetricService metricService, IMetricRepository metricRepository)
+    public MetricController(IMetricService metricService, IFlowImporterMetric flowImporterMetric)
     {
         _metricService = metricService;
-        _metricRepository = metricRepository;
+        _metricFlowImporter = flowImporterMetric;
+
     }
     
     /// <summary>
-    /// Gets all metrics.
+    /// Gets all the flowImporter data
     /// </summary>
-    [HttpGet("all")]
-    public async Task<IActionResult> GetAllMetric()
+    [HttpGet("flowImporter")]
+    public async Task<IActionResult> GetFlowImporter()
     {
-        _metricRepository.GetTotalCountAsync();
-        return Ok(await _metricService.GetAllMetrics());
+        _metricFlowImporter.UpdateMetric();
+        var data = _metricService.GetMetrics<FlowImporterData>("FlowImporterData").FlowImporterDataSeries.ToArray();
+        return Ok(data);
     }
 }
