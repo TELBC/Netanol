@@ -1,6 +1,6 @@
 ﻿using Fennec.Database;
+using Fennec.Metrics;
 using Fennec.Services;
-using Metrics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

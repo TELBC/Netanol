@@ -56,7 +56,6 @@ public class AggregateTrace
     [BsonElement("packetCount")]
     public ulong PacketCount { get; set; }
     
-    
     [BsonElement("byteCount")]
     public ulong ByteCount { get; set; }
     

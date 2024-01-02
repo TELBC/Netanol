@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using Fennec.Services;
 
-namespace Metrics;
+namespace Fennec.Metrics;
 
 public interface IFlowImporterMetric
 {
@@ -19,24 +19,24 @@ public interface IFlowImporterMetric
 
 public class FlowImporterMetric : IFlowImporterMetric
 {
-    private const int arraySize = 5760;
-    private const int periodInMinute = 1; // ex: periodInMinute of 1 will do the calculation every Minute
+    private const int ArraySize = 5760;
+    private const int PeriodInMinute = 1; // ex: periodInMinute of 1 will do the calculation every Minute
 
     private readonly FlowImporterDataSeries[] _flowImporterData; // to store all FlowImportCounts 
     private readonly IMetricService _metricService;
 
     private readonly PeriodicTimer _periodicTimer;
 
-    private readonly Dictionary<IPEndPoint, int> tempFlowImports; // to store FlowImportCount in last xx seconds
+    private readonly Dictionary<IPEndPoint, int> _tempFlowImports; // to store FlowImportCount in last xx seconds
     private int _nextModifiedPosition;
 
     public FlowImporterMetric(IMetricService metricService)
     {
-        tempFlowImports = new Dictionary<IPEndPoint, int>();
-        _flowImporterData = new FlowImporterDataSeries[arraySize];
+        _tempFlowImports = new Dictionary<IPEndPoint, int>();
+        _flowImporterData = new FlowImporterDataSeries[ArraySize];
         _nextModifiedPosition = 0;
         _metricService = metricService;
-        _periodicTimer = new PeriodicTimer(TimeSpan.FromMinutes(periodInMinute));
+        _periodicTimer = new PeriodicTimer(TimeSpan.FromMinutes(PeriodInMinute));
 
         StartPeriodicTask(); // to start the periodicProcess
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit; // to safely dispose once application ends
@@ -44,7 +44,7 @@ public class FlowImporterMetric : IFlowImporterMetric
 
     public void AddFlowImport(IPEndPoint endPoint)
     {
-        tempFlowImports[endPoint] = tempFlowImports.TryGetValue(endPoint, out var value) ? value + 1 : 1;
+        _tempFlowImports[endPoint] = _tempFlowImports.TryGetValue(endPoint, out var value) ? value + 1 : 1;
     }
 
     public void UpdateMetric()
@@ -67,11 +67,11 @@ public class FlowImporterMetric : IFlowImporterMetric
         _flowImporterData[_nextModifiedPosition] = new FlowImporterDataSeries
         {
             DateTime = DateTime.UtcNow,
-            Endpoints = new Dictionary<IPEndPoint, int>(tempFlowImports)
+            Endpoints = new Dictionary<IPEndPoint, int>(_tempFlowImports)
         };
 
-        tempFlowImports.Clear();
-        _nextModifiedPosition = (_nextModifiedPosition + 1) % arraySize;
+        _tempFlowImports.Clear();
+        _nextModifiedPosition = (_nextModifiedPosition + 1) % ArraySize;
     }
 
     private void OnProcessExit(object sender, EventArgs e)

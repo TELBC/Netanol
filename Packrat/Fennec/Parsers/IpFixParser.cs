@@ -15,15 +15,13 @@ namespace Fennec.Parsers;
 public class IpFixParser : IParser
 {
     private readonly ILogger _log;
-    private readonly IServiceProvider _serviceProvider;
     // TODO: expand _templateRecords to a service, can be used to display/monitor templates in frontend
     private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords;
     private readonly IMetricService _metricService;
 
-    public IpFixParser(ILogger log, IServiceProvider serviceProvider, IMetricService metricService)
+    public IpFixParser(ILogger log,  IMetricService metricService)
     {
         _log = log.ForContext<IpFixParser>();
-        _serviceProvider = serviceProvider;
         _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
         _metricService = metricService;
     }
@@ -34,7 +32,7 @@ public class IpFixParser : IParser
         var stream = new MemoryStream(result.Buffer);
 
         using var ipfixReader = new IpfixReader(stream, 0, _templateRecords.Values);
-        var header = ipfixReader.ReadPacketHeader();
+        _ = ipfixReader.ReadPacketHeader();
 
         // Process each set in the IPFIX message. Has to be while(true) because header doesn't provide a count of sets.
         while (true)
