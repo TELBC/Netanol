@@ -67,9 +67,11 @@ public class AggregateTrace
 public class TraceRepository : ITraceRepository
 {
     private readonly IMongoCollection<SingleTrace> _traces;
+    private readonly DnsResolverService _dnsResolverService;
 
-    public TraceRepository(IMongoDatabase database)
+    public TraceRepository(IMongoDatabase database, DnsResolverService dnsResolverService)
     {
+        _dnsResolverService = dnsResolverService;
         _traces = database.GetCollection<SingleTrace>("singleTraces");
     }
 
@@ -84,20 +86,30 @@ public class TraceRepository : ITraceRepository
     /// <param name="traceImportInfos"></param>
     public async Task ImportTraceImportInfo(IEnumerable<TraceImportInfo> traceImportInfos)
     {
-        foreach (var traceImportInfo in traceImportInfos)
+        var tasks = traceImportInfos.Select(async traceImportInfo =>
         {
+            var srcDnsEntryTask = _dnsResolverService.GetDnsEntryFromCacheOrResolve(traceImportInfo.SrcIp);
+            var dstDnsEntryTask = _dnsResolverService.GetDnsEntryFromCacheOrResolve(traceImportInfo.DstIp);
+
+            await Task.WhenAll(srcDnsEntryTask, dstDnsEntryTask);
+
+            var srcDnsEntry = srcDnsEntryTask.Result;
+            var dstDnsEntry = dstDnsEntryTask.Result;
+
             var singleTrace = new SingleTrace
             {
                 Timestamp = traceImportInfo.ReadTime,
                 Protocol = traceImportInfo.Protocol,
-                Source = new SingleTraceEndpoint(traceImportInfo.SrcIp, traceImportInfo.SrcPort),
-                Destination = new SingleTraceEndpoint(traceImportInfo.DstIp, traceImportInfo.DstPort),
+                Source = new SingleTraceEndpoint(traceImportInfo.SrcIp, traceImportInfo.SrcPort, srcDnsEntry?.HostName),
+                Destination = new SingleTraceEndpoint(traceImportInfo.DstIp, traceImportInfo.DstPort, dstDnsEntry?.HostName),
                 ByteCount = traceImportInfo.ByteCount,
                 PacketCount = traceImportInfo.PacketCount
             };
 
             await AddSingleTrace(singleTrace);
-        }
+        });
+
+        await Task.WhenAll(tasks);
     }
 
     public async Task<List<AggregateTrace>> AggregateTraces(DateTimeOffset start, DateTimeOffset end)
