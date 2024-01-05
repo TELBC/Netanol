@@ -1,6 +1,5 @@
 <template>
   <div id="flowImportContainer">
-    <label id="flowImportLabel" for="flowImport">Flow Import</label>
     <svg id="flowImport" ref="svgRef"></svg>
   </div>
 </template>
@@ -16,11 +15,11 @@ import {
   line,
   extent,
   isoParse,
-  timeMinute,
+  timeHour,
+  pointer,
 } from 'd3';
-
 import networkAnalysisService, {FlowImport} from '~/services/networkAnalysisService';
-import _ from "lodash";
+
 
 let svgRef = ref(null);
 
@@ -59,7 +58,181 @@ onMounted(async() => {
         "127.0.0.1:62541": 45,
         "127.0.0.1:60199": 57
       }
-    }
+    },
+    {
+      "dateTime": "2024-01-02T17:40:59.5720466Z",
+      "endpoints": {
+        "127.0.0.1:60198": 60,
+        "127.0.0.1:62541": 55,
+        "127.0.0.1:60199": 19
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:41:59.5745162Z",
+      "endpoints": {
+        "127.0.0.1:60198": 46,
+        "127.0.0.1:62541": 60,
+        "127.0.0.1:60199": 36
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:42:59.581861Z",
+      "endpoints": {
+        "127.0.0.1:62541": 22,
+        "127.0.0.1:60199": 60
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:43:59.5703493Z",
+      "endpoints": {
+        "127.0.0.1:62541": 45,
+        "127.0.0.1:60199": 57
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:44:59.5720466Z",
+      "endpoints": {
+        "127.0.0.1:62541": 45,
+        "127.0.0.1:60199": 57,
+        "127.0.0.1:60198": 11
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:45:59.5745162Z",
+      "endpoints": {
+        "127.0.0.1:62541": 57,
+        "127.0.0.1:60199": 61,
+        "127.0.0.1:60198": 24
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:46:59.5720466Z",
+      "endpoints": {
+        "127.0.0.1:62541": 27,
+        "127.0.0.1:60199": 34,
+        "127.0.0.1:60198": 9
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:47:59.5745162Z",
+      "endpoints": {
+        "127.0.0.1:62541": 72,
+        "127.0.0.1:60199": 56,
+        "127.0.0.1:60198": 37
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:48:59.5720466Z",
+      "endpoints": {
+        "127.0.0.1:62541": 71,
+        "127.0.0.1:60199": 57,
+        "127.0.0.1:60198": 12
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:49:59.5745162Z",
+      "endpoints": {
+        "127.0.0.1:62541": 63,
+        "127.0.0.1:60199": 64,
+        "127.0.0.1:60198": 19
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:50:59.5720466Z",
+      "endpoints": {
+        "127.0.0.1:62541": 37,
+        "127.0.0.1:60199": 63,
+        "127.0.0.1:60198": 19
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:51:59.5745162Z",
+      "endpoints": {
+        "127.0.0.1:62541": 47,
+        "127.0.0.1:60199": 65,
+        "127.0.0.1:60198": 18
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:52:59.5720466Z",
+      "endpoints": {
+        "127.0.0.1:62541": 48,
+        "127.0.0.1:60199": 46,
+        "127.0.0.1:60198": 26
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:53:59.5745162Z",
+      "endpoints": {
+        "127.0.0.1:62541": 57,
+        "127.0.0.1:60199": 61,
+        "127.0.0.1:60198": 24
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:54:59.5720466Z",
+      "endpoints": {
+        "127.0.0.1:62541": 45,
+        "127.0.0.1:60199": 57,
+        "127.0.0.1:60198": 11
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:55:59.5745162Z",
+      "endpoints": {
+        "127.0.0.1:62541": 43,
+        "127.0.0.1:60199": 33,
+        "127.0.0.1:60198": 37
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:56:59.5720466Z",
+      "endpoints": {
+        "127.0.0.1:62541": 56,
+        "127.0.0.1:60199": 33,
+        "127.0.0.1:60198": 43
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:57:59.5745162Z",
+      "endpoints": {
+        "127.0.0.1:62541": 32,
+        "127.0.0.1:60199": 38,
+        "127.0.0.1:60198": 53
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:58:59.5720466Z",
+      "endpoints": {
+        "127.0.0.1:62541": 29,
+        "127.0.0.1:60199": 29,
+        "127.0.0.1:60198": 51
+      }
+    },
+    {
+      "dateTime": "2024-01-02T17:59:59.5745162Z",
+      "endpoints": {
+        "127.0.0.1:62541": 30,
+        "127.0.0.1:60199": 30,
+        "127.0.0.1:60198": 49
+      }
+    },
+    {
+      "dateTime": "2024-01-02T18:00:59.5720466Z",
+      "endpoints": {
+        "127.0.0.1:62541": 31,
+        "127.0.0.1:60199": 27,
+        "127.0.0.1:60198": 44
+      }
+    },
+    {
+      "dateTime": "2024-01-02T18:01:59.5745162Z",
+      "endpoints": {
+        "127.0.0.1:62541": 33,
+        "127.0.0.1:60199": 42,
+        "127.0.0.1:60198": 41
+      }
+    },
   ];
 
   const width = 900;
@@ -69,21 +242,32 @@ onMounted(async() => {
   const marginBottom = 20;
   const marginLeft = 20;
 
-  // const data = flowImportGraphData.flatMap(item => {
-  //   return Object.entries(item.endpoints).map(([endpoint, value]) => ({
-  //     dateTime: isoParse(item.dateTime),
-  //     endpoint,
-  //     value
-  //   }));
-  // });
+  let tooltip = select('#flowImportContainer')
+    .append('div')
+    .style('position', 'absolute')
+    .style('visibility', 'hidden')
+    .style('background-color', '#537B87')
+    .style('color', 'white')
+    .style('padding', '0.7vh')
+    .style('border-radius', '4px')
+    .style('border', '0.1vh solid #424242')
+    .style('font-family', 'Open Sans');
 
-  const data = testData.flatMap(item => {
+  const data = flowImportGraphData.flatMap(item => {
     return Object.entries(item.endpoints).map(([endpoint, value]) => ({
       dateTime: isoParse(item.dateTime),
       endpoint,
       value
     }));
   });
+
+  // const data = testData.flatMap(item => {
+  //   return Object.entries(item.endpoints).map(([endpoint, value]) => ({
+  //     dateTime: isoParse(item.dateTime),
+  //     endpoint,
+  //     value
+  //   }));
+  // });
 
   console.log(data)
 
@@ -94,40 +278,80 @@ onMounted(async() => {
 
   const maxValue = Math.max(...data.map(d => d.value));
   const y = scaleLinear()
-    .domain([0, maxValue + 20])
+    .domain([0, maxValue + 10])
     .range([height - marginBottom, marginTop]);
 
   const svg = select(svgRef.value)
-    .attr("width", width)
-    .attr("height", height);
+    .attr('width', width)
+    .attr('height', height);
 
-  svg.append("g")
-    .attr("transform", `translate(0,${height - marginBottom})`)
+  svg.append('g')
+    .attr('transform', `translate(0,${height - marginBottom})`)
     .call(axisBottom(x)
-      .ticks(timeMinute.every(1)));
+      .ticks(timeHour.every(2)));
 
-  svg.append("g")
-    .attr("transform", `translate(${marginLeft},0)`)
+  svg.append('g')
+    .attr('transform', `translate(${marginLeft},0)`)
     .call(axisLeft(y));
+
+  svg.selectAll('xGrid')
+    .data(x.ticks())
+    .join('line')
+    .attr('x1', d => x(d))
+    .attr('x2', d => x(d))
+    .attr('y1', 0)
+    .attr('y2', height)
+    .attr('stroke', '#e0e0e0')
+    .attr('stroke-width', .5);
+
+  svg.selectAll('yGrid')
+    .data(y.ticks((maxValue + 10) / 10))
+    .join('line')
+    .attr('x1', 0)
+    .attr('x2', width - marginRight)
+    .attr('y1', d => y(d))
+    .attr('y2', d => y(d))
+    .attr('stroke', '#e0e0e0')
+    .attr('stroke-width', .5)
 
   const lineGenerator = line()
     .x(d => x(d.dateTime))
     .y(d => y(d.value));
 
   const endpoints = Array.from(new Set(data.map(d => d.endpoint)));
-  const colors = ['#795387', '#875F53', '#618753']
-  _.zip(endpoints, colors).forEach(([endpoint, color], i) => {
-    svg.append('circle').attr('cx',width-marginRight + 20).attr('cy',20 + i * 25).attr('r', 10).style('fill', color ?? 'black')
-    svg.append('text').attr('x', width-marginRight + 40).attr('y', 20 + i * 25).text(endpoint!).style('font-size', '15px').attr('alignment-baseline','middle')
+  const colors = ['#7EA0A9', '#C78750', '#EB5050', '#294D61']
+  endpoints.forEach((endpoint, i) => {
+    svg.append('circle').attr('cx',width-marginRight + 20).attr('cy',20 + i * 25).attr('r', 10).style('fill', colors[i] ?? 'black')
+    svg.append('text').attr('x', width-marginRight + 40).attr('y', 20 + i * 25).text(endpoint!).style('font-size', '1.5vh').attr('alignment-baseline','middle')
 
     const filteredData = data.filter(d => d.endpoint === endpoint);
     svg.append('path')
       .datum(filteredData)
+      .attr('class', `line-${endpoint}`)
       .attr('fill', 'none')
-      .attr('stroke', color ?? 'black')
+      .attr('stroke', colors[i] ?? 'black')
       .attr('stroke-width', 3.5)
-      .attr('d', lineGenerator);
+      .attr('d', lineGenerator)
+      .on('mouseover', function() { tooltip.style('visibility', 'visible'); })
+      .on('mousemove', function(event) {
+        if (event) {
+          let mousePos = pointer(event);
+          tooltip.style('top', (event.pageY - 10) + 'px')
+            .style('left', (event.pageX + 10) + 'px')
+            .html(`Date: ${x.invert(mousePos[0])}, Packets: ${Math.round(y.invert(mousePos[1]))}`);
+        }
+      })
+      .on('mouseout', function() { tooltip.style('visibility', 'hidden'); });
   });
+
+  svg.append('text')
+    .attr('class', 'chart-title')
+    .attr('x', marginLeft + 20)
+    .attr('y', marginTop)
+    .style('font-size', '3vh')
+    .style('font-weight', 'bold')
+    .style('font-family', 'sans-serif')
+    .text('Flow Import');
 });
 </script>
 
@@ -136,11 +360,5 @@ onMounted(async() => {
   display: flex;
   flex-direction: column;
   margin: 5vh 0 0 5vw;
-}
-
-#flowImportLabel {
-  font-weight: bold;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 3vh;
 }
 </style>
