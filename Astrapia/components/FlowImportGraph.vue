@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import {onMounted, ref} from 'vue';
-import {axisBottom, axisLeft, extent, isoParse, line, pointer, scaleLinear, scaleTime, select, timeHour,} from 'd3';
+import {axisBottom, axisLeft, extent, isoParse, line, pointer, scaleLinear, scaleTime, select,} from 'd3';
 import networkAnalysisService, {FlowImport} from '~/services/networkAnalysisService';
 
 
@@ -275,8 +275,7 @@ onMounted(async() => {
 
   svg.append('g')
     .attr('transform', `translate(0,${height - marginBottom})`)
-    .call(axisBottom(x)
-      .ticks(timeHour.every(2)));
+    .call(axisBottom(x));
 
   svg.append('g')
     .attr('transform', `translate(${marginLeft},0)`)
