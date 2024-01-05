@@ -5,19 +5,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import {
-  select,
-  scaleTime,
-  scaleLinear,
-  axisBottom,
-  axisLeft,
-  line,
-  extent,
-  isoParse,
-  timeHour,
-  pointer,
-} from 'd3';
+import {onMounted, ref} from 'vue';
+import {axisBottom, axisLeft, extent, isoParse, line, pointer, scaleLinear, scaleTime, select, timeHour,} from 'd3';
 import networkAnalysisService, {FlowImport} from '~/services/networkAnalysisService';
 
 
@@ -25,8 +14,6 @@ let svgRef = ref(null);
 
 onMounted(async() => {
   const flowImportGraphData = await networkAnalysisService.getFlowImport() as FlowImport[];
-
-  console.log(flowImportGraphData)
 
   const testData = [
     {
@@ -235,7 +222,7 @@ onMounted(async() => {
     },
   ];
 
-  const width = 900;
+  const width = 1600;
   const height = 600;
   const marginTop = 20;
   const marginRight = 150;
@@ -246,16 +233,19 @@ onMounted(async() => {
     .append('div')
     .style('position', 'absolute')
     .style('visibility', 'hidden')
-    .style('background-color', '#537B87')
-    .style('color', 'white')
-    .style('padding', '0.7vh')
+    .style('background-color', '#D7DFE7')
+    .style('color', 'black')
+    .style('padding', '0.8vh')
     .style('border-radius', '4px')
     .style('border', '0.1vh solid #424242')
     .style('font-family', 'Open Sans');
 
   const data = flowImportGraphData.flatMap(item => {
+    const dateTime = isoParse(item.dateTime);
+    const offset = dateTime!.getTimezoneOffset();
+    const utcDateTime = new Date(dateTime!.getTime() + offset * 60000);
     return Object.entries(item.endpoints).map(([endpoint, value]) => ({
-      dateTime: isoParse(item.dateTime),
+      dateTime: utcDateTime,
       endpoint,
       value
     }));
@@ -268,8 +258,6 @@ onMounted(async() => {
   //     value
   //   }));
   // });
-
-  console.log(data)
 
   const dates = data.map(d => d.dateTime);
   const x = scaleTime()
@@ -320,11 +308,22 @@ onMounted(async() => {
 
   const endpoints = Array.from(new Set(data.map(d => d.endpoint)));
   const colors = ['#7EA0A9', '#C78750', '#EB5050', '#294D61']
+
+  const timestamps = Array.from(new Set(data.map(d => d.dateTime)));
+  const processedData = endpoints.map(endpoint => {
+    const existingValues = data.filter(d => d.endpoint === endpoint);
+    return timestamps.map(timestamp => {
+      const existingValue = existingValues.find(d => d.dateTime.getTime() === timestamp.getTime());
+      return existingValue || {dateTime: timestamp, endpoint, value: 0};
+    });
+  });
+
   endpoints.forEach((endpoint, i) => {
     svg.append('circle').attr('cx',width-marginRight + 20).attr('cy',20 + i * 25).attr('r', 10).style('fill', colors[i] ?? 'black')
     svg.append('text').attr('x', width-marginRight + 40).attr('y', 20 + i * 25).text(endpoint!).style('font-size', '1.5vh').attr('alignment-baseline','middle')
 
-    const filteredData = data.filter(d => d.endpoint === endpoint);
+    const flattenedData = processedData.flatMap(d => d);
+    const filteredData = flattenedData.filter(d => d.endpoint === endpoint);
     svg.append('path')
       .datum(filteredData)
       .attr('class', `line-${endpoint}`)
@@ -338,7 +337,7 @@ onMounted(async() => {
           let mousePos = pointer(event);
           tooltip.style('top', (event.pageY - 10) + 'px')
             .style('left', (event.pageX + 10) + 'px')
-            .html(`Date: ${x.invert(mousePos[0])}, Packets: ${Math.round(y.invert(mousePos[1]))}`);
+            .html(`Date: ${x.invert(mousePos[0]).toString().slice(0, 24)}<br>Packets: ${Math.round(y.invert(mousePos[1]))}`);
         }
       })
       .on('mouseout', function() { tooltip.style('visibility', 'hidden'); });
