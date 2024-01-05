@@ -28,6 +28,19 @@ public interface ITraceRepository
     /// </summary>
     /// <returns></returns>
     public Task<List<AggregateTrace>> AggregateTraces(DateTimeOffset start, DateTimeOffset end);
+    
+    /// <summary>
+    /// Get all traces from the database.
+    /// </summary>
+    /// <returns></returns>
+    public Task<List<SingleTrace>> GetAllTraces();
+    
+    /// <summary>
+    /// Update a trace in the database.
+    /// </summary>
+    /// <param name="trace"></param>
+    /// <returns></returns>
+    public Task UpdateTrace(SingleTrace trace);
 }
 
 public record TraceImportInfo(
@@ -142,5 +155,24 @@ public class TraceRepository : ITraceRepository
                     { "packetCount", "$totalPackets" }
                 }
             ).ToListAsync();
+    }
+    
+    /// <summary>
+    /// Get all traces from the database.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<SingleTrace>> GetAllTraces()
+    {
+        return await _traces.Find(_ => true).ToListAsync();
+    }
+    
+    /// <summary>
+    /// Update a trace in the database.
+    /// </summary>
+    /// <param name="trace"></param>
+    public async Task UpdateTrace(SingleTrace trace)
+    {
+        var filter = Builders<SingleTrace>.Filter.Eq(s => s.Id, trace.Id);
+        await _traces.ReplaceOneAsync(filter, trace);
     }
 }
