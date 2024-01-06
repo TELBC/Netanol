@@ -336,7 +336,7 @@ onMounted(async() => {
           let mousePos = pointer(event);
           tooltip.style('top', (event.pageY - 10) + 'px')
             .style('left', (event.pageX + 10) + 'px')
-            .html(`Date: ${x.invert(mousePos[0]).toString().slice(0, 24)}<br>Packets: ${Math.round(y.invert(mousePos[1]))}`);
+            .html(`Endpoint: ${endpoint}<br>Date: ${x.invert(mousePos[0]).toString().slice(0, 24)}<br>Packets: ${Math.round(y.invert(mousePos[1]))}`);
         }
       })
       .on('mouseout', function() { tooltip.style('visibility', 'hidden'); });
