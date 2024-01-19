@@ -3,7 +3,23 @@
     <div>
       <TopologyMenuBar @changeLayout="handleLayoutChange" @change="handleTimeframeSelection" :from-value="timeframeSelectorFrom" :to-value="timeframeSelectorTo" />
     </div>
-    <Graph :data="data"/>
+    <div id="graph">
+    <v-network-graph
+      ref="graph"
+      :nodes="graphData.nodes"
+      :edges="graphData.edges"
+      :configs="networkGraphConfigs"
+      :event-handlers="eventHandlers"
+    >
+      <template #edge-label="{ edge, hovered, ...slotProps }">
+        <v-edge-label v-if="hovered" :text="edge.label" align="center" vertical-align="above" v-bind="slotProps" />
+      </template>
+    </v-network-graph>
+    <div id="tooltip" />
+    <div>
+      <TopologyFooter :graph="graph" :metaData="metaData" element-id="graph"/>
+    </div>
+    </div>
   </div>
 </template>
 
