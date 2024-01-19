@@ -63,7 +63,16 @@ public class Startup
         services.AddSingleton<IMetricRepository, MetricRepository>();
         services.AddSingleton<IMongoClient>(_ => new MongoClient(Configuration.GetConnectionString("MongoConnection")));
         services.AddSingleton<IMongoDatabase>(s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat"));
-        
+
+        // DnsResolverService
+        services.Configure<DnsCacheOptions>(Configuration.GetSection("DnsCache"));
+        services.AddSingleton<DnsResolverService>();
+        services.AddSingleton<DnsCacheCleanupService>();
+
+        // Parser services
+        services.AddSingleton<NetFlow9Parser>(); // TODO: set exception behaviour
+        services.AddSingleton<IpFixParser>(); // TODO: set exception behaviour
+
         // Protocol multiplexer
         var multiplexerOptions = Configuration.GetSection("Multiplexers").Get<List<MultiplexerOptions>>();
 

@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using Fennec.Database;
 using Fennec.Options;
 using Microsoft.Extensions.Options;
+using SQLitePCL;
 
 namespace Fennec.Services;
 
@@ -12,53 +13,53 @@ namespace Fennec.Services;
 public class DnsResolverService
 {
     private readonly ILogger _log;
-    private Dictionary<IPAddress, Tuple<IPHostEntry, DateTime>> _dnsCache = new();
-    private readonly TimeSpan _staleEntryDuration;
+    private Dictionary<IPAddress, (string, DateTime)> _dnsCache = new();
+    private readonly TimeSpan _invalidationDuration;
 
-    public DnsResolverService(ILogger log, TimeSpan staleEntryDuration)
+    public DnsResolverService(ILogger log, IOptions<DnsCacheOptions> options)
     {
         _log = log;
-        _staleEntryDuration = staleEntryDuration;
+        _invalidationDuration = options.Value.InvalidationDuration;
     }
 
     /// <summary>
     /// Resolves an IP address to a DNS entry.
     /// </summary>
     /// <param name="ipAddress"></param>
-    /// <returns></returns>
-    private IPHostEntry ResolveIpToDns(IPAddress ipAddress)
+    private async Task<string?> ResolveIpToDns(IPAddress ipAddress)
     {
         try
         {
-            return Dns.GetHostEntry(ipAddress);
+            var ipHostEntry = await Dns.GetHostEntryAsync(ipAddress);
+            return ipHostEntry.HostName;
         }
-        catch (SocketException ex)
+        catch (SocketException e)
         {
-            _log.Debug($"Could not resolve IP {ipAddress} to DNS: {ex.Message}");
-            return new IPHostEntry(); // return empty entry
+            _log.Warning("Could not resolve {IpAddress} to DNS entry: {Message}", ipAddress, e.Message);
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            _log.Error("Unexpected exception while resolving IP to DNS: " + ex.Message);
-            return new IPHostEntry(); // return empty entry
+            _log.Error("Unexpected exception while resolving {IpAddress} to DNS entry: {Message}", ipAddress, e.Message);
         }
+        
+        return null;
     }
 
     /// <summary>
     /// Resolves an IP address to a DNS entry, either from the cache or by calling <see cref="ResolveIpToDns"/>.
     /// </summary>
-    /// <param name="ipAddress"></param>
+    /// <param name="ipAddress">IP to get from _dnsCache or resolve</param>
     /// <returns></returns>
-    public async Task<IPHostEntry> GetDnsEntryFromCacheOrResolve(IPAddress ipAddress)
+    public async Task<string?> GetDnsEntryFromCacheOrResolve(IPAddress ipAddress)
     {
-        if (!_dnsCache.TryGetValue(ipAddress, out var cachedDns))
-            return await Task.Run(() => ResolveIpToDns(ipAddress));
-        if ((DateTime.Now - cachedDns.Item2).TotalMinutes <= 60) // cache valid for 60 minutes
+        if (!_dnsCache.TryGetValue(ipAddress, out var cachedDns)) // if IP not in cache
+            return await ResolveIpToDns(ipAddress);
+        if (DateTime.Now - cachedDns.Item2 <= _invalidationDuration) // if IP in cache and not expired
         {
             return cachedDns.Item1;
         }
 
-        return await Task.Run(() => ResolveIpToDns(ipAddress));
+        return await ResolveIpToDns(ipAddress);
     }
 
     /// <summary>
@@ -66,16 +67,10 @@ public class DnsResolverService
     /// </summary>
     public void CleanupDnsCache()
     {
-        var cutoff = DateTime.Now.Subtract(_staleEntryDuration); // remove entries older than StaleEntryDuration
+        var cutoff = DateTime.Now.Subtract(_invalidationDuration); // remove entries older than InvalidationDuration
         _dnsCache = _dnsCache
             .Where(kvp => kvp.Value.Item2 > cutoff)
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-    }
-    
-    public static DnsResolverService CreateInstance(IServiceProvider serviceProvider, TimeSpan staleEntryDuration)
-    {
-        var log = serviceProvider.GetRequiredService<ILogger>();
-        return ActivatorUtilities.CreateInstance<DnsResolverService>(serviceProvider, log, staleEntryDuration);
     }
 }
 
@@ -89,11 +84,11 @@ public class DnsCacheCleanupService : BackgroundService
     private readonly TimeSpan _cleanupInterval;
 
     public DnsCacheCleanupService(DnsResolverService dnsResolverService, ILogger log,
-        IOptions<DnsCheckServiceOptions> options)
+        IOptions<DnsCacheOptions> options)
     {
         _dnsResolverService = dnsResolverService;
         _log = log;
-        _cleanupInterval = options.Value.CheckInterval;
+        _cleanupInterval = options.Value.CleanupInterval;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -104,13 +99,5 @@ public class DnsCacheCleanupService : BackgroundService
             _dnsResolverService.CleanupDnsCache();
             await Task.Delay(_cleanupInterval, stoppingToken);
         }
-    }
-
-    public static DnsCacheCleanupService CreateInstance(IServiceProvider serviceProvider, TimeSpan cleanupInterval)
-    {
-        var dnsResolverService = serviceProvider.GetRequiredService<DnsResolverService>();
-        var log = serviceProvider.GetRequiredService<ILogger>();
-        return ActivatorUtilities.CreateInstance<DnsCacheCleanupService>(serviceProvider, dnsResolverService, log,
-            cleanupInterval);
     }
 }

@@ -42,11 +42,12 @@ public class SingleTraceEndpoint
     }
 
 #pragma warning disable CS8618
-    private SingleTraceEndpoint() { }
+    private SingleTraceEndpoint()
+    {
+    }
 #pragma warning restore CS8618
 
-    [BsonIgnore]
-    public IPAddress IpAddress => new (IpBytes);
+    [BsonIgnore] public IPAddress IpAddress => new(IpBytes);
 }
 
 /// <summary>
@@ -57,7 +58,7 @@ public class SingleTrace
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
-    
+
     /// <summary>
     /// Time when this information was received.
     /// </summary>
@@ -75,7 +76,7 @@ public class SingleTrace
     /// </summary>
     [BsonElement("source")]
     public SingleTraceEndpoint Source { get; set; }
-    
+
     /// <summary>
     /// Information about the destination of the communication between two devices.
     /// </summary>
@@ -87,14 +88,15 @@ public class SingleTrace
     /// </summary>
     [BsonElement("byteCount")]
     public ulong ByteCount { get; set; }
-    
+
     /// <summary>
     /// The amount of packets transmitted.
     /// </summary>
     [BsonElement("packetCount")]
     public ulong PacketCount { get; set; }
 
-    public SingleTrace(DateTimeOffset timestamp, TraceProtocol protocol, SingleTraceEndpoint source, SingleTraceEndpoint destination, ulong byteCount, ulong packetCount)
+    public SingleTrace(DateTimeOffset timestamp, TraceProtocol protocol, SingleTraceEndpoint source,
+        SingleTraceEndpoint destination, ulong byteCount, ulong packetCount)
     {
         Timestamp = timestamp;
         Protocol = protocol;

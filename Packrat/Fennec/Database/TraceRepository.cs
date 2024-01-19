@@ -113,8 +113,8 @@ public class TraceRepository : ITraceRepository
             {
                 Timestamp = traceImportInfo.ReadTime,
                 Protocol = traceImportInfo.Protocol,
-                Source = new SingleTraceEndpoint(traceImportInfo.SrcIp, traceImportInfo.SrcPort, srcDnsEntry?.HostName),
-                Destination = new SingleTraceEndpoint(traceImportInfo.DstIp, traceImportInfo.DstPort, dstDnsEntry?.HostName),
+                Source = new SingleTraceEndpoint(traceImportInfo.SrcIp, traceImportInfo.SrcPort, srcDnsEntry),
+                Destination = new SingleTraceEndpoint(traceImportInfo.DstIp, traceImportInfo.DstPort, dstDnsEntry),
                 ByteCount = traceImportInfo.ByteCount,
                 PacketCount = traceImportInfo.PacketCount
             };
