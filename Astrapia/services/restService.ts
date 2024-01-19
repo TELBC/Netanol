@@ -53,6 +53,20 @@ class RestService {
   public async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T, any>> {
     return await this.axiosInstance.post<T>(url, data, config);
   }
+
+  /**
+   * Performs a PUT request and returns data of the specified type.
+   */
+  public async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T, any>> {
+    return await this.axiosInstance.put<T>(url, data, config);
+  }
+
+  /**
+   * Performs a DELETE request and returns data of the specified type.
+   */
+  public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T, any>> {
+    return await this.axiosInstance.delete<T>(url, config);
+  }
 }
 
 export default new RestService();
