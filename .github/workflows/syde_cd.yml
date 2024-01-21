@@ -29,22 +29,29 @@ jobs:
       - name: Stop Docker Compose Services
         continue-on-error: true
         run: |
-          ssh $SYDE_USER@$SYDE_HOST "cd ~/netanol/Docker && docker compose down"
+          ssh $SYDE_USER@$SYDE_HOST "cd ~/Netanol/Docker && docker compose down"
           
       - name: Remove Old Files
         continue-on-error: true
         run: |
-          ssh $SYDE_USER@$SYDE_HOST "rm -rf ~/netanol"
+          ssh $SYDE_USER@$SYDE_HOST "rm -rf ~/Netanol"
   
       - name: SCP Transfer to User's Home Directory
         run: |
-          ssh $SYDE_USER@$SYDE_HOST "mkdir -p ~/netanol"
-          scp -r $GITHUB_WORKSPACE/* $SYDE_USER@$SYDE_HOST:~/netanol
+          ssh $SYDE_USER@$SYDE_HOST "mkdir -p ~/Netanol"
+          scp -r $GITHUB_WORKSPACE/* $SYDE_USER@$SYDE_HOST:~/Netanol
+      
+      - name: Copy Override
+        continue-on-error: true
+        run: |
+           ssh $SYDE_USER@$SYDE_HOST "
+           cd ~/Netanol/Docker && 
+           cp syde/appsettings.Override.json ~/Netanol/Packrat/Fennec/"
 
       - name: Run Remote Docker
         run: |
           ssh $SYDE_USER@$SYDE_HOST "
-          cd ~/netanol/Docker && 
+          cd ~/Netanol/Docker && 
           docker compose build --no-cache &&
           docker system prune -f &&
           docker compose --profile dev --env-file .env --env-file syde/docker.env up -d"
