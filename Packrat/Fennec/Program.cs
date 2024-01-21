@@ -8,6 +8,7 @@ var log = new LoggerConfiguration()
 
 log.Information("Starting Fennec... This is the boot logger and will be replaced by the actual logger once the configuration is loaded");
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Override.json", true);
 // builder.Host.UseDefaultServiceProvider(opts => opts.ValidateScopes = false);
 builder.Configuration.AddEnvironmentVariables("FENNEC_");
 

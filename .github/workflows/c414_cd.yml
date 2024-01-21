@@ -18,18 +18,24 @@ jobs:
       - name: Remove Old Files
         continue-on-error: true
         run: |
-          rm -rf ~/netanol
+          rm -rf ~/Netanol
           
       - name: Checkout Code
         uses: actions/checkout@v4
   
       - name: Copy Code
         run: |
-          mkdir ~/netanol && cp -r . ~/netanol
+          mkdir ~/Netanol && cp -r . ~/Netanol
 
+      - name: Copy Override
+        continue-on-error: true
+        run: |
+          cd ~/Netanol/Docker && 
+          cp c414/appsettings.Override.json ~/Netanol/Packrat/Fennec/
+          
       - name: Run Remote Docker
         run: |
-          cd ~/netanol/Docker && 
+          cd ~/Netanol/Docker && 
           docker compose build --no-cache && 
           docker system prune -f &&
           docker compose --profile prod --env-file .env --env-file c414/docker.env up -d
