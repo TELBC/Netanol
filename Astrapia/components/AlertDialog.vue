@@ -12,6 +12,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+
 const alertState = ref({
   showAlert: false,
   submit: false,
