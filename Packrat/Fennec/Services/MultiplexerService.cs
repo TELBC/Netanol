@@ -29,6 +29,7 @@ public class MultiplexerService
     /// <param name="log">Logger for logging information and errors.</param>
     /// <param name="options">Configuration options for the service.</param>
     /// <param name="parsers">The collection of data parsers.</param>
+    /// <param name="listeningPort">Port the multiplexer listens on.</param>
     /// <param name="traceRepository"></param>
     public MultiplexerService(
         ILogger log,
