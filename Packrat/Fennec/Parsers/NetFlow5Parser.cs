@@ -10,6 +10,13 @@ namespace Fennec.Parsers;
 /// </summary>
 public class NetFlow5Parser : IParser
 {
+    private readonly ILogger _log;
+
+    public NetFlow5Parser(ILogger log)
+    {
+        _log = log.ForContext<NetFlow5Parser>();
+    }
+
     /// <summary>
     /// Parses a NetFlow v5 packet.
     /// </summary>
@@ -25,18 +32,36 @@ public class NetFlow5Parser : IParser
     /// Creates a list of <see cref="TraceImportInfo"/> from a <see cref="UdpReceiveResult"/>.
     /// </summary>
     /// <param name="result"></param>
-    /// <returns></returns>
+    /// <returns>List of <see cref="TraceImportInfo"/></returns>
     private IEnumerable<TraceImportInfo> CreateTraceImportInfoList(UdpReceiveResult result)
     {
+        var importTraces = new List<TraceImportInfo>();
         var stream = new MemoryStream(result.Buffer);
         using var nr = new NetflowReader(stream);
         var header = nr.ReadPacketHeader();
-        
-        var importTraces = new List<TraceImportInfo>();
-        for (var i = 0; i < header.Count; i++)
+
+        try
         {
-            var flow = nr.ReadFlowRecord();
-            importTraces.Add(CreateTraceImportInfo(flow, result));
+            for (var i = 0; i < header.Count; i++)
+            {
+                var flow = nr.ReadFlowRecord();
+                var trace = CreateTraceImportInfo(flow, result);
+                importTraces.Add(trace);
+            }
+        }
+        catch (EndOfStreamException)
+        {
+            _log.Verbose("Reached end of packet");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("Cannot read flow records before reading packet header. {Exception}", ex);
+        }
+        catch (Exception ex)
+        {
+            _log.ForContext("Exception", ex)
+                .Error("Failed to extract data from the packet due to an " +
+                       "unhandled exception | {ExceptionName}: {ExceptionMessage}", ex.GetType().Name, ex.Message);
         }
 
         return importTraces;
@@ -62,6 +87,7 @@ public class NetFlow5Parser : IParser
             flow.Octets,
             (TraceProtocol)flow.Protocol
         );
+        
         return trace;
     }
 }
