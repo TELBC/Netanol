@@ -123,6 +123,7 @@ public class MultiplexerService
         {
             IParser parser = parserType switch
             {
+                ParserType.Netflow5 => ActivatorUtilities.CreateInstance<NetFlow5Parser>(serviceProvider),
                 ParserType.Netflow9 => ActivatorUtilities.CreateInstance<NetFlow9Parser>(serviceProvider),
                 ParserType.Ipfix => ActivatorUtilities.CreateInstance<IpFixParser>(serviceProvider),
                 _ => throw new ArgumentOutOfRangeException()
@@ -152,6 +153,7 @@ public class MultiplexerService
 
         return version switch
         {
+            5 => ParserType.Netflow5,
             9 => ParserType.Netflow9,
             10 => ParserType.Ipfix,
             _ => null
