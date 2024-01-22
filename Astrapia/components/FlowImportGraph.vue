@@ -15,213 +15,6 @@ let svgRef = ref(null);
 onMounted(async() => {
   const flowImportGraphData = await networkAnalysisService.getFlowImport() as FlowImport[];
 
-  const testData = [
-    {
-      "dateTime": "2024-01-02T17:36:59.5720466Z",
-      "endpoints": {
-        "127.0.0.1:60198": 60,
-        "127.0.0.1:62541": 55,
-        "127.0.0.1:60199": 19
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:37:59.5745162Z",
-      "endpoints": {
-        "127.0.0.1:60198": 46,
-        "127.0.0.1:62541": 60,
-        "127.0.0.1:60199": 36
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:38:59.581861Z",
-      "endpoints": {
-        "127.0.0.1:62541": 22,
-        "127.0.0.1:60199": 60
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:39:59.5703493Z",
-      "endpoints": {
-        "127.0.0.1:62541": 45,
-        "127.0.0.1:60199": 57
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:40:59.5720466Z",
-      "endpoints": {
-        "127.0.0.1:60198": 60,
-        "127.0.0.1:62541": 55,
-        "127.0.0.1:60199": 19
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:41:59.5745162Z",
-      "endpoints": {
-        "127.0.0.1:60198": 46,
-        "127.0.0.1:62541": 60,
-        "127.0.0.1:60199": 36
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:42:59.581861Z",
-      "endpoints": {
-        "127.0.0.1:62541": 22,
-        "127.0.0.1:60199": 60
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:43:59.5703493Z",
-      "endpoints": {
-        "127.0.0.1:62541": 45,
-        "127.0.0.1:60199": 57
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:44:59.5720466Z",
-      "endpoints": {
-        "127.0.0.1:62541": 45,
-        "127.0.0.1:60199": 57,
-        "127.0.0.1:60198": 11
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:45:59.5745162Z",
-      "endpoints": {
-        "127.0.0.1:62541": 57,
-        "127.0.0.1:60199": 61,
-        "127.0.0.1:60198": 24
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:46:59.5720466Z",
-      "endpoints": {
-        "127.0.0.1:62541": 27,
-        "127.0.0.1:60199": 34,
-        "127.0.0.1:60198": 9
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:47:59.5745162Z",
-      "endpoints": {
-        "127.0.0.1:62541": 72,
-        "127.0.0.1:60199": 56,
-        "127.0.0.1:60198": 37
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:48:59.5720466Z",
-      "endpoints": {
-        "127.0.0.1:62541": 71,
-        "127.0.0.1:60199": 57,
-        "127.0.0.1:60198": 12
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:49:59.5745162Z",
-      "endpoints": {
-        "127.0.0.1:62541": 63,
-        "127.0.0.1:60199": 64,
-        "127.0.0.1:60198": 19
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:50:59.5720466Z",
-      "endpoints": {
-        "127.0.0.1:62541": 37,
-        "127.0.0.1:60199": 63,
-        "127.0.0.1:60198": 19
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:51:59.5745162Z",
-      "endpoints": {
-        "127.0.0.1:62541": 47,
-        "127.0.0.1:60199": 65,
-        "127.0.0.1:60198": 18
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:52:59.5720466Z",
-      "endpoints": {
-        "127.0.0.1:62541": 48,
-        "127.0.0.1:60199": 46,
-        "127.0.0.1:60198": 26
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:53:59.5745162Z",
-      "endpoints": {
-        "127.0.0.1:62541": 57,
-        "127.0.0.1:60199": 61,
-        "127.0.0.1:60198": 24
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:54:59.5720466Z",
-      "endpoints": {
-        "127.0.0.1:62541": 45,
-        "127.0.0.1:60199": 57,
-        "127.0.0.1:60198": 11
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:55:59.5745162Z",
-      "endpoints": {
-        "127.0.0.1:62541": 43,
-        "127.0.0.1:60199": 33,
-        "127.0.0.1:60198": 37
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:56:59.5720466Z",
-      "endpoints": {
-        "127.0.0.1:62541": 56,
-        "127.0.0.1:60199": 33,
-        "127.0.0.1:60198": 43
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:57:59.5745162Z",
-      "endpoints": {
-        "127.0.0.1:62541": 32,
-        "127.0.0.1:60199": 38,
-        "127.0.0.1:60198": 53
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:58:59.5720466Z",
-      "endpoints": {
-        "127.0.0.1:62541": 29,
-        "127.0.0.1:60199": 29,
-        "127.0.0.1:60198": 51
-      }
-    },
-    {
-      "dateTime": "2024-01-02T17:59:59.5745162Z",
-      "endpoints": {
-        "127.0.0.1:62541": 30,
-        "127.0.0.1:60199": 30,
-        "127.0.0.1:60198": 49
-      }
-    },
-    {
-      "dateTime": "2024-01-02T18:00:59.5720466Z",
-      "endpoints": {
-        "127.0.0.1:62541": 31,
-        "127.0.0.1:60199": 27,
-        "127.0.0.1:60198": 44
-      }
-    },
-    {
-      "dateTime": "2024-01-02T18:01:59.5745162Z",
-      "endpoints": {
-        "127.0.0.1:62541": 33,
-        "127.0.0.1:60199": 42,
-        "127.0.0.1:60198": 41
-      }
-    },
-  ];
-
   const width = 1600;
   const height = 600;
   const marginTop = 20;
@@ -231,15 +24,10 @@ onMounted(async() => {
 
   let tooltip = select('#flowImportContainer')
     .append('div')
-    .style('position', 'absolute')
-    .style('visibility', 'hidden')
-    .style('background-color', '#D7DFE7')
-    .style('color', 'black')
-    .style('padding', '0.8vh')
-    .style('border-radius', '4px')
-    .style('border', '0.1vh solid #424242')
-    .style('font-family', 'Open Sans');
+    .classed('tooltip', true);
 
+  // creating a flat array of objects with endpoint, dateTime, and value
+  // date would be converted to local datetime by date constructor, so it is converted back to utc with timezone offset
   const data = flowImportGraphData.flatMap(item => {
     const dateTime = isoParse(item.dateTime);
     const offset = dateTime!.getTimezoneOffset();
@@ -250,14 +38,6 @@ onMounted(async() => {
       value
     }));
   });
-
-  // const data = testData.flatMap(item => {
-  //   return Object.entries(item.endpoints).map(([endpoint, value]) => ({
-  //     dateTime: isoParse(item.dateTime),
-  //     endpoint,
-  //     value
-  //   }));
-  // });
 
   const dates = data.map(d => d.dateTime);
   const x = scaleTime()
@@ -288,8 +68,6 @@ onMounted(async() => {
     .attr('x2', d => x(d))
     .attr('y1', 0)
     .attr('y2', height)
-    .attr('stroke', '#e0e0e0')
-    .attr('stroke-width', .5);
 
   svg.selectAll('yGrid')
     .data(y.ticks((maxValue + 10) / 10))
@@ -298,8 +76,6 @@ onMounted(async() => {
     .attr('x2', width - marginRight)
     .attr('y1', d => y(d))
     .attr('y2', d => y(d))
-    .attr('stroke', '#e0e0e0')
-    .attr('stroke-width', .5)
 
   const lineGenerator = line()
     .x(d => x(d.dateTime))
@@ -346,9 +122,7 @@ onMounted(async() => {
     .attr('class', 'chart-title')
     .attr('x', marginLeft + 20)
     .attr('y', marginTop)
-    .style('font-size', '3vh')
-    .style('font-weight', 'bold')
-    .style('font-family', 'sans-serif')
+    .classed('chart-title', true)
     .text('Flow Import');
 });
 </script>
@@ -358,5 +132,27 @@ onMounted(async() => {
   display: flex;
   flex-direction: column;
   margin: 5vh 0 0 5vw;
+}
+
+#flowImportContainer >>> .tooltip {
+  position: absolute;
+  visibility: hidden;
+  background-color: #D7DFE7;
+  color: black;
+  padding: 0.8vh;
+  border-radius: 4px;
+  border: 0.1vh solid #424242;
+  font-family: "Open Sans", sans-serif;
+}
+
+.xGrid, .yGrid {
+  stroke: #e0e0e0;
+  stroke-width: 0.5;
+}
+
+#flowImportContainer >>> .chart-title {
+  font-size: 3vh;
+  font-weight: bold;
+  font-family: "Open Sans", sans-serif;
 }
 </style>
