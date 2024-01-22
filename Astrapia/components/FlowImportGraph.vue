@@ -18,7 +18,7 @@ onMounted(async() => {
   const width = 1600;
   const height = 600;
   const marginTop = 20;
-  const marginRight = 150;
+  const marginRight = 170;
   const marginBottom = 20;
   const marginLeft = 20;
 
@@ -94,8 +94,18 @@ onMounted(async() => {
   });
 
   endpoints.forEach((endpoint, i) => {
-    svg.append('circle').attr('cx',width-marginRight + 20).attr('cy',20 + i * 25).attr('r', 10).style('fill', colors[i] ?? 'black')
-    svg.append('text').attr('x', width-marginRight + 40).attr('y', 20 + i * 25).text(endpoint!).style('font-size', '1.5vh').attr('alignment-baseline','middle')
+    svg.append('circle')
+      .attr('cx',width-marginRight + 20)
+      .attr('cy',20 + i * 25)
+      .attr('r', 10)
+      .style('fill', colors[i] ?? 'black')
+    svg.append('text')
+      .attr('x', width-marginRight + 40)
+      .attr('y', 20 + i * 25)
+      .text(endpoint!)
+      .style('font-size', '1.5vh')
+      .style('font-family', 'Open Sans')
+      .attr('alignment-baseline','middle')
 
     const flattenedData = processedData.flatMap(d => d);
     const filteredData = flattenedData.filter(d => d.endpoint === endpoint);
