@@ -13,7 +13,7 @@ namespace Fennec.Services;
 public class DnsResolverService
 {
     private readonly ILogger _log;
-    private Dictionary<IPAddress, (string, DateTime)> _dnsCache = new();
+    private Dictionary<IPAddress, (string?, DateTime)> _dnsCache = new();
     private readonly TimeSpan _invalidationDuration;
 
     public DnsResolverService(ILogger log, IOptions<DnsCacheOptions> options)
@@ -61,7 +61,7 @@ public class DnsResolverService
             }
             else // if IP not in cache and could not be resolved
             {
-                _dnsCache.Add(ipAddress, ("DNS could not be resolved", DateTime.Now));
+                _dnsCache.Add(ipAddress, (null, DateTime.Now));
                 _log.Warning("Could not resolve {IpAddress} to DNS entry, added to cache with invalid DNS entry.", ipAddress);
             }
             
