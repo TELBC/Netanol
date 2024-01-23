@@ -53,7 +53,19 @@ public class DnsResolverService
     public async Task<string?> GetDnsEntryFromCacheOrResolve(IPAddress ipAddress)
     {
         if (!_dnsCache.TryGetValue(ipAddress, out var cachedDns)) // if IP not in cache
-            return await ResolveIpToDns(ipAddress);
+        {
+            var hostname = await ResolveIpToDns(ipAddress);
+            if (hostname != null)
+            {
+                _dnsCache.Add(ipAddress, (hostname, DateTime.Now));
+            }
+            else // if IP not in cache and could not be resolved
+            {
+                _dnsCache.Add(ipAddress, ("DNS could not be resolved", DateTime.Now));
+            }
+            
+            return hostname;
+        }
         if (DateTime.Now - cachedDns.Item2 <= _invalidationDuration) // if IP in cache and not expired
         {
             return cachedDns.Item1;
