@@ -35,7 +35,7 @@ public class DnsResolverService
         }
         catch (SocketException e)
         {
-            _log.Warning("Could not resolve {IpAddress} to DNS entry: {Message}", ipAddress, e.Message);
+            _log.Verbose("Could not resolve {IpAddress} to DNS entry: {Message}", ipAddress, e.Message);
         }
         catch (Exception e)
         {
@@ -62,6 +62,7 @@ public class DnsResolverService
             else // if IP not in cache and could not be resolved
             {
                 _dnsCache.Add(ipAddress, ("DNS could not be resolved", DateTime.Now));
+                _log.Warning("Could not resolve {IpAddress} to DNS entry, added to cache with invalid DNS entry.", ipAddress);
             }
             
             return hostname;
