@@ -16,24 +16,13 @@ public class NetFlow5Parser : IParser
     {
         _log = log.ForContext<NetFlow5Parser>();
     }
-
+    
     /// <summary>
     /// Parses a NetFlow v5 packet.
     /// </summary>
     /// <param name="result"></param>
     /// <returns></returns>
     public IEnumerable<TraceImportInfo> Parse(UdpReceiveResult result)
-    {
-        var importTraces = CreateTraceImportInfoList(result);
-        return importTraces;
-    }
-    
-    /// <summary>
-    /// Creates a list of <see cref="TraceImportInfo"/> from a <see cref="UdpReceiveResult"/>.
-    /// </summary>
-    /// <param name="result"></param>
-    /// <returns>List of <see cref="TraceImportInfo"/></returns>
-    private IEnumerable<TraceImportInfo> CreateTraceImportInfoList(UdpReceiveResult result)
     {
         var importTraces = new List<TraceImportInfo>();
         var stream = new MemoryStream(result.Buffer);

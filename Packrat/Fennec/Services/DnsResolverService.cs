@@ -39,9 +39,10 @@ public class DnsResolverService
         }
         catch (Exception e)
         {
-            _log.Error("Unexpected exception while resolving {IpAddress} to DNS entry: {Message}", ipAddress, e.Message);
+            _log.Error("Unexpected exception while resolving {IpAddress} to DNS entry: {Message}", ipAddress,
+                e.Message);
         }
-        
+
         return null;
     }
 
@@ -62,11 +63,14 @@ public class DnsResolverService
             else // if IP not in cache and could not be resolved
             {
                 _dnsCache.Add(ipAddress, (null, DateTime.Now));
-                _log.Warning("Could not resolve {IpAddress} to DNS entry, added to cache with invalid DNS entry.", ipAddress);
+                _log.Verbose(
+                    "No DNS Entry for {IpAddress} was found continuing with empty value. Check every {DnsInvalidationDuration}.",
+                    ipAddress, _invalidationDuration);
             }
-            
+
             return hostname;
         }
+
         if (DateTime.Now - cachedDns.Item2 <= _invalidationDuration) // if IP in cache and not expired
         {
             return cachedDns.Item1;
