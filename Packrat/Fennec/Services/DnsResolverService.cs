@@ -13,7 +13,7 @@ namespace Fennec.Services;
 public class DnsResolverService
 {
     private readonly ILogger _log;
-    private Dictionary<IPAddress, (string, DateTime)> _dnsCache = new();
+    private Dictionary<IPAddress, (string?, DateTime)> _dnsCache = new();
     private readonly TimeSpan _invalidationDuration;
 
     public DnsResolverService(ILogger log, IOptions<DnsCacheOptions> options)
@@ -35,13 +35,14 @@ public class DnsResolverService
         }
         catch (SocketException e)
         {
-            _log.Warning("Could not resolve {IpAddress} to DNS entry: {Message}", ipAddress, e.Message);
+            _log.Verbose("Could not resolve {IpAddress} to DNS entry: {Message}", ipAddress, e.Message);
         }
         catch (Exception e)
         {
-            _log.Error("Unexpected exception while resolving {IpAddress} to DNS entry: {Message}", ipAddress, e.Message);
+            _log.Error("Unexpected exception while resolving {IpAddress} to DNS entry: {Message}", ipAddress,
+                e.Message);
         }
-        
+
         return null;
     }
 
@@ -53,7 +54,23 @@ public class DnsResolverService
     public async Task<string?> GetDnsEntryFromCacheOrResolve(IPAddress ipAddress)
     {
         if (!_dnsCache.TryGetValue(ipAddress, out var cachedDns)) // if IP not in cache
-            return await ResolveIpToDns(ipAddress);
+        {
+            var hostname = await ResolveIpToDns(ipAddress);
+            if (hostname != null)
+            {
+                _dnsCache.Add(ipAddress, (hostname, DateTime.Now));
+            }
+            else // if IP not in cache and could not be resolved
+            {
+                _dnsCache.Add(ipAddress, (null, DateTime.Now));
+                _log.Verbose(
+                    "No DNS Entry for {IpAddress} was found continuing with empty value. Check every {DnsInvalidationDuration}.",
+                    ipAddress, _invalidationDuration);
+            }
+
+            return hostname;
+        }
+
         if (DateTime.Now - cachedDns.Item2 <= _invalidationDuration) // if IP in cache and not expired
         {
             return cachedDns.Item1;
