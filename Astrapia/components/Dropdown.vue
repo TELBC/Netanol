@@ -21,6 +21,8 @@
       </div>
       <div class="create-layout-container">
         <input class="new-layout" type="text" v-model="dropdownState.newLayout" />
+        <div class="error-create-layout" v-bind:class="{ 'create-error-appear': dropdownState.createError }">!</div>
+        <div class="create-error-tooltip">{{ dropdownState.createErrorMessage }} Error</div>
         <div v-if="dropdownState.isCreate">
           <font-awesome-icon icon="fa-solid fa-plus" v-on:click="createLayout" />
         </div>
@@ -43,7 +45,9 @@ const dropdownState = ref({
   options: [],
   newLayout: '',
   isCreate: true,
-  oldName: ''
+  oldName: '',
+  createError: false,
+  createErrorMessage: '',
 });
 
 const rerender = ref({
@@ -56,6 +60,9 @@ function selectOption(option: Layouts['name']) {
 
 function changeDropdownState() {
   dropdownState.value.isOpen = !dropdownState.value.isOpen;
+  dropdownState.value.createError = false;
+  dropdownState.value.isCreate = true;
+  dropdownState.value.newLayout = '';
 }
 
 async function getLayouts() {
@@ -64,11 +71,19 @@ async function getLayouts() {
 }
 
 async function createLayout() {
-  await layoutService.createLayout(dropdownState.value.newLayout);
-  await getLayouts();
-  dropdownState.value.selectedOption = dropdownState.value.newLayout;
-  dropdownState.value.isOpen = false;
-  dropdownState.value.newLayout = '';
+  const newLayout = dropdownState.value.newLayout.trim();
+  dropdownState.value.createError = false;
+  if (newLayout !== '' && dropdownState.value.options.indexOf(newLayout) > -1) {
+    await layoutService.createLayout(newLayout);
+    await getLayouts();
+    dropdownState.value.selectedOption = newLayout;
+    dropdownState.value.isOpen = false;
+    dropdownState.value.newLayout = '';
+  }
+  else if (dropdownState.value.options.indexOf(newLayout) == -1) {
+    dropdownState.value.createError = true;
+    dropdownState.value.createErrorMessage = 'Duplicate Layout Name aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  }
 }
 
 async function deleteLayout(layout: string) {
@@ -77,13 +92,23 @@ async function deleteLayout(layout: string) {
 }
 
 async function updateLayout(name: string, newName: string) {
-  await layoutService.updateLayout(name, newName);
-  dropdownState.value.isCreate = true;
-  dropdownState.value.newLayout = '';
-  await getLayouts();
+  const newLayout = dropdownState.value.newLayout.trim();
+  dropdownState.value.createError = false;
+  if (newLayout !== '' && dropdownState.value.options.indexOf(newLayout) > -1) {
+    await layoutService.updateLayout(name, newName);
+    dropdownState.value.isCreate = true;
+    dropdownState.value.newLayout = '';
+    await getLayouts();
+  }
+  else if (dropdownState.value.options.indexOf(newLayout) == -1) {
+    dropdownState.value.createError = true;
+    dropdownState.value.createErrorMessage = 'Duplicate Layout Name';
+  }
+
 }
 
 function onUpdate(name: string) {
+  dropdownState.value.createError = false;
   dropdownState.value.newLayout = name;
   dropdownState.value.oldName = name;
   dropdownState.value.isCreate = false;
@@ -113,8 +138,8 @@ onMounted(async() => {
   font-family: 'Open Sans', sans-serif;
   background-color: white;
   cursor: pointer;
-  font-size: 2vh;
-  width: 15vw;
+  font-size: 1.5vh;
+  width: 10vw;
 }
 
 .select {
@@ -127,6 +152,9 @@ onMounted(async() => {
 
 .selected-option {
   padding-right: 0.5vw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .options {
@@ -148,6 +176,7 @@ onMounted(async() => {
 .options-wrapper {
   max-height: 30vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .option {
@@ -159,12 +188,28 @@ onMounted(async() => {
   width: 100%;
 }
 
+.option-name {
+  width: 90%;
+  padding: 0.5vh 0 0.5vh 0.5vw;
+  overflow-x: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .option:hover {
   background-color: #7EA0A9;
   color: white;
 
+
   .affect-layout-button {
     color: white;
+  }
+
+  .option-name {
+    width: 90%;
+    word-wrap: break-word;
+    white-space: normal;
+    background-color: #7EA0A9;
   }
 }
 
@@ -177,21 +222,17 @@ onMounted(async() => {
   }
 }
 
-.option-name {
-  width: 90%;
-  padding: 0.5vh 0 0.5vh 0.5vw;
-}
-
 .affect-layout-button {
   color: #7EA0A9;
   font-size: 1.5vh;
+  padding: 0.5vh 0 0.5vh 0.5vw;
 }
 
 .delete-button {
   display: flex;
   justify-content: flex-end;
   width: 10%;
-  padding: 0.5vh 0.5vw 0.5vh 0;
+  padding-right: 0.5vw;
 }
 
 .create-layout-container {
@@ -199,11 +240,62 @@ onMounted(async() => {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  cursor: pointer;
   padding: 0.5vh 0.5vw;
+  border-top: 1px solid #424242;
+}
+
+.error-create-layout {
+  color: white;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: bolder;
+  font-size: 0.7vh;
+  width: 5%;
+  user-select: none;
+}
+
+.create-error-appear {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1.5px solid #EB5050;
+  border-radius: 50%;
+  color: #EB5050;
+}
+
+.create-error-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 3.2vh;
+  width: 80%;
+  word-wrap: anywhere;
+}
+
+.create-error-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 89%;
+  width: 0;
+  height: 0;
+  border: 12px solid transparent;
+  border-top-color: #eb5050;
+  border-bottom: 0;
+  margin-left: -7px;
+  margin-bottom: -7px;
+}
+
+.error-create-layout.create-error-appear:hover + .create-error-tooltip {
+    display: flex;
+    align-items: center;
+    padding: 0.3vh 0.3vw;
+    font-size: 1.3vh;
+    background-color: #EB5050;
+    color: white;
+    border-radius: 4px;
+    border: 1px solid #424242;
 }
 
 .new-layout {
-  width: 85%;
+  width: 75%;
 }
 </style>
