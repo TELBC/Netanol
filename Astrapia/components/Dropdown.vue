@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import layoutService, {Layouts} from "~/services/layoutService";
-import {watch} from "vue";
+import {watch,ref} from "vue";
 
 const dropdownState = ref({
   isOpen: false,

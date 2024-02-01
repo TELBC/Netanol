@@ -61,7 +61,7 @@ const handleTimeframeSelection = (from: string, to: string) => {
   display: flex;
   flex-direction: column;
   position: fixed;
-  z-index: 99;
+  z-index: 12;
 }
 
 #topology-menu {

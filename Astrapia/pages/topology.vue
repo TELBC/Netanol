@@ -38,7 +38,7 @@ import TopologyMenuBar from "~/components/TopologyMenuBar.vue";
 const graph = ref<vNG.Instance>()
 const graphData = reactive({ nodes: {} as vNG.Nodes, edges: {} as vNG.Edges });
 let metaData = ref<IGraphStatistics | null>(null);
-const layout = ref('test');
+const layout = ref('');
 let tooltip: HTMLElement | null;
 const timeframeSelectorFrom = ref(new Date(new Date().getTime() - 2 * 60 * 1000).toISOString().slice(0,16))
 const timeframeSelectorTo = ref(new Date().toISOString().slice(0,16))
