@@ -4,8 +4,8 @@
       <div class="topology-menu-options" @click="toggleMenuBarOptions('grouping')">Grouping</div>
       <div class="topology-menu-options" @click="toggleMenuBarOptions('timeframe')">Timeframe</div>
       <div class="topology-menu-options" @click="toggleMenuBarOptions('clusters')">Clusters</div>
-      <div class="topology-menu-options" @click="toggleMenuBarOptions('layouts')">Layouts</div>
       <div class="topology-menu-options">Freeze</div>
+      <div class="layout-dropdown"><Dropdown @changeLayout="handleLayoutChange" /></div>
     </div>
     <div class="menu-bar-options" v-if="menuBarOptions==='grouping'">
       <button class="menu-option-content grouping-buttons">Group selection</button>
@@ -15,11 +15,11 @@
       <TopologyTimeframeSelector @change="handleTimeframeSelection" :from-value="fromValue" :to-value="toValue" />
     </div>
     <div class="menu-bar-options" v-if="menuBarOptions==='clusters'"></div>
-    <div class="menu-bar-options" v-if="menuBarOptions==='layouts'"></div>
   </div>
 </template>
 
 <script setup lang="ts">
+import {Dropdown} from "#components";
 import { ref } from 'vue';
 import TopologyTimeframeSelector from "~/components/TopologyTimeframeSelector.vue";
 
@@ -43,8 +43,13 @@ const toggleMenuBarOptions = (option: string) => {
 }
 
 const emit = defineEmits<{
-  change: [from: string, to: string]
-}>()
+  changeLayout: [selectedLayout: string];
+  change: [from: string, to: string];
+}>();
+
+const handleLayoutChange = (selectedLayout: string) => {
+  emit('changeLayout', selectedLayout);
+}
 
 const handleTimeframeSelection = (from: string, to: string) => {
   emit('change', from, to);
@@ -56,7 +61,7 @@ const handleTimeframeSelection = (from: string, to: string) => {
   display: flex;
   flex-direction: column;
   position: fixed;
-  z-index: 99;
+  z-index: 12;
 }
 
 #topology-menu {
@@ -66,7 +71,6 @@ const handleTimeframeSelection = (from: string, to: string) => {
   width: 100vw;
   background-color: #537B87;
   font-size: 2vh;
-  color: white;
   font-family: 'Open Sans', sans-serif;
 }
 
@@ -75,6 +79,7 @@ const handleTimeframeSelection = (from: string, to: string) => {
   transition: 0.2s ease-in-out;
   padding: 1vh 2vw;
   user-select: none;
+  color: white;
 }
 
 .topology-menu-options:hover {
@@ -119,5 +124,10 @@ const handleTimeframeSelection = (from: string, to: string) => {
 .grouping-buttons:active {
   background-color: #617F87;
   color: white;
+}
+
+.layout-dropdown {
+  margin-left: auto;
+  margin-right: 4vw;
 }
 </style>

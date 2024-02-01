@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <TopologyMenuBar @change="handleTimeframeSelection" :from-value="timeframeSelectorFrom" :to-value="timeframeSelectorTo" />
+      <TopologyMenuBar @changeLayout="handleLayoutChange" @change="handleTimeframeSelection" :from-value="timeframeSelectorFrom" :to-value="timeframeSelectorTo" />
     </div>
     <div id="graph">
     <v-network-graph
@@ -38,15 +38,19 @@ import TopologyMenuBar from "~/components/TopologyMenuBar.vue";
 const graph = ref<vNG.Instance>()
 const graphData = reactive({ nodes: {} as vNG.Nodes, edges: {} as vNG.Edges });
 let metaData = ref<IGraphStatistics | null>(null);
-const layout = 'test';
+const layout = ref('');
 let tooltip: HTMLElement | null;
-// const rangeValue = ref(2);
 const timeframeSelectorFrom = ref(new Date(new Date().getTime() - 2 * 60 * 1000).toISOString().slice(0,16))
 const timeframeSelectorTo = ref(new Date().toISOString().slice(0,16))
 
 const handleTimeframeSelection = (from: string, to: string) => {
   timeframeSelectorFrom.value = from
   timeframeSelectorTo.value = to
+}
+
+const handleLayoutChange = (selectedLayout: string) => {
+  layout.value = selectedLayout;
+  fetchAndUpdateGraph();
 }
 
 const eventHandlers: vNG.EventHandlers = {
@@ -71,17 +75,13 @@ const fetchAndUpdateGraph: () => Promise<void> = async () => {
     to: new Date(timeframeSelectorTo.value + ':00.000Z')
   };
 
-  const data = await topologyService.getTopology('test', dateRange.from, dateRange.to);
+  const data = await topologyService.getTopology(layout.value, dateRange.from, dateRange.to);
   metaData = data.graphStatistics;
   graphData.nodes = data.nodes;
   graphData.edges = data.edges;
 };
 
 const debouncedFetchGraphData = debounce(fetchAndUpdateGraph, 100);
-
-// watch(rangeValue, async () => {
-//   await debouncedFetchGraphData();
-// });
 
 onMounted(async () => {
   tooltip = document.getElementById('tooltip');

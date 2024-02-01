@@ -144,7 +144,7 @@ onMounted(async() => {
   margin: 5vh 0 0 5vw;
 }
 
-#flowImportContainer >>> .tooltip {
+#flowImportContainer:deep(.tooltip) {
   position: absolute;
   visibility: hidden;
   background-color: #D7DFE7;
@@ -160,7 +160,7 @@ onMounted(async() => {
   stroke-width: 0.5;
 }
 
-#flowImportContainer >>> .chart-title {
+#flowImportContainer:deep(.chart-title) {
   font-size: 3vh;
   font-weight: bold;
   font-family: "Open Sans", sans-serif;
