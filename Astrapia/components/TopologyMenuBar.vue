@@ -12,10 +12,7 @@
       <button class="menu-option-content grouping-buttons">Ungroup selection</button>
     </div>
     <div class="menu-bar-options" v-if="menuBarOptions==='timeframe'">
-      <p class="menu-option-content timeframe-labels">from</p>
-      <input class="menu-option-content" type="date">
-      <p class="menu-option-content timeframe-labels">to</p>
-      <input class="menu-option-content" type="date">
+      <TopologyTimeframeSelector @change="handleTimeframeSelection" :from-value="fromValue" :to-value="toValue" />
     </div>
     <div class="menu-bar-options" v-if="menuBarOptions==='clusters'"></div>
   </div>
@@ -23,6 +20,17 @@
 
 <script setup lang="ts">
 import {Dropdown} from "#components";
+import { ref } from 'vue';
+import TopologyTimeframeSelector from "~/components/TopologyTimeframeSelector.vue";
+
+const props = defineProps({
+  fromValue: {
+    type: String
+  },
+  toValue: {
+    type: String
+  },
+});
 
 const menuBarOptions = ref("")
 
@@ -36,10 +44,15 @@ const toggleMenuBarOptions = (option: string) => {
 
 const emit = defineEmits<{
   changeLayout: [selectedLayout: string];
+  change: [from: string, to: string];
 }>();
 
 const handleLayoutChange = (selectedLayout: string) => {
   emit('changeLayout', selectedLayout);
+}
+
+const handleTimeframeSelection = (from: string, to: string) => {
+  emit('change', from, to);
 }
 </script>
 
@@ -81,7 +94,6 @@ const handleLayoutChange = (selectedLayout: string) => {
   display: flex;
   flex-direction: row;
   align-items: center;
-  width: 88.4vw;
   border: 0.1vw solid #424242;
   background-color: #e0e0e0;
   font-size: 2vh;
@@ -112,10 +124,6 @@ const handleLayoutChange = (selectedLayout: string) => {
 .grouping-buttons:active {
   background-color: #617F87;
   color: white;
-}
-
-.timeframe-labels {
-  margin: 1vh 1vw 1vh 2vw;
 }
 
 .layout-dropdown {
