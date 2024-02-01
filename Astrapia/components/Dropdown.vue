@@ -73,36 +73,47 @@ async function getLayouts() {
 async function createLayout() {
   const newLayout = dropdownState.value.newLayout.trim();
   dropdownState.value.createError = false;
-  if (newLayout !== '' && dropdownState.value.options.indexOf(newLayout) > -1) {
+  if (newLayout !== '' && !dropdownState.value.options.some((option: { name: string }) => option.name === newLayout)) {
     await layoutService.createLayout(newLayout);
     await getLayouts();
     dropdownState.value.selectedOption = newLayout;
     dropdownState.value.isOpen = false;
     dropdownState.value.newLayout = '';
   }
-  else if (dropdownState.value.options.indexOf(newLayout) == -1) {
+  else if (dropdownState.value.options.some((option: { name: string }) => option.name === newLayout)) {
     dropdownState.value.createError = true;
-    dropdownState.value.createErrorMessage = 'Duplicate Layout Name aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    dropdownState.value.createErrorMessage = 'Duplicate Layout Name';
   }
 }
 
 async function deleteLayout(layout: string) {
   await layoutService.deleteLayout(layout);
   await getLayouts();
+  if (dropdownState.value.selectedOption === layout) {
+    dropdownState.value.selectedOption = dropdownState.value.options[0]['name'] ?? 'No layouts found';
+  }
 }
 
 async function updateLayout(name: string, newName: string) {
-  const newLayout = dropdownState.value.newLayout.trim();
+  const newLayout = newName.trim();
   dropdownState.value.createError = false;
-  if (newLayout !== '' && dropdownState.value.options.indexOf(newLayout) > -1) {
-    await layoutService.updateLayout(name, newName);
+  if (newLayout !== '' && !dropdownState.value.options.some((option: { name: string }) => option.name === newLayout)) {
+    await layoutService.updateLayout(name, newLayout);
     dropdownState.value.isCreate = true;
     dropdownState.value.newLayout = '';
+    if (dropdownState.value.selectedOption === name) {
+      dropdownState.value.selectedOption = newLayout
+    }
     await getLayouts();
   }
-  else if (dropdownState.value.options.indexOf(newLayout) == -1) {
+  else if (dropdownState.value.options.some((option: { name: string }) => option.name === newLayout)) {
     dropdownState.value.createError = true;
-    dropdownState.value.createErrorMessage = 'Duplicate Layout Name';
+    if (name === newLayout) {
+      dropdownState.value.createErrorMessage = 'Layout Name is already "' + newLayout + '"';
+    }
+    else {
+      dropdownState.value.createErrorMessage = 'Duplicate Layout Name';
+    }
   }
 
 }
