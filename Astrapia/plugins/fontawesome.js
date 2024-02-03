@@ -14,11 +14,31 @@ import {
   faPlus,
   faTrash,
   faPen,
+  faChevronLeft,
+  faChevronRight,
   faPlay,
   faPause
 } from '@fortawesome/free-solid-svg-icons'
 
-library.add(faGear, faBars, faChartLine, faDiagramProject, faHouse, faCircleInfo, faArrowsToCircle, faExpand, faChevronUp, faChevronDown, faPlus, faTrash, faPen, faPlay, faPause)
+library.add(
+  faGear,
+  faBars,
+  faChartLine,
+  faDiagramProject,
+  faHouse,
+  faCircleInfo,
+  faArrowsToCircle,
+  faExpand,
+  faChevronUp,
+  faChevronDown,
+  faPlus,
+  faTrash,
+  faPen,
+  faChevronLeft,
+  faChevronRight,
+  faPlay,
+  faPause,
+)
 
 config.autoAddCss = false
 

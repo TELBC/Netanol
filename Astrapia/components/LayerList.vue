@@ -24,12 +24,12 @@ const layerListState = ref({
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  top: 4.6vh;
+  top: 4.7vh;
   right: 0;
   width: 15vw;
   margin: 0;
-  height: 95.4vh;
-  z-index: 97;
+  height: 95.3vh;
+  z-index: 14;
   overflow: hidden;
 }
 
@@ -67,7 +67,7 @@ const layerListState = ref({
   transition: 0.2s ease-in-out;
   left: auto;
   right: 0;
-  z-index: 98;
+  z-index: 14;
 }
 
 .layer-list-container.expanded {
