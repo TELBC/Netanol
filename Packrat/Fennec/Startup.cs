@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using Fennec.Database;
 using Fennec.Database.Domain.Layers;
+using Fennec.Database.Graph;
 using Fennec.Metrics;
 using Fennec.Options;
 using Fennec.Parsers;
@@ -58,6 +59,7 @@ public class Startup
         // Database services
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddSingleton<ITraceRepository, TraceRepository>();
+        services.AddSingleton<IGraphRepository, GraphRepository>();
         services.AddSingleton<ILayoutRepository, LayoutRepository>();
         services.AddSingleton<ILayerRepository, LayerRepository>();
         services.AddSingleton<IMetricRepository, MetricRepository>();

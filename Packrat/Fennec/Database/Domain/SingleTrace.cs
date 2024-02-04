@@ -42,12 +42,8 @@ public class SingleTraceEndpoint
     }
 
 #pragma warning disable CS8618
-    private SingleTraceEndpoint()
-    {
-    }
+    private SingleTraceEndpoint() { }
 #pragma warning restore CS8618
-
-    [BsonIgnore] public IPAddress IpAddress => new(IpBytes);
 }
 
 /// <summary>
@@ -66,12 +62,6 @@ public class SingleTrace
     public DateTimeOffset Timestamp { get; set; }
 
     /// <summary>
-    /// What protocol was used during communication.
-    /// </summary>
-    [BsonElement("protocol")]
-    public TraceProtocol Protocol { get; set; }
-
-    /// <summary>
     /// Information about the source of the communication between two devices.
     /// </summary>
     [BsonElement("source")]
@@ -82,7 +72,13 @@ public class SingleTrace
     /// </summary>
     [BsonElement("destination")]
     public SingleTraceEndpoint Destination { get; set; }
-
+    
+    /// <summary>
+    /// What protocol was used during communication.
+    /// </summary>
+    [BsonElement("protocol")]
+    public TraceProtocol Protocol { get; set; }
+ 
     /// <summary>
     /// The amount of bytes transmitted.
     /// </summary>

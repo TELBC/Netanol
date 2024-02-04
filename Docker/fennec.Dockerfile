@@ -1,5 +1,5 @@
 # File will change its just a placeholder so we get it to run
-# Stage 1: Build the app using .NET SDK 6.0
+# Stage 1: Build the app using .NET SDK 7.0
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build-env
 WORKDIR /app
 
