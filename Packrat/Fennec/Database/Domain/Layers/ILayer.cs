@@ -83,7 +83,14 @@ public class LayerModelBinder : IModelBinder
 
         // Here you should implement logic to determine the concrete type
         // For example, based on the "Type" property in JSON
-        var type = jsonObject["Type"]?.ToString();
+        var type = jsonObject["type"]?.ToString();
+        
+        if (type == null)
+        {
+            bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Missing type attribute");
+            return;
+        }
+        
         switch (type)
         {
             case LayerType.Filter:

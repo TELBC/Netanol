@@ -51,30 +51,41 @@ public record TraceImportInfo(
 
 public class AggregateTrace
 {
+    public AggregateTrace(byte[] sourceIpBytes, byte[] destinationIpBytes, ushort sourcePort, ushort destinationPort, TraceProtocol protocol, ulong packetCount, ulong byteCount)
+    {
+        SourceIpBytes = sourceIpBytes;
+        DestinationIpBytes = destinationIpBytes;
+        SourcePort = sourcePort;
+        DestinationPort = destinationPort;
+        Protocol = protocol;
+        PacketCount = packetCount;
+        ByteCount = byteCount;
+    }
+
+#pragma warning disable CS8618
+    public AggregateTrace() { }
+#pragma warning restore CS8618
+    
     [BsonElement("sourceIpBytes")]
     public byte[] SourceIpBytes { get; set; }
     
-    public string SourceIp => new IPAddress(SourceIpBytes).ToString();
-    
     [BsonElement("destinationIpBytes")]
     public byte[] DestinationIpBytes { get; set; }
-    public string DestinationIp => new IPAddress(DestinationIpBytes).ToString();
     
-    // [BsonElement("sourcePort")]
-    // public ushort SourcePort { get; set; }
+    [BsonElement("sourcePort")]
+    public ushort SourcePort { get; set; }
     
-    // [BsonElement("destinationPort")]
-    // public ushort DestinationPort { get; set; }
+    [BsonElement("destinationPort")]
+    public ushort DestinationPort { get; set; }
+    
+    [BsonElement("protocol")]
+    public TraceProtocol Protocol { get; set; }
     
     [BsonElement("packetCount")]
     public ulong PacketCount { get; set; }
     
     [BsonElement("byteCount")]
     public ulong ByteCount { get; set; }
-    
-#pragma warning disable CS8618
-    private AggregateTrace() { }
-#pragma warning restore CS8618
 }
 
 public class TraceRepository : ITraceRepository
@@ -134,9 +145,10 @@ public class TraceRepository : ITraceRepository
                     { "_id", new BsonDocument
                         {
                             { "sourceIp", "$source.ipBytes" },
-                            // { "sourcePort", "$source.port" },
-                            { "destinationIp", "$destination.ipBytes" }
-                            // { "destinationPort", "$destination.port" }
+                            { "sourcePort", "$source.port" },
+                            { "destinationIp", "$destination.ipBytes" },
+                            { "destinationPort", "$destination.port" },
+                            { "protocol", "$protocol" }
                         }
                     },
                     { "totalBytes", new BsonDocument("$sum", "$byteCount") },
@@ -148,9 +160,10 @@ public class TraceRepository : ITraceRepository
                 {
                     { "_id", 0 },
                     { "sourceIpBytes", "$_id.sourceIp" },
-                    // { "sourcePort", "$_id.sourcePort" },
+                    { "sourcePort", "$_id.sourcePort" },
                     { "destinationIpBytes", "$_id.destinationIp" },
-                    // { "destinationPort", "$_id.destinationPort" },
+                    { "destinationPort", "$_id.destinationPort" },
+                    { "protocol", "$_id.protocol" },
                     { "byteCount", "$totalBytes" },
                     { "packetCount", "$totalPackets" }
                 }
