@@ -174,13 +174,25 @@ public class MultiplexerService
 
         // Read the first two bytes from the buffer as a big-endian ushort
         var version = (ushort)((buffer[0] << 8) | buffer[1]);
-
-        return version switch
+        
+        // Check for NetFlow protocol version
+        if (version is 5 or 9 or 10) // NetFlow stores version in the first 2 bytes
         {
-            5 => FlowProtocol.Netflow5,
-            9 => FlowProtocol.Netflow9,
-            10 => FlowProtocol.Ipfix,
-            _ => null
-        };
+            return version switch
+            {
+                5 => FlowProtocol.Netflow5,
+                9 => FlowProtocol.Netflow9,
+                10 => FlowProtocol.Ipfix,
+                _ => null
+            };
+        }
+        
+        // Check for sFlow protocol version
+        if (buffer is [_, _, 0, 5, ..]) // sFlow stores version in the first 4 bytes
+        {
+            return FlowProtocol.Sflow;
+        }
+
+        return null;
     }
 }
