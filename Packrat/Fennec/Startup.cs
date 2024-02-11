@@ -1,4 +1,6 @@
 ﻿using System.Data;
+using System.Net.Http.Headers;
+using System.Text;
 using Fennec.Database;
 using Fennec.Metrics;
 using Fennec.Options;
@@ -10,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using Newtonsoft.Json.Converters;
@@ -44,6 +47,8 @@ public class Startup
     {
         BsonSerializer.RegisterSerializer(typeof(ILayer), new MongoLayerSerializer());
         services.AddAutoMapper(typeof(MapperProfile));
+
+        services.AddHttpClient();
         
         // Options
         // services.Configure<Netflow9ParserOptions>(Configuration.GetSection("Parsers:Netflow9"));
@@ -53,11 +58,11 @@ public class Startup
             .AddOptions<SecurityOptions>()
             .Bind(Configuration.GetSection("Security"))
             .ValidateDataAnnotations();
-        
+
         // Metric service
         services.AddSingleton<IMetricService, MetricService>();
         services.AddSingleton<IFlowImporterMetric, FlowImporterMetric>();
-        
+
         // Database services
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddSingleton<ITraceRepository, TraceRepository>();
@@ -79,6 +84,42 @@ public class Startup
         services.AddSingleton<NetFlow9Parser>();
         services.AddSingleton<IpFixParser>(); 
 
+        // Vmware API 
+        var tagsRequest = Configuration.GetSection("TagsRequest").Get<TagsRequestOptions>();
+
+        if (tagsRequest.Enabled)
+        {
+            Log.Information("Starting to configure Tagging Service!");
+            services.AddHttpClient("VmWareApiClient")
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                })
+                .ConfigureHttpClient((serviceProvider, client) =>
+                {
+                    if(tagsRequest.VmWareRequest.VmWareTargetAddress.IsNullOrEmpty())
+                        throw new Exception("Target machine address not provided for Tagging service!");
+                    
+                    if(tagsRequest.VmWareRequest.VmWareCredentials.Username.IsNullOrEmpty() ||
+                       tagsRequest.VmWareRequest.VmWareCredentials.Password.IsNullOrEmpty())
+                        throw new Exception("Username and/or password is not configured properly!");
+                    
+                    client.BaseAddress = new Uri(tagsRequest.VmWareRequest.VmWareTargetAddress.StartsWith("https://")
+                            ? tagsRequest.VmWareRequest.VmWareTargetAddress
+                            : "https://" + tagsRequest.VmWareRequest.VmWareTargetAddress);
+
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
+                                Convert.ToBase64String(Encoding.ASCII.GetBytes(
+                                    $"{tagsRequest.VmWareRequest.VmWareCredentials.Username}:{tagsRequest.VmWareRequest.VmWareCredentials.Password}")));
+                });
+            services.Configure<TagsRequestOptions>(Configuration.GetSection("TagsRequest"));
+            services.Configure<TagsCacheOptions>(Configuration.GetSection("TagsCache"));
+            services.AddSingleton<ITagsRequestService, TagsRequestService>();
+            services.AddSingleton<ITagsCacheService, TagsCacheService>();
+            services.AddHostedService<TagsCacheRefresherService>(t => ActivatorUtilities.CreateInstance<TagsCacheRefresherService>(t));
+            Log.Information("Finished configuring Tagging Service Successfully!");
+        }
+        
         // Protocol multiplexer
         var multiplexerOptions = Configuration.GetSection("Multiplexers").Get<List<MultiplexerOptions>>();
 
@@ -110,8 +151,11 @@ public class Startup
                     builder.AllowAnyMethod();
                 });
             });
-        } else 
+        }
+        else
+        {
             Log.Information("CORS is disabled... No CORS header will be added");
+        }
 
         if (StartupOptions.EnableSwagger)
             services.AddSwaggerGen(c =>
@@ -122,7 +166,7 @@ public class Startup
                 var filePath = Path.Combine(AppContext.BaseDirectory, "Fennec.xml");
                 c.IncludeXmlComments(filePath);
             });
-        
+
         // Authentication services
         services.AddDbContext<AuthContext>(options =>
             options.UseSqlite("Data Source=Data/Identity.db"));
@@ -158,9 +202,9 @@ public class Startup
                     return Task.CompletedTask;
                 };
             });
-        
+
         // services.AddAuthorization();
-        
+
         // Identity services
         services.Configure<IdentityOptions>(opts =>
         {
@@ -171,7 +215,7 @@ public class Startup
             opts.Password.RequireUppercase = true;
             opts.Password.RequiredLength = 6;
             opts.Password.RequiredUniqueChars = 1;
-            
+
             // Lockout settings.
             opts.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
             opts.Lockout.MaxFailedAccessAttempts = 5;
@@ -218,10 +262,10 @@ public class Startup
             } else
                 Log.Information("Initial admin user already exists... Skipping creation");
         }
-        
+
         app.UsePathBase("/api");
         app.UseSerilogRequestLogging();
-        
+
         if (StartupOptions.EnableSwagger)
         {
             app.UseSwagger();
