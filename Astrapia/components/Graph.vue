@@ -1,202 +1,265 @@
 <template>
   <div id="graph">
-    <svg id="graph-svg" width="960" height="600"></svg>
+    <svg ref="svg" width="960" height="600"></svg>
     <div id="tooltip" style="visibility: hidden;"></div>
-    <TopologyFooter @recenter="recenterNodes" :metaData="metaData" element-id="graph"/>
+    <TopologyFooter @recenter="recenterGraph" :metaData="metaData" element-id="graph"/>
   </div>
 </template>
 
-<script setup lang="ts">
-import { onMounted, ref,watch } from 'vue';
+<script>
 import * as d3 from 'd3';
 import TopologyFooter from "~/components/TopologyFooter.vue";
 
-const props = defineProps({
-  data: {
-    type: Object,
-    required: true,
+export default {
+  components: {TopologyFooter},
+  props: {
+    data: {
+      type: Object,
+      default: null
+    }
   },
-});
-const { data } = props;
+  data() {
+    return {
+      previousData: null,
+      metaData: null,
+      isDragging: false,
+      graph: null,
+      svg: null,
+      zoom: null
+    };
+  },
+  watch: {
+    data(newData) {
+      if (newData && this.hasDataChanged(newData)) {
+        this.metaData = newData.graphStatistics;
+        this.renderGraph(newData);
+      }
+    }
+  },
+  mounted() {
+    if (this.data) {
+      this.renderGraph(this.data);
+    }
+  },
+  methods: {
+    renderGraph(graph) {
+      const svg = d3.select(this.$refs.svg)
+        .attr("width", window.innerWidth)
+        .attr("height", window.innerHeight);
 
-let nodes, edges, simulation, zoom, svg;
-const metaData = ref();
-let isDragging = false;
-
-onMounted(async () => {
-  await UpdateGraph();
-  await initGraph();
-});
-
-const UpdateGraph = async () => {
-  if (props.data) {
-    metaData.value = props.data.graphStatistics;
-    nodes = Object.values(props.data.nodes);
-    edges = Object.values(props.data.edges);
-  }
-};
-
-watch(() => props.data, async (newVal) => {
-  if (newVal) {
-    await UpdateGraph();
-    await initGraph();
-  }
-}, { immediate: true });
-
-function recenterNodes() {
-  const centerX = nodes.reduce((sum, node) => sum + node.x, 0) / nodes.length;
-  const centerY = nodes.reduce((sum, node) => sum + node.y, 0) / nodes.length;
-
-  svg.call(zoom.translateTo, centerX, centerY);
-}
-
-const initGraph = async () => {
-  zoom = d3.zoom().on('zoom', (e) => {
-    const transform = e.transform;
-    link.attr('transform', transform);
-    node.attr('transform', transform);
-    label.attr('transform', transform);
-  });
-
-  const drag = d3.drag()
-      .on("start", function (event) {
-        isDragging = true;
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        event.subject.fx = null;
-        event.subject.fy = null;
-      })
-      .on("drag", function (event) {
-        event.subject.fx = event.x;
-        event.subject.fy = event.y;
-      })
-      .on("end", function () {
-        isDragging = false;
-        simulation.alphaTarget(0).restart();
+      const zoom = d3.zoom().on('zoom', (e) => {
+        const transform = e.transform;
+        svg.selectAll(".link").attr('transform', transform);
+        svg.selectAll(".node").attr('transform', transform);
+        svg.selectAll(".label").attr('transform', transform);
+        svg.selectAll(".link-overlay").attr('transform', transform);
       });
 
-  svg = d3.select("#graph-svg")
-      .attr("width", window.innerWidth)
-      .attr("height", window.innerHeight)
-      .call(zoom);
+      svg.call(zoom);
 
-  simulation = d3.forceSimulation(nodes)
-      .force("link", d3.forceLink(edges).id((d: { id: any; }) => d.id).distance(300).strength(1))
-      .force("charge", d3.forceManyBody().strength(-7000))
-      .force("center", d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2))
-      .force("x", d3.forceX().strength(0.5))
-      .force("y", d3.forceY().strength(0.5))
-      .force("collide", d3.forceCollide(10));
+      const simulation = d3.forceSimulation(graph.nodes)
+        .force("link", d3.forceLink(graph.edges).id(d => d.id).distance(200).strength(1))
+        .force("charge", d3.forceManyBody().strength(-3000))
+        .force("center", d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2))
+        .force("collide", d3.forceCollide(10));
 
-  let strokeWidthScale = d3.scaleLinear()
-      .domain([0, 50000000])
-      .range([2, 10]);
+      const drag = d3.drag()
+        .on("start", function (event) {
+          this.isDragging = true;
+          if (!event.active) simulation.alphaTarget(0.3).restart();
+          event.subject.fx = null;
+          event.subject.fy = null;
+        })
+        .on("drag", function (event) {
+          event.subject.fx = event.x;
+          event.subject.fy = event.y;
+        })
+        .on("end", function () {
+          this.isDragging = false;
+          simulation.alphaTarget(0).restart();
+        });
 
+      //links
+      const linkWidthScale = d3.scaleLinear()
+        .domain([0, 1000])
+        .clamp(true)
+        .range([0.5, 4]);
 
-  let link = svg.append("g")
-      .attr("stroke", "#999")
-      .attr("stroke-opacity", 0.6)
-      .selectAll("line")
-      .data(edges)
-      .join("line")
-      .attr("stroke-width", d => strokeWidthScale(d.byteCount));
+      const linkColorScale = d3.scaleLinear()
+        .domain([0, 10000])
+        .clamp(true)
+        .range(["#a4a4a4", "#3f3f3f"]);
 
+      const links = svg.selectAll(".link")
+        .data(graph.edges, d => d.source.id + '-' + d.target.id);
 
-  let linkHitArea = svg.append("g")
-      .attr("stroke", "transparent")
-      .attr("stroke-width", 10)
-      .selectAll("line")
-      .data(edges)
-      .join("line")
-      .on("mouseover", function(event, d) {
-        tooltip.style("visibility", "visible");
-        tooltip.html(`Bytes: ${d.byteCount} <br> Traces: ${d.traceCount} <br> Packets: ${d.packetCount}`);
-      })
-      .on("mousemove", function(event) {
-        tooltip.style("left", (event.pageX-80) + "px")
-            .style("top", (event.pageY+20) + "px");
-      })
+      links.exit().remove();
 
-      .on("mouseleave", function() {
-        tooltip.style("visibility", "hidden");
-      });
+      const newLinks = links.enter()
+        .append("line")
+        .attr("class", "link")
+        .merge(links)
+        .attr("stroke", d => linkColorScale(d.byteCount))
+        .attr("stroke-width", d => linkWidthScale(d.packetCount));
 
-  let node = svg.append("g")
-      .attr("stroke", "#fff")
-      .attr("stroke-width", 1.5)
-      .selectAll("circle")
-      .data(nodes)
-      .join("circle")
-      .attr("r", 10)
-      .attr("fill", "#537B87")
-      .call(drag);
+      //linkOverlays
+      const linkOverlays = svg.selectAll(".link-overlay")
+        .data(graph.edges, d => d.source.id + '-' + d.target.id);
 
-  const tooltip = d3.select("#tooltip");
+      linkOverlays.exit().remove();
 
-  node
-      .on("mouseenter", function (event, d) {
-        if (!isDragging) {
+      const newLinkOverlays = linkOverlays.enter()
+        .append("line")
+        .attr("class", "link-overlay")
+        .merge(links)
+        .attr("stroke", "transparent")
+        .attr("stroke-width", 8);
+
+      //nodes
+      const nodes = svg.selectAll(".node")
+        .data(graph.nodes, d => d.id);
+
+      nodes.exit().remove();
+
+      const newNodes = nodes.enter()
+        .append("circle")
+        .attr("class", "node")
+        .attr("r", 8)
+        .attr("fill", "#537B87")
+        .attr("cx", window.innerWidth/2 )
+        .attr("cy", window.innerHeight /2)
+        .merge(nodes);
+
+      //label
+
+      const labels = svg.selectAll(".label")
+        .data(graph.nodes, d => d.id);
+
+      labels.exit().remove();
+
+      const newLabels = labels.enter()
+        .append("text")
+        .attr("class", "label")
+        .attr("x", 0)
+        .attr("dy", "1.5em")
+        .attr("text-anchor", "middle")
+        .attr("font-family", "Arial")
+        .style("fill", "#414141")
+        .merge(labels)
+        .text(d => d.id);
+
+      //tooltip
+      const tooltip = d3.select("#tooltip");
+
+      svg.selectAll(".node").call(drag)
+        .on("mouseenter", function (event, d) {
+          if (!this.isDragging) {
+            tooltip.style("visibility", "visible");
+            tooltip.html(d.name);
+          }
+        })
+        .on("mousemove", function (event) {
+          if (!this.isDragging) {
+            const [x, y] = d3.pointer(event, svg.node());
+            tooltip.style("left", (x + 10) + "px")
+              .style("top", (y + 10) + "px");
+          }
+        })
+        .on("mouseleave", function () {
+          if (!this.isDragging) {
+            tooltip.style("visibility", "hidden");
+          }
+        });
+
+      svg.selectAll(".link-overlay")
+        .on("mouseover", function (event, d) {
           tooltip.style("visibility", "visible");
-          tooltip.html(d.name);
-        }
-      })
-      .on("mousemove", function (event) {
-        if (!isDragging) {
-          tooltip.style("left", (d3.select(this).attr("cx") + event.pageX) + "px")
-              .style("top", (d3.select(this).attr("cy") + event.pageY) + "px");
-        }
-      })
-      .on("mouseleave", function () {
-        if (!isDragging) {
+          tooltip.html(`Bytes: ${d.byteCount} <br> Traces: ${d.traceCount} <br> Packets: ${d.packetCount}`);
+        })
+        .on("mousemove", function (event) {
+          const tooltipWidth = tooltip.node().getBoundingClientRect().width;
+          tooltip.style("left", (event.pageX - tooltipWidth / 2) + "px")
+            .style("top", (event.pageY + 10) + "px");
+        })
+
+        .on("mouseleave", function () {
           tooltip.style("visibility", "hidden");
-        }
+        });
+
+      simulation.on("tick", () => {
+        newLinks
+          .attr("x1", d => d.source.x)
+          .attr("y1", d => d.source.y)
+          .attr("x2", d => d.target.x)
+          .attr("y2", d => d.target.y);
+
+        newLinkOverlays
+          .attr("x1", d => d.source.x)
+          .attr("y1", d => d.source.y)
+          .attr("x2", d => d.target.x)
+          .attr("y2", d => d.target.y);
+
+        newNodes
+          .attr("cx", d => d.x)
+          .attr("cy", d => d.y);
+
+        newLabels
+          .attr("x", d => d.x)
+          .attr("y", d => d.y);
       });
 
-  let label = svg.append("g")
-      .selectAll("text")
-      .data(nodes)
-      .enter()
-      .append("text")
-      .attr("x", 0)
-      .attr("dy", "1.5em")
-      .attr("text-anchor", "middle")
-      .attr("font-family", "Arial")
-      .style("fill", "#414141")
-      .text(function (d) {
-        return d.name;
-      });
+      this.previousData = JSON.parse(JSON.stringify(graph));
+      this.graph = graph;
+      this.svg = svg;
+      this.zoom = zoom;
+    },
+    recenterGraph() {
+      if (!this.graph || !this.svg || !this.zoom) return;
 
-  simulation.alpha(0.1).alphaTarget(0).restart();
-  simulation.on("tick", () => {
-    link
-        .attr("x1", d => d.source.x)
-        .attr("y1", d => d.source.y)
-        .attr("x2", d => d.target.x)
-        .attr("y2", d => d.target.y);
+      const centerX = this.graph.nodes.reduce((sum, node) => sum + node.x, 0) / this.graph.nodes.length;
+      const centerY = this.graph.nodes.reduce((sum, node) => sum + node.y, 0) / this.graph.nodes.length;
 
-    linkHitArea
-        .attr("x1", d => d.source.x)
-        .attr("y1", d => d.source.y)
-        .attr("x2", d => d.target.x)
-        .attr("y2", d => d.target.y);
+      this.svg.call(this.zoom.translateTo, centerX, centerY);
+    },
+    hasDataChanged(newData) {
+      if (this.previousData === null) {
+        return newData !== null;
+      }
 
-    node
-        .attr("cx", d => d.x)
-        .attr("cy", d => d.y);
+      if (newData === null) {
+        return true;
+      }
 
-    label
-        .attr("x", d => d.x)
-        .attr("y", d => d.y);
-  });
+      return !this.isEqual(this.previousData, newData);
+    },
+    isEqual(obj1, obj2) {
+      if (typeof obj1 !== 'object' || typeof obj2 !== 'object')
+        return obj1 === obj2;
+
+      const props1 = Object.keys(obj1);
+      const props2 = Object.keys(obj2);
+      if (props1.length !== props2.length)
+        return false;
+
+      for (let prop of props1) {
+        if (!this.isEqual(obj1[prop], obj2[prop]))
+          return false;
+      }
+
+      return true;
+    }
+  }
 };
 </script>
 
 <style scoped>
-#graph{
+svg {
   position: fixed;
   width: 100vw;
   height: 100vh;
   background-color: white;
 }
+
 #tooltip {
   position: absolute;
   visibility: hidden;
