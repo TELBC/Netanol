@@ -36,8 +36,12 @@
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import layoutService, {Layouts} from "~/services/layoutService";
-import {watch,ref} from "vue";
+import layoutService from "~/services/layoutService";
+import {onMounted,watch,ref} from "vue";
+export interface Layouts {
+  name: string,
+  layerCount: number
+}
 
 const dropdownState = ref({
   isOpen: false,

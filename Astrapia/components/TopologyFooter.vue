@@ -1,8 +1,10 @@
 <template>
   <div class="footer">
-    <button class="icon-button" @click="$emit('recenter')">
-      <font-awesome-icon icon="fa-solid fa-arrows-to-circle" />
-    </button>
+    <Tooltip title="Recenter Graph">
+      <button class="icon-button" @click="$emit('recenter')">
+        <font-awesome-icon icon="fa-solid fa-arrows-to-circle" />
+      </button>
+    </Tooltip>
     <span class="separator"></span>
     <div class="footer-info" v-if="metaData">
       <span class="metadata-item">
@@ -22,9 +24,11 @@
       </span>
     </div>
     <span class="separator"></span>
-    <div class="footer-info">
-      <FullscreenButton elementId="graph"/>
-    </div>
+    <Tooltip title="Fullscreen">
+      <div class="footer-info">
+        <FullscreenButton elementId="graph"/>
+      </div>
+    </Tooltip>
   </div>
 </template>
 
@@ -35,7 +39,8 @@ import { ref, watch } from 'vue';
 
 const props = defineProps<{
   elementId: String,
-  metaData: IGraphStatistics
+  metaData: IGraphStatistics,
+  freezeSim: Boolean
 }>();
 
 const convertedByteCount = ref('');

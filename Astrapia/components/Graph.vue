@@ -31,34 +31,39 @@ export default {
   watch: {
     data(newData) {
       if (newData && this.hasDataChanged(newData)) {
-        this.metaData = newData.graphStatistics;
-        this.renderGraph(newData);
+        this.updateData(newData)
+        this.renderGraph();
       }
     }
   },
   mounted() {
-    if (this.data) {
-      this.renderGraph(this.data);
-    }
+    this.svg = d3.select(this.$refs.svg)
+      .attr("width", window.innerWidth)
+      .attr("height", window.innerHeight);
   },
   methods: {
-    renderGraph(graph) {
-      const svg = d3.select(this.$refs.svg)
-        .attr("width", window.innerWidth)
-        .attr("height", window.innerHeight);
+    updateData(newData) {
+      this.metaData = newData.graphStatistics;
 
-      const zoom = d3.zoom().on('zoom', (e) => {
-        const transform = e.transform;
-        svg.selectAll(".link").attr('transform', transform);
-        svg.selectAll(".node").attr('transform', transform);
-        svg.selectAll(".label").attr('transform', transform);
-        svg.selectAll(".link-overlay").attr('transform', transform);
+      const oldNodes = new Map(this.data.nodes.map(d => [d.id, d]));
+      this.data.nodes = newData.nodes.map(d => Object.assign(oldNodes.get(d.id), d));
+
+      const oldLinks = new Map(this.data.edges.map(d => [d.id, d]));
+      this.data.edges = newData.edges.map(d => Object.assign(oldLinks.get(d.id),d));
+    },
+    renderGraph() {
+      this.zoom = d3.zoom().on('zoom', (e) => {
+        const transform = e.transform;//TODO zooming out and render causes nodes/links to be disconnected and bigger
+        this.svg.selectAll(".link").attr('transform', transform);
+        this.svg.selectAll(".node").attr('transform', transform);
+        this.svg.selectAll(".label").attr('transform', transform);
+        this.svg.selectAll(".link-overlay").attr('transform', transform);
       });
 
-      svg.call(zoom);
+      this.svg.call(this.zoom);
 
-      const simulation = d3.forceSimulation(graph.nodes)
-        .force("link", d3.forceLink(graph.edges).id(d => d.id).distance(200).strength(1))
+      const simulation = d3.forceSimulation(this.data.nodes)
+        .force("link", d3.forceLink(this.data.edges).id(d => d.id))
         .force("charge", d3.forceManyBody().strength(-3000))
         .force("center", d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2))
         .force("collide", d3.forceCollide(10));
@@ -90,34 +95,34 @@ export default {
         .clamp(true)
         .range(["#a4a4a4", "#3f3f3f"]);
 
-      const links = svg.selectAll(".link")
-        .data(graph.edges, d => d.source.id + '-' + d.target.id);
+      const links = this.svg.selectAll(".link")
+        .data(this.data.edges, d => d.id);
 
       links.exit().remove();
 
       const newLinks = links.enter()
-        .append("line")
+        .insert("line", ".node")
         .attr("class", "link")
         .merge(links)
         .attr("stroke", d => linkColorScale(d.byteCount))
         .attr("stroke-width", d => linkWidthScale(d.packetCount));
 
       //linkOverlays
-      const linkOverlays = svg.selectAll(".link-overlay")
-        .data(graph.edges, d => d.source.id + '-' + d.target.id);
+      const linkOverlays = this.svg.selectAll(".link-overlay")
+        .data(this.data.edges, d => d.id);
 
       linkOverlays.exit().remove();
 
       const newLinkOverlays = linkOverlays.enter()
-        .append("line")
+        .insert("line", ".node")
         .attr("class", "link-overlay")
         .merge(links)
         .attr("stroke", "transparent")
         .attr("stroke-width", 8);
 
       //nodes
-      const nodes = svg.selectAll(".node")
-        .data(graph.nodes, d => d.id);
+      const nodes = this.svg.selectAll(".node")
+        .data(this.data.nodes, d => d.id);
 
       nodes.exit().remove();
 
@@ -126,14 +131,14 @@ export default {
         .attr("class", "node")
         .attr("r", 8)
         .attr("fill", "#537B87")
-        .attr("cx", window.innerWidth/2 )
+        .attr("cx", window.innerWidth / 2 )
         .attr("cy", window.innerHeight /2)
         .merge(nodes);
 
       //label
 
-      const labels = svg.selectAll(".label")
-        .data(graph.nodes, d => d.id);
+      const labels = this.svg.selectAll(".label")
+        .data(this.data.nodes, d => d.name);
 
       labels.exit().remove();
 
@@ -151,7 +156,7 @@ export default {
       //tooltip
       const tooltip = d3.select("#tooltip");
 
-      svg.selectAll(".node").call(drag)
+      this.svg.selectAll(".node").call(drag)
         .on("mouseenter", function (event, d) {
           if (!this.isDragging) {
             tooltip.style("visibility", "visible");
@@ -160,7 +165,7 @@ export default {
         })
         .on("mousemove", function (event) {
           if (!this.isDragging) {
-            const [x, y] = d3.pointer(event, svg.node());
+            const [x, y] = d3.pointer(event, this.svg.node());
             tooltip.style("left", (x + 10) + "px")
               .style("top", (y + 10) + "px");
           }
@@ -171,7 +176,7 @@ export default {
           }
         });
 
-      svg.selectAll(".link-overlay")
+      this.svg.selectAll(".link-overlay")
         .on("mouseover", function (event, d) {
           tooltip.style("visibility", "visible");
           tooltip.html(`Bytes: ${d.byteCount} <br> Traces: ${d.traceCount} <br> Packets: ${d.packetCount}`);
@@ -208,13 +213,10 @@ export default {
           .attr("y", d => d.y);
       });
 
-      this.previousData = JSON.parse(JSON.stringify(graph));
-      this.graph = graph;
-      this.svg = svg;
-      this.zoom = zoom;
+      this.previousData = JSON.parse(JSON.stringify(this.data));
     },
     recenterGraph() {
-      if (!this.graph || !this.svg || !this.zoom) return;
+      if (!this.data || !this.svg || !this.zoom) return;
 
       const centerX = this.graph.nodes.reduce((sum, node) => sum + node.x, 0) / this.graph.nodes.length;
       const centerY = this.graph.nodes.reduce((sum, node) => sum + node.y, 0) / this.graph.nodes.length;
