@@ -4,14 +4,21 @@
       <font-awesome-icon icon="fa-solid fa-chevron-left" class="collapse-expand-icon" v-bind:class="{ 'collapse-expand-layer-rotate': layerListState.isExpanded }" />
     </div>
     <div class="layer-list-container" :class="{ 'expanded': layerListState.isExpanded }">
-      <div class="layer" v-for="layer in layerListState.selectedLayout.layers" :key="rerenderer.layerListRerender" @click="openCloseLayer(layer.name)" v-bind:class="{ 'create-open-hide': layerListState.createLayerOpen }">
-        <div>
-          <font-awesome-icon icon="fa-solid fa-chevron-right" v-bind:class="{'expand-layer-icon': layerListState.layerOpen === layer.name}" class="expand-layer" />
+      <div class="layer-list-overflow-container">
+        <div class="layer-container" v-for="layer in layerListState.selectedLayout.layers" :key="rerenderer.layerListRerender" @click="openCloseLayer(layer.name)" v-bind:class="{ 'create-open-hide': layerListState.createLayerOpen }">
+          <div class="layer">
+            <div>
+              <font-awesome-icon icon="fa-solid fa-chevron-right" v-bind:class="{'expand-layer-icon': layerListState.layerOpen === layer.name}" class="expand-layer" />
+            </div>
+            <div class="layer-name">
+              {{ layer.name }}
+            </div>
+            <input type="checkbox" class="theme-checkbox" @click.stop>
+          </div>
+          <div v-bind:class="{ 'expand-layer-info': layerListState.layerOpen === layer.name }">
+
+          </div>
         </div>
-        <div class="layer-name">
-          {{ layer.name }}
-        </div>
-        <input type="checkbox" class="theme-checkbox" @click.stop>
       </div>
       <div class="create-form" v-bind:class="{ 'create-layer-open': layerListState.createLayerOpen }">
         <input type="text" placeholder="Layer Name" />
@@ -39,7 +46,7 @@ const layerListState = ref({
     name: '',
     layers: [
       {
-        name: 'Layer1'
+        name: 'Layer1Layer1Layer1Layer1Layer1Layer1Layer1'
       },
       {
         name: 'Layer2'
@@ -67,7 +74,172 @@ const layerListState = ref({
       },
       {
         name: 'Layer10'
-      }
+      },
+      {
+        name: 'Layer11'
+      },
+      {
+        name: 'Layer12'
+      },
+      {
+        name: 'Layer13'
+      },
+      {
+        name: 'Layer14'
+      },
+      {
+        name: 'Layer15'
+      },
+      {
+        name: 'Layer16'
+      },
+      {
+        name: 'Layer17'
+      },
+      {
+        name: 'Layer18'
+      },
+      {
+        name: 'Layer19'
+      },
+      {
+        name: 'Layer20'
+      },
+      {
+        name: 'Layer21'
+      },
+      {
+        name: 'Layer22'
+      },
+      {
+        name: 'Layer23'
+      },
+      {
+        name: 'Layer24'
+      },
+      {
+        name: 'Layer25'
+      },
+      {
+        name: 'Layer26'
+      },
+      {
+        name: 'Layer27'
+      },
+      {
+        name: 'Layer28'
+      },
+      {
+        name: 'Layer29'
+      },
+      {
+        name: 'Layer30'
+      },
+      {
+        name: 'Layer31'
+      },
+      {
+        name: 'Layer32'
+      },
+      {
+        name: 'Layer33'
+      },
+      {
+        name: 'Layer34'
+      },
+      {
+        name: 'Layer35'
+      },
+      {
+        name: 'Layer36'
+      },
+      {
+        name: 'Layer37'
+      },
+      {
+        name: 'Layer38'
+      },
+      {
+        name: 'Layer39'
+      },
+      {
+        name: 'Layer40'
+      },
+      {
+        name: 'Layer41'
+      },
+      {
+        name: 'Layer42'
+      },
+      {
+        name: 'Layer43'
+      },
+      {
+        name: 'Layer44'
+      },
+      {
+        name: 'Layer45'
+      },
+      {
+        name: 'Layer46'
+      },
+      {
+        name: 'Layer47'
+      },
+      {
+        name: 'Layer48'
+      },
+      {
+        name: 'Layer49'
+      },
+      {
+        name: 'Layer50'
+      },
+      {
+        name: 'Layer51'
+      },
+      {
+        name: 'Layer52'
+      },
+      {
+        name: 'Layer53'
+      },
+      {
+        name: 'Layer54'
+      },
+      {
+        name: 'Layer55'
+      },
+      {
+        name: 'Layer56'
+      },
+      {
+        name: 'Layer57'
+      },
+      {
+        name: 'Layer58'
+      },
+      {
+        name: 'Layer59'
+      },
+      {
+        name: 'Layer60'
+      },
+      {
+        name: 'Layer61'
+      },
+      {
+        name: 'Layer62'
+      },
+      {
+        name: 'Layer63'
+      },
+      {
+        name: 'Layer64'
+      },
+      {
+        name: 'Layer65'
+      },
     ]
   },
   layerOpen: '',
@@ -165,6 +337,17 @@ watch(() => props.layout!, (newLayout, oldLayout) => {
   width: 14vw;
 }
 
+.layer-list-overflow-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 94.5%;
+}
+
+.layer-container {
+  display: flex;
+  flex-direction: column;
+}
+
 .layer {
   display: flex;
   flex-direction: row;
@@ -172,7 +355,7 @@ watch(() => props.layout!, (newLayout, oldLayout) => {
   padding: 1vh 1vw;
   cursor: pointer;
   transition: 0.2s ease-in-out;
-  height: 3vh;
+
   width: 90%;
 }
 
@@ -183,6 +366,24 @@ watch(() => props.layout!, (newLayout, oldLayout) => {
 
 .expand-layer-icon {
   transform: rotate(-90deg);
+}
+
+.layer-name {
+  width: 60%;
+  overflow-x: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.layer-name:hover {
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.expand-layer-info {
+  display: flex;
+  flex-direction: column;
+  height: 10vh;
 }
 
 .create-layer {
