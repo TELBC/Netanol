@@ -26,5 +26,5 @@ public class MultiplexerOptions
     /// <summary>
     ///     The collectors that should be added to the multiplexer.
     /// </summary>
-    public IEnumerable<ParserType> Parsers { get; set; } = new List<ParserType>();
+    public IEnumerable<FlowProtocol> Parsers { get; set; } = new List<FlowProtocol>();
 }

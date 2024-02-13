@@ -30,7 +30,7 @@ public class GraphRepository : IGraphRepository
 
     public async Task<GraphDetails> GenerateGraph(DateTimeOffset from, DateTimeOffset to, Layout layout)
     {
-        var traces = await _traceRepository.AggregateTraces(from, to);
+        var traces = await _traceRepository.AggregateTraces(layout.QueryConditions, from, to);
         foreach (var layer in layout.Layers)
             layer.Execute(ref traces);
 

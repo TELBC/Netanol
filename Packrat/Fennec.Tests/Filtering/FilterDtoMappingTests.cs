@@ -41,7 +41,7 @@ public class FilterDtoMappingTests
         Assert.Equal(IPAddress.Parse(dto.DestinationAddress).GetAddressBytes(), entity.DestinationAddress);
         Assert.Equal(ushort.Parse(dto.SourcePort!), entity.SourcePort);
         Assert.Equal(ushort.Parse(dto.DestinationPort!), entity.DestinationPort);
-        Assert.Equal(Enum.Parse<TraceProtocol>(dto.Protocol!), entity.Protocol);
+        Assert.Equal(Enum.Parse<DataProtocol>(dto.Protocol!), entity.Protocol);
         Assert.Equal(dto.Include, entity.Include);
     }
     
@@ -56,7 +56,7 @@ public class FilterDtoMappingTests
             destinationAddress: new byte[] { 10, 0, 0, 1 },
             destinationAddressMask: new byte[] { 255, 255, 255, 0 },
             destinationPort: 80,
-            protocol: TraceProtocol.Tcp,
+            protocol: DataProtocol.Tcp,
             include: true);
 
         // Act

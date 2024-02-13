@@ -17,6 +17,9 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 7.0.x
+          
+      - name: Setup Docker
+        uses: docker/setup-buildx-action@v3
 
       - name: Restore NuGet packages
         working-directory: Packrat/Fennec.Tests

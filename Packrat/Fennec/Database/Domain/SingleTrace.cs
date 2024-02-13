@@ -1,10 +1,11 @@
 ﻿using System.Net;
+using Fennec.Parsers;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Fennec.Database.Domain;
 
-public enum TraceProtocol
+public enum DataProtocol
 {
     Unknown,
     Udp,
@@ -76,8 +77,14 @@ public class SingleTrace
     /// <summary>
     /// What protocol was used during communication.
     /// </summary>
-    [BsonElement("protocol")]
-    public TraceProtocol Protocol { get; set; }
+    [BsonElement("dataProtocol")]
+    public DataProtocol DataProtocol { get; set; }
+    
+    /// <summary>
+    /// The protocol used to transmit the flow.
+    /// </summary>
+    [BsonElement("flowProtocol")]
+    public FlowProtocol FlowProtocol { get; set; }
  
     /// <summary>
     /// Whether when this trace was received it was a duplicate.
@@ -96,11 +103,13 @@ public class SingleTrace
     [BsonElement("packetCount")]
     public ulong PacketCount { get; set; }
 
-    public SingleTrace(DateTimeOffset timestamp, TraceProtocol protocol, SingleTraceEndpoint source,
+    public SingleTrace(DateTimeOffset timestamp, DataProtocol dataProtocol, FlowProtocol flowProtocol, bool duplicate, SingleTraceEndpoint source,
         SingleTraceEndpoint destination, ulong byteCount, ulong packetCount)
     {
         Timestamp = timestamp;
-        Protocol = protocol;
+        DataProtocol = dataProtocol;
+        FlowProtocol = flowProtocol;
+        Duplicate = duplicate;
         Source = source;
         Destination = destination;
         ByteCount = byteCount;
