@@ -111,6 +111,8 @@ services:
       - REPLAY_FILE
       - REPLAY_TARGET
       - REPLAY_SPEED
+    volumes:
+      - ./replay/captures/:/captures
     networks:
       - netanol-network
     profiles:

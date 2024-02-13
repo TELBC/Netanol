@@ -13,8 +13,5 @@ WORKDIR /
 # Copy the Python script into the container
 COPY send_payloads.py /send_payloads.py
 
-# If captures directory is not too large and changes infrequently
-COPY captures /captures/
-
 # Set the default command for the container to your Python script
 ENTRYPOINT ["python", "/send_payloads.py"]
