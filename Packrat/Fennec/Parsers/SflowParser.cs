@@ -8,12 +8,15 @@ public class SflowParser : IParser
 {
     public IEnumerable<TraceImportInfo> Parse(UdpReceiveResult result)
     {
-        var datagram = result.Buffer;
+        using var stream = new MemoryStream(result.Buffer);
         var reader = new SflowReader();
-        var header = reader.ReadHeader(datagram);
-        var sample = reader.ReadSample(datagram);
         
-        
+        var header = reader.ReadHeader(stream);
+        var samples = reader.ReadSamples(stream, header.NumSamples);
+
+        Console.WriteLine();
+
+
         return new List<TraceImportInfo>();
     }
 }

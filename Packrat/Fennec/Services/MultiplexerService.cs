@@ -188,7 +188,7 @@ public class MultiplexerService
         }
         
         // Check for sFlow protocol version
-        if (buffer is [_, _, 0, 5, ..]) // sFlow stores version in the first 4 bytes
+        if (buffer is [_, _, 0, 5, ..]) // sFlow stores version in the first 4 bytes, the only way we can differentiate between Netflow5 and sFlow XD
         {
             return FlowProtocol.Sflow;
         }
