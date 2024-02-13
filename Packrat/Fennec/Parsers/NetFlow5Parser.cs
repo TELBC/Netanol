@@ -72,6 +72,7 @@ public class NetFlow5Parser : IParser
             flow.SourcePort,
             flow.DestinationAddress,
             flow.DestinationPort,
+            false,
             flow.Packets,
             flow.Octets,
             (TraceProtocol)flow.Protocol

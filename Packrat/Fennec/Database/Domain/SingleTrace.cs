@@ -80,6 +80,11 @@ public class SingleTrace
     public TraceProtocol Protocol { get; set; }
  
     /// <summary>
+    /// Whether when this trace was received it was a duplicate.
+    /// </summary>
+    public bool Duplicate { get; set; }
+    
+    /// <summary>
     /// The amount of bytes transmitted.
     /// </summary>
     [BsonElement("byteCount")]
