@@ -19,7 +19,7 @@ public class MultiplexerService
     private readonly ILogger _log;
     private readonly ITraceRepository _traceRepository;
     private readonly UdpClient _udpClient;
-    private readonly IDictionary<ParserType, IParser> _parsers;
+    private readonly IDictionary<FlowProtocol, IParser> _parsers;
     private readonly MultiplexerOptions _options;
     private readonly IFlowImporterMetric _flowImporterMetric;
 
@@ -33,7 +33,7 @@ public class MultiplexerService
     /// <param name="traceRepository"></param>
     public MultiplexerService(
         ILogger log,
-        IDictionary<ParserType, IParser> parsers,
+        IDictionary<FlowProtocol, IParser> parsers,
         MultiplexerOptions options, ITraceRepository traceRepository, IFlowImporterMetric flowImporterMetric)
     {
         _log = log.ForContext<MultiplexerService>().ForContext("MultiplexerName", options.Name);
@@ -117,15 +117,15 @@ public class MultiplexerService
 
     public static MultiplexerService CreateInstance(IServiceProvider serviceProvider, MultiplexerOptions options)
     {
-        var activeCollectors = new Dictionary<ParserType, IParser>();
+        var activeCollectors = new Dictionary<FlowProtocol, IParser>();
     
         foreach (var parserType in options.Parsers)
         {
             IParser parser = parserType switch
             {
-                ParserType.Netflow5 => ActivatorUtilities.CreateInstance<NetFlow5Parser>(serviceProvider),
-                ParserType.Netflow9 => ActivatorUtilities.CreateInstance<NetFlow9Parser>(serviceProvider),
-                ParserType.Ipfix => ActivatorUtilities.CreateInstance<IpFixParser>(serviceProvider),
+                FlowProtocol.Netflow5 => ActivatorUtilities.CreateInstance<NetFlow5Parser>(serviceProvider),
+                FlowProtocol.Netflow9 => ActivatorUtilities.CreateInstance<NetFlow9Parser>(serviceProvider),
+                FlowProtocol.Ipfix => ActivatorUtilities.CreateInstance<IpFixParser>(serviceProvider),
                 _ => throw new ArgumentOutOfRangeException()
             };
             
@@ -141,7 +141,7 @@ public class MultiplexerService
     /// <param name="buffer"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    private static ParserType? DetermineProtocolVersion(IReadOnlyList<byte> buffer)
+    private static FlowProtocol? DetermineProtocolVersion(IReadOnlyList<byte> buffer)
     {
         if (buffer.Count < 2)
         {
@@ -153,9 +153,9 @@ public class MultiplexerService
 
         return version switch
         {
-            5 => ParserType.Netflow5,
-            9 => ParserType.Netflow9,
-            10 => ParserType.Ipfix,
+            5 => FlowProtocol.Netflow5,
+            9 => FlowProtocol.Netflow9,
+            10 => FlowProtocol.Ipfix,
             _ => null
         };
     }

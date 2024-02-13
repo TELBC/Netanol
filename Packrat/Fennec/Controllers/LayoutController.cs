@@ -2,7 +2,6 @@ using System.Data;
 using AutoMapper;
 using Fennec.Database;
 using Fennec.Database.Domain;
-using Fennec.Database.Domain.Layers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -127,5 +126,25 @@ public class LayoutController : ControllerBase
         {
             return NotFound($"The layout with the name `{name}` does not exist.");
         }
+    }
+    
+    /// <summary>
+    /// Replace the existing query conditions for the layout with the given name with the new ones.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="queryConditions"></param>
+    /// <returns></returns>
+    [HttpPut("{name}/queryConditions")]
+    [SwaggerResponse(StatusCodes.Status200OK, "Query conditions successfully updated", typeof(FullLayoutDto))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "The layout with the name does not exist")]
+    public async Task<IActionResult> ReplaceQueryConditions(string name, QueryConditionsDto queryConditions)
+    {
+        var layout = await _layoutRepository.GetLayout(name);
+        if (layout == null)
+            return NotFound($"The layout with the name `{name}` does not exist.");
+
+        var newQueryConditions = _mapper.Map<QueryConditions>(queryConditions);
+        await _layoutRepository.ReplaceQueryConditions(name, newQueryConditions);
+        return Ok(_mapper.Map<FullLayoutDto>(layout));
     }
 }

@@ -51,6 +51,11 @@ public interface ILayoutRepository
     /// <returns></returns>
     /// <exception cref="KeyNotFoundException">Thrown if a layout with the name <paramref name="name" /> does not exist.</exception>
     Task<Layout> DeleteLayout(string name);
+    
+    /// <summary>
+    /// Replace the existing query conditions for the layout with the given name with the new ones.
+    /// </summary>
+    Task ReplaceQueryConditions(string layoutName, QueryConditions queryConditions);    
 }
 
 public class LayoutRepository : ILayoutRepository
@@ -112,5 +117,15 @@ public class LayoutRepository : ILayoutRepository
             throw new KeyNotFoundException($"A layout with the name {name} does not exist.");
 
         return layout;
+    }
+    
+    public async Task ReplaceQueryConditions(string layoutName, QueryConditions queryConditions)
+    {
+        var layout = await _layouts.Find(l => l.Name == layoutName).FirstOrDefaultAsync();
+        if (layout == null)
+            throw new KeyNotFoundException($"A layout with the name {layoutName} does not exist.");
+
+        var update = Builders<Layout>.Update.Set(l => l.QueryConditions, queryConditions);
+        await _layouts.UpdateOneAsync(l => l.Name == layoutName, update);
     }
 }

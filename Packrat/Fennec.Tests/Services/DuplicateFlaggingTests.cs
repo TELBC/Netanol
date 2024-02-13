@@ -2,6 +2,7 @@
 using Fennec.Database;
 using Fennec.Database.Domain;
 using Fennec.Options;
+using Fennec.Parsers;
 using Fennec.Services;
 using NSubstitute;
 
@@ -14,7 +15,7 @@ public class DuplicateFlaggingTests
         IPAddress.Parse("10.10.20.1"), 10,
         IPAddress.Parse("10.10.30.1"), 20,
         false,
-        10, 10, TraceProtocol.Tcp);
+        10, 10, DataProtocol.Tcp, FlowProtocol.Ipfix);
 
     [Fact]
     public void NoFlag_WhenOnlyTrace()

@@ -18,7 +18,7 @@ public class FilterListTests
         var filterList = new FilterList(false, conditions);
         var aggregateTraces = new List<AggregateTrace>
         {
-            new(new byte[] { 192, 168, 1, 101 }, new byte[] { 10, 0, 0, 2 }, 12345, 80, TraceProtocol.Tcp, 100, 1000)
+            new(new byte[] { 192, 168, 1, 101 }, new byte[] { 10, 0, 0, 2 }, 12345, 80, DataProtocol.Tcp, 100, 1000)
         };
 
         // Act
@@ -37,12 +37,12 @@ public class FilterListTests
         {
             // Matching condition
             new(new byte[] { 192, 168, 1, 100 }, new byte[] { 255, 255, 255, 255 }, 12345, new byte[] { 10, 0, 0, 1 },
-                new byte[] { 255, 255, 255, 255 }, 80, TraceProtocol.Tcp, true)
+                new byte[] { 255, 255, 255, 255 }, 80, DataProtocol.Tcp, true)
         };
         var filterList = new FilterList(false, conditions);
         var aggregateTraces = new List<AggregateTrace>
         {
-            new(new byte[] { 192, 168, 1, 100 }, new byte[] { 10, 0, 0, 1 }, 12345, 80, TraceProtocol.Tcp, 100, 1000)
+            new(new byte[] { 192, 168, 1, 100 }, new byte[] { 10, 0, 0, 1 }, 12345, 80, DataProtocol.Tcp, 100, 1000)
         };
 
         // Act
@@ -61,7 +61,7 @@ public class FilterListTests
         var filterList = new FilterList(true, conditions); // Implicit include is true
         var aggregateTraces = new List<AggregateTrace>
         {
-            new(new byte[] { 192, 168, 1, 102 }, new byte[] { 10, 0, 0, 2 }, 54321, 8080, TraceProtocol.Udp, 50, 500)
+            new(new byte[] { 192, 168, 1, 102 }, new byte[] { 10, 0, 0, 2 }, 54321, 8080, DataProtocol.Udp, 50, 500)
         };
 
         // Act
@@ -79,12 +79,12 @@ public class FilterListTests
         {
             // Condition that matches but specifies exclusion
             new(new byte[] { 192, 168, 1, 100 }, new byte[] { 255, 255, 255, 255 }, 12345, new byte[] { 10, 0, 0, 1 },
-                new byte[] { 255, 255, 255, 255 }, 80, TraceProtocol.Tcp, false)
+                new byte[] { 255, 255, 255, 255 }, 80, DataProtocol.Tcp, false)
         };
         var filterList = new FilterList(false, conditions);
         var aggregateTraces = new List<AggregateTrace>
         {
-            new(new byte[] { 192, 168, 1, 100 }, new byte[] { 10, 0, 0, 1 }, 12345, 80, TraceProtocol.Tcp, 100, 1000)
+            new(new byte[] { 192, 168, 1, 100 }, new byte[] { 10, 0, 0, 1 }, 12345, 80, DataProtocol.Tcp, 100, 1000)
         };
 
         // Act
@@ -101,16 +101,16 @@ public class FilterListTests
         var conditions = new List<FilterCondition>
         {
             new(new byte[] { 192, 168, 1, 100 }, new byte[] { 255, 255, 255, 255 }, 12345, new byte[] { 10, 0, 0, 1 },
-                new byte[] { 255, 255, 255, 255 }, 80, TraceProtocol.Tcp, true),
+                new byte[] { 255, 255, 255, 255 }, 80, DataProtocol.Tcp, true),
             new(new byte[] { 192, 168, 1, 101 }, new byte[] { 255, 255, 255, 255 }, 54321, new byte[] { 10, 0, 0, 2 },
-                new byte[] { 255, 255, 255, 255 }, 8080, TraceProtocol.Udp, true)
+                new byte[] { 255, 255, 255, 255 }, 8080, DataProtocol.Udp, true)
         };
         var filterList = new FilterList(false, conditions);
         var aggregateTraces = new List<AggregateTrace>
         {
-            new(new byte[] { 192, 168, 1, 100 }, new byte[] { 10, 0, 0, 1 }, 12345, 80, TraceProtocol.Tcp, 100, 1000),
-            new(new byte[] { 192, 168, 1, 101 }, new byte[] { 10, 0, 0, 2 }, 54321, 8080, TraceProtocol.Udp, 50, 500),
-            new(new byte[] { 192, 168, 1, 100}, new byte[] {10, 0, 0, 2}, 12345,  3123, TraceProtocol.Tcp, 10, 10)
+            new(new byte[] { 192, 168, 1, 100 }, new byte[] { 10, 0, 0, 1 }, 12345, 80, DataProtocol.Tcp, 100, 1000),
+            new(new byte[] { 192, 168, 1, 101 }, new byte[] { 10, 0, 0, 2 }, 54321, 8080, DataProtocol.Udp, 50, 500),
+            new(new byte[] { 192, 168, 1, 100}, new byte[] {10, 0, 0, 2}, 12345,  3123, DataProtocol.Tcp, 10, 10)
         };
 
         // Act

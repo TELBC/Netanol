@@ -132,10 +132,11 @@ public class IpFixParser : IParser
             (ulong) packetCount, (ulong) byteCount, 
             protocolIdentifier switch
             {
-                (byte)6 => TraceProtocol.Tcp,
-                (byte)17 => TraceProtocol.Udp,
-                _ => TraceProtocol.Unknown
-            }
+                (byte)6 => DataProtocol.Tcp,
+                (byte)17 => DataProtocol.Udp,
+                _ => DataProtocol.Unknown
+            },
+            FlowProtocol.Ipfix
         );
     }
 }

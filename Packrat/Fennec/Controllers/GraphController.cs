@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using Fennec.Database;
+using Fennec.Database.Domain;
 using Fennec.Database.Graph;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ public record GraphStatistics(long TotalHostCount, long TotalByteCount, long Tot
 
 public record GraphResponse(
     GraphStatistics GraphStatistics,
+    QueryConditions QueryConditions,
     Dictionary<string, Node> Nodes,
     Dictionary<string, Edge> Edges);
 
@@ -61,6 +63,7 @@ public class GraphController : ControllerBase
                     details.TotalByteCount,
                     details.TotalPacketCount,
                     details.TotalTraceCount),
+                layout.QueryConditions,
                 details.Nodes,
                 details.Edges);
         

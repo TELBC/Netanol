@@ -11,7 +11,7 @@ public class FilterConditionTests
         destinationIpBytes: new byte[] { 10, 0, 0, 1 },
         sourcePort: 12345,
         destinationPort: 80,
-        protocol: TraceProtocol.Tcp,
+        protocol: DataProtocol.Tcp,
         packetCount: 10,
         byteCount: 1000
     );
@@ -21,7 +21,7 @@ public class FilterConditionTests
         destinationIpBytes: new byte[] { 10, 0, 0, 1 },
         sourcePort: 12345,
         destinationPort: 80,
-        protocol: TraceProtocol.Tcp,
+        protocol: DataProtocol.Tcp,
         packetCount: 10,
         byteCount: 1000
     );
@@ -37,7 +37,7 @@ public class FilterConditionTests
             destinationAddress: new byte[] { 10, 0, 0, 1 },
             destinationAddressMask: new byte[] { 255, 255, 255, 255 },
             destinationPort: 80,
-            protocol: TraceProtocol.Tcp,
+            protocol: DataProtocol.Tcp,
             include: true
         );
 
@@ -46,7 +46,7 @@ public class FilterConditionTests
             destinationIpBytes: new byte[] { 10, 0, 0, 1 },
             sourcePort: 12345 ,
             destinationPort: 80,
-            protocol: TraceProtocol.Tcp,
+            protocol: DataProtocol.Tcp,
             packetCount: 1000,
             byteCount: 10
         );
@@ -69,7 +69,7 @@ public class FilterConditionTests
             destinationAddress: new byte[] { 10, 0, 0, 1 },
             destinationAddressMask: new byte[] { 255, 255, 255, 255 },
             destinationPort: 80,
-            protocol: TraceProtocol.Tcp,
+            protocol: DataProtocol.Tcp,
             include: true
         );
 
@@ -91,7 +91,7 @@ public class FilterConditionTests
             destinationAddress: new byte[] { 10, 0, 0, 0 }, // Matched by mask
             destinationAddressMask: new byte[] { 255, 255, 255, 0 },
             destinationPort: 80,
-            protocol: TraceProtocol.Tcp,
+            protocol: DataProtocol.Tcp,
             include: true
         );
 
@@ -113,7 +113,7 @@ public class FilterConditionTests
             destinationAddress: new byte[] { 0, 0, 0, 0 }, // Ignored due to mask
             destinationAddressMask: new byte[] { 0, 0, 0, 0 },
             destinationPort: 80,
-            protocol: TraceProtocol.Tcp,
+            protocol: DataProtocol.Tcp,
             include: true
         );
 
@@ -135,7 +135,7 @@ public class FilterConditionTests
             destinationAddress: new byte[] { 10, 0, 0, 1 },
             destinationAddressMask: new byte[] { 255, 255, 255, 255 },
             destinationPort: 80,
-            protocol: TraceProtocol.Udp, // Intentional mismatch
+            protocol: DataProtocol.Udp, // Intentional mismatch
             include: true
         );
 

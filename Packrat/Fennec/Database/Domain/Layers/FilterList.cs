@@ -73,7 +73,7 @@ public class FilterCondition
     public FilterCondition() { }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-    public FilterCondition(byte[] sourceAddress, byte[] sourceAddressMask, ushort? sourcePort, byte[] destinationAddress, byte[] destinationAddressMask, ushort? destinationPort, TraceProtocol? protocol, bool include)
+    public FilterCondition(byte[] sourceAddress, byte[] sourceAddressMask, ushort? sourcePort, byte[] destinationAddress, byte[] destinationAddressMask, ushort? destinationPort, DataProtocol? protocol, bool include)
     {
         SourceAddress = sourceAddress;
         SourceAddressMask = sourceAddressMask;
@@ -105,7 +105,7 @@ public class FilterCondition
     public ushort? DestinationPort { get; set; }
 
     [BsonElement("protocol")] 
-    public TraceProtocol? Protocol { get; set; }
+    public DataProtocol? Protocol { get; set; }
 
     [BsonElement("include")] 
     public bool Include { get; set; }

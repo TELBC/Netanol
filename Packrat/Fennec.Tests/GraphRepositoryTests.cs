@@ -13,7 +13,7 @@ public class GraphRepositoryTests
     {
         var mockTraceRepository = Substitute.For<ITraceRepository>();
         mockTraceRepository
-            .AggregateTraces(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
+            .AggregateTraces(Arg.Any<QueryConditions>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
             .Returns(Task.FromResult(sampleTraces));
         return mockTraceRepository;
     }
@@ -34,7 +34,7 @@ public class GraphRepositoryTests
                 SourcePort = 80,
                 DestinationIpBytes = IPAddress.Parse("10.0.0.1").GetAddressBytes(),
                 DestinationPort = 5603,
-                Protocol = TraceProtocol.Tcp,
+                Protocol = DataProtocol.Tcp,
                 PacketCount = 100,
                 ByteCount = 2000
             },
@@ -44,7 +44,7 @@ public class GraphRepositoryTests
                 SourcePort = 120,
                 DestinationIpBytes = IPAddress.Parse("10.0.0.2").GetAddressBytes(),
                 DestinationPort = 3293,
-                Protocol = TraceProtocol.Tcp,
+                Protocol = DataProtocol.Tcp,
                 PacketCount = 150,
                 ByteCount = 3000
             }
@@ -82,7 +82,7 @@ public class GraphRepositoryTests
                 SourcePort = 80,
                 DestinationIpBytes = IPAddress.Parse("10.0.0.1").GetAddressBytes(),
                 DestinationPort = 5603,
-                Protocol = TraceProtocol.Udp,
+                Protocol = DataProtocol.Udp,
                 PacketCount = 10,
                 ByteCount = 1000
             },
@@ -92,7 +92,7 @@ public class GraphRepositoryTests
                 SourcePort = 120,
                 DestinationIpBytes = IPAddress.Parse("10.0.0.1").GetAddressBytes(),
                 DestinationPort = 3293,
-                Protocol = TraceProtocol.Tcp,
+                Protocol = DataProtocol.Tcp,
                 PacketCount = 50,
                 ByteCount = 1000
             }

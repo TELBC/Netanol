@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using AutoMapper;
 using Fennec.Database.Domain;
 using Fennec.Database.Domain.Layers;
@@ -16,11 +15,11 @@ public class MapperProfile : Profile
             {
                 var srcAdd = IPAddress.Parse(dto.SourceAddress).GetAddressBytes();
                 var srcMask = IPAddress.Parse(dto.SourceAddressMask).GetAddressBytes();
-                ushort? srcPort  = dto.SourcePort == null ? null : ushort.Parse(dto.SourcePort);
+                ushort? srcPort = dto.SourcePort == null ? null : ushort.Parse(dto.SourcePort);
                 var dstAdd = IPAddress.Parse(dto.DestinationAddress).GetAddressBytes();
                 var dstMask = IPAddress.Parse(dto.DestinationAddressMask).GetAddressBytes();
                 ushort? dstPort = dto.DestinationPort == null ? null : ushort.Parse(dto.DestinationPort);
-                TraceProtocol? protocol = dto.Protocol == null ? null : Enum.Parse<TraceProtocol>(dto.Protocol);
+                DataProtocol? protocol = dto.Protocol == null ? null : Enum.Parse<DataProtocol>(dto.Protocol);
                 return new FilterCondition(srcAdd, srcMask, srcPort, dstAdd, dstMask, dstPort, protocol, dto.Include);
             })
             .ForMember(dest => dest.SourceAddress, opt => opt.Ignore())
@@ -37,7 +36,7 @@ public class MapperProfile : Profile
                 var dstAdd = new IPAddress(filterCondition.DestinationAddress);
                 var dstMask = new IPAddress(filterCondition.DestinationAddressMask);
                 return new FilterConditionDto(
-                    srcAdd.ToString(), 
+                    srcAdd.ToString(),
                     srcMask.ToString(),
                     filterCondition.SourcePort?.ToString(),
                     dstAdd.ToString(),
@@ -50,7 +49,7 @@ public class MapperProfile : Profile
             .ForMember(dest => dest.SourceAddressMask, opt => opt.Ignore())
             .ForMember(dest => dest.DestinationAddress, opt => opt.Ignore())
             .ForMember(dest => dest.DestinationAddressMask, opt => opt.Ignore());
-        
+
 
         CreateMap<FilterList, FilterListDto>()
             .ConstructUsing((layer, ctx) => new FilterListDto(
@@ -100,6 +99,25 @@ public class MapperProfile : Profile
 
         CreateMap<Layout, FullLayoutDto>()
             .ConstructUsing((src, ctx) => new FullLayoutDto(src.Name,
+                ctx.Mapper.Map<QueryConditionsDto>(src.QueryConditions),
                 src.Layers.Select(layer => ctx.Mapper.Map<ShortLayerDto>(layer)).ToList()));
+        
+        CreateMap<QueryConditions, QueryConditionsDto>()
+            .ConstructUsing(src => new QueryConditionsDto(
+                src.AllowDuplicates,
+                 src.FlowProtocolsWhitelist,
+                 src.DataProtocolsWhitelist,
+                src.PortsWhitelist))
+            .ForAllMembers(opts => opts.AllowNull());
+
+        CreateMap<QueryConditionsDto, QueryConditions>()
+            .ConstructUsing(src => new QueryConditions
+            {
+                AllowDuplicates = src.AllowDuplicates,
+                FlowProtocolsWhitelist = src.FlowProtocolsWhitelist,
+                DataProtocolsWhitelist = src.DataProtocolsWhitelist,
+                PortsWhitelist = src.PortsWhitelist
+            })
+            .ForAllMembers(opts => opts.AllowNull());
     }
 }

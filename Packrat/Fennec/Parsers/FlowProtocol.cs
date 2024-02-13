@@ -1,6 +1,6 @@
 ﻿namespace Fennec.Parsers;
 
-public enum ParserType
+public enum FlowProtocol
 {
     Netflow9,
     Ipfix,

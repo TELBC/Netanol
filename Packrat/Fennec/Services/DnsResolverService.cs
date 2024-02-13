@@ -112,7 +112,7 @@ public class DnsCacheCleanupService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _log.Information("Running DnsCacheCleanupService.");
+            _log.Information("Running DnsCacheCleanupService");
             _dnsResolverService.CleanupDnsCache();
             await Task.Delay(_cleanupInterval, stoppingToken);
         }

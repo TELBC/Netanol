@@ -137,10 +137,11 @@ public class NetFlow9Parser : IParser
             packetCount, byteCount,
             protocol switch
             {
-                (byte)6 => TraceProtocol.Tcp,
-                (byte)17 => TraceProtocol.Udp,
-                _ => TraceProtocol.Unknown
-            }
+                6 => DataProtocol.Tcp,
+                17 => DataProtocol.Udp,
+                _ => DataProtocol.Unknown
+            },
+            FlowProtocol.Netflow9
         );
     }
 }

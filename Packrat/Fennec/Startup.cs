@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using Newtonsoft.Json.Converters;
 using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
@@ -75,28 +76,26 @@ public class Startup
         services.AddSingleton<DnsCacheCleanupService>();
 
         // Parser services
-        services.AddSingleton<NetFlow9Parser>(); // TODO: set exception behaviour
-        services.AddSingleton<IpFixParser>(); // TODO: set exception behaviour
+        services.AddSingleton<NetFlow9Parser>();
+        services.AddSingleton<IpFixParser>(); 
 
         // Protocol multiplexer
         var multiplexerOptions = Configuration.GetSection("Multiplexers").Get<List<MultiplexerOptions>>();
 
         if (multiplexerOptions != null)
-        {
-
             services.AddHostedService<MultiplexerMonitorService>(s => 
                 ActivatorUtilities.CreateInstance<MultiplexerMonitorService>(s, multiplexerOptions));
-        }
         else
-        {
-            Log.Error("Failed to read multiplexer configuration... If you want to run no multiplexers define an empty list.");
-        }
+            Log.Error("Failed to read multiplexer configuration... To run no multiplexers define an empty list");
 
         // Web services
         services.AddControllers(c =>
         {
             c.ModelBinderProviders.Insert(0, new LayerModelBinderProvider());
-        }).AddNewtonsoftJson();
+        }).AddNewtonsoftJson(options =>
+        {
+            options.SerializerSettings.Converters.Add(new StringEnumConverter());
+        });
         services.AddAutoMapper(typeof(Program).Assembly);
 
         if (StartupOptions.AllowCors)

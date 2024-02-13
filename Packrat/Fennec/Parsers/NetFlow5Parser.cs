@@ -75,7 +75,8 @@ public class NetFlow5Parser : IParser
             false,
             flow.Packets,
             flow.Octets,
-            (TraceProtocol)flow.Protocol
+            (DataProtocol)flow.Protocol,
+            FlowProtocol.Netflow5
         );
         
         return trace;
