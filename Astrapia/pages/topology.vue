@@ -21,7 +21,7 @@
           </div>
       </div>
     </div>
-    <LayerList />
+    <LayerList v-bind:layout="layout" />
   </div>
 </template>
 
