@@ -47,6 +47,7 @@ public class Startup
         // Options
         // services.Configure<Netflow9ParserOptions>(Configuration.GetSection("Parsers:Netflow9"));
         // services.Configure<IpfixParserOptions>(Configuration.GetSection("Parsers:Ipfix"));
+        services.Configure<DuplicateFlaggingOptions>(Configuration.GetSection("DuplicateFlagging"));
         services
             .AddOptions<SecurityOptions>()
             .Bind(Configuration.GetSection("Security"))
@@ -59,6 +60,8 @@ public class Startup
         // Database services
         // services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddSingleton<ITraceRepository, TraceRepository>();
+        services.AddSingleton<ITimeService, TimeService>();
+        services.AddSingleton<IDuplicateFlaggingService, DuplicateFlaggingService>();
         services.AddSingleton<IGraphRepository, GraphRepository>();
         services.AddSingleton<ILayoutRepository, LayoutRepository>();
         services.AddSingleton<ILayerRepository, LayerRepository>();

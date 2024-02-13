@@ -128,6 +128,7 @@ public class IpFixParser : IParser
             readTime, exporterIp,
             srcIp, (ushort) srcPort,
             dstIp, (ushort) dstPort,
+            false,
             (ulong) packetCount, (ulong) byteCount, 
             protocolIdentifier switch
             {
