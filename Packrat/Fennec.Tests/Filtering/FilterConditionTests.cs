@@ -1,58 +1,36 @@
-﻿using Fennec.Database;
+﻿using System.Net;
+using Fennec.Database;
 using Fennec.Database.Domain;
-using Fennec.Database.Domain.Layers;
+using Fennec.Processing;
+using Fennec.Processing.Graph;
 
 namespace Fennec.Tests.Filtering;
 
 public class FilterConditionTests
 {
-    private readonly AggregateTrace _trace = new(
-        sourceIpBytes: new byte[] { 192, 168, 1, 100 },
-        destinationIpBytes: new byte[] { 10, 0, 0, 1 },
-        sourcePort: 12345,
-        destinationPort: 80,
-        protocol: DataProtocol.Tcp,
-        packetCount: 10,
-        byteCount: 1000
-    );
+    private readonly TraceEdge _trace = new (
+            IPAddress.Parse("192.168.1.100"), 
+            IPAddress.Parse("10.0.0.1"), 
+            12345, 80,
+            DataProtocol.Tcp, 1000, 10);
 
-    private readonly AggregateTrace _trace2 = new(
-        sourceIpBytes: new byte[] { 192, 168, 1, 100 },
-        destinationIpBytes: new byte[] { 10, 0, 0, 1 },
-        sourcePort: 12345,
-        destinationPort: 80,
-        protocol: DataProtocol.Tcp,
-        packetCount: 10,
-        byteCount: 1000
-    );
-    
     [Fact]
     public void MatchWithExactAddressesPortsAndProtocol()
     {
         // Arrange
         var filter = new FilterCondition(
-            sourceAddress: new byte[] { 192, 168, 1, 100 },
-            sourceAddressMask: new byte[] { 255, 255, 255, 255 },
-            sourcePort: 12345,
-            destinationAddress: new byte[] { 10, 0, 0, 1 },
-            destinationAddressMask: new byte[] { 255, 255, 255, 255 },
-            destinationPort: 80,
-            protocol: DataProtocol.Tcp,
-            include: true
-        );
-
-        var trace = new AggregateTrace(
-            sourceIpBytes: new byte[] { 192, 168, 1, 100 },
-            destinationIpBytes: new byte[] { 10, 0, 0, 1 },
-            sourcePort: 12345 ,
-            destinationPort: 80,
-            protocol: DataProtocol.Tcp,
-            packetCount: 1000,
-            byteCount: 10
+            new byte[] { 192, 168, 1, 100 },
+            new byte[] { 255, 255, 255, 255 },
+            12345,
+            new byte[] { 10, 0, 0, 1 },
+            new byte[] { 255, 255, 255, 255 },
+            80,
+            DataProtocol.Tcp,
+            true
         );
 
         // Act
-        var result = filter.MatchesAggregateTrace(trace);
+        var result = filter.MatchesTraceEdge(_trace);
 
         // Assert
         Assert.True(result);
@@ -63,84 +41,84 @@ public class FilterConditionTests
     {
         // Arrange
         var filter = new FilterCondition(
-            sourceAddress: new byte[] { 192, 168, 1, 101 }, // Intentionally incorrect
-            sourceAddressMask: new byte[] { 255, 255, 255, 255 },
-            sourcePort: 12345,
-            destinationAddress: new byte[] { 10, 0, 0, 1 },
-            destinationAddressMask: new byte[] { 255, 255, 255, 255 },
-            destinationPort: 80,
-            protocol: DataProtocol.Tcp,
-            include: true
+            new byte[] { 192, 168, 1, 101 }, // Intentionally incorrect
+            new byte[] { 255, 255, 255, 255 },
+            12345,
+            new byte[] { 10, 0, 0, 1 },
+            new byte[] { 255, 255, 255, 255 },
+            80,
+            DataProtocol.Tcp,
+            true
         );
 
         // Act
-        var result = filter.MatchesAggregateTrace(_trace);
+        var result = filter.MatchesTraceEdge(_trace);
 
         // Assert
         Assert.False(result);
     }
-    
+
     [Fact]
     public void MatchWithVagueAddressesExactPortAndProtocol()
     {
         // Arrange
         var filter = new FilterCondition(
-            sourceAddress: new byte[] { 192, 168, 1, 0 }, // Matched by mask
-            sourceAddressMask: new byte[] { 255, 255, 255, 0 },
-            sourcePort: 12345,
-            destinationAddress: new byte[] { 10, 0, 0, 0 }, // Matched by mask
-            destinationAddressMask: new byte[] { 255, 255, 255, 0 },
-            destinationPort: 80,
-            protocol: DataProtocol.Tcp,
-            include: true
+            new byte[] { 192, 168, 1, 0 }, // Matched by mask
+            new byte[] { 255, 255, 255, 0 },
+            12345,
+            new byte[] { 10, 0, 0, 0 }, // Matched by mask
+            new byte[] { 255, 255, 255, 0 },
+            80,
+            DataProtocol.Tcp,
+            true
         );
 
         // Act
-        var result = filter.MatchesAggregateTrace(_trace2);
+        var result = filter.MatchesTraceEdge(_trace);
 
         // Assert
         Assert.True(result);
     }
-    
+
     [Fact]
     public void MatchWithWildCardAddressExactPortAndProtocol()
     {
         // Arrange
         var filter = new FilterCondition(
-            sourceAddress: new byte[] { 0, 0, 0, 0 }, // Ignored due to mask
-            sourceAddressMask: new byte[] { 0, 0, 0, 0 },
-            sourcePort: 12345,
-            destinationAddress: new byte[] { 0, 0, 0, 0 }, // Ignored due to mask
-            destinationAddressMask: new byte[] { 0, 0, 0, 0 },
-            destinationPort: 80,
-            protocol: DataProtocol.Tcp,
-            include: true
+            new byte[] { 0, 0, 0, 0 }, // Ignored due to mask
+            new byte[] { 0, 0, 0, 0 },
+            12345,
+            new byte[] { 0, 0, 0, 0 }, // Ignored due to mask
+            new byte[] { 0, 0, 0, 0 },
+            80,
+            DataProtocol.Tcp,
+            true
         );
 
         // Act
-        var result = filter.MatchesAggregateTrace(_trace);
+        var result = filter.MatchesTraceEdge(_trace);
 
         // Assert
         Assert.True(result);
     }
-    
+
     [Fact]
     public void MismatchWithProtocolAndExactAddressAndPort()
     {
         // Arrange
         var filter = new FilterCondition(
-            sourceAddress: new byte[] { 192, 168, 1, 100 },
-            sourceAddressMask: new byte[] { 255, 255, 255, 255 },
-            sourcePort: 12345,
-            destinationAddress: new byte[] { 10, 0, 0, 1 },
-            destinationAddressMask: new byte[] { 255, 255, 255, 255 },
-            destinationPort: 80,
-            protocol: DataProtocol.Udp, // Intentional mismatch
-            include: true
+            new byte[] { 192, 168, 1, 100 },
+            new byte[] { 255, 255, 255, 255 },
+            12345,
+            new byte[] { 10, 0, 0, 1 },
+            new byte[] { 255, 255, 255, 255 },
+            80,
+            DataProtocol.Udp, // Intentional mismatch
+            true
         );
 
         // Act
-        var result = filter.MatchesAggregateTrace(_trace2);
+        var result = filter.MatchesTraceEdge(_trace);
 
         // Assert
         Assert.False(result);

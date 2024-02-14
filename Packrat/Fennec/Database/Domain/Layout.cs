@@ -1,5 +1,5 @@
-﻿using Fennec.Database.Domain.Layers;
-using Fennec.Parsers;
+﻿using Fennec.Parsers;
+using Fennec.Processing;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -61,11 +61,9 @@ public class Layout
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    protected Layout()
-    {
-    }
+    protected Layout() { }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
+    
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }

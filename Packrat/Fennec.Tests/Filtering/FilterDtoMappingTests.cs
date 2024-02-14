@@ -2,7 +2,7 @@
 using AutoMapper;
 using Fennec.Database;
 using Fennec.Database.Domain;
-using Fennec.Database.Domain.Layers;
+using Fennec.Processing;
 
 namespace Fennec.Tests.Filtering;
 

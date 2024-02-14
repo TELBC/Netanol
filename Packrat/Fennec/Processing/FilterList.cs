@@ -1,6 +1,9 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using Fennec.Database;
+using Fennec.Database.Domain;
+using Fennec.Processing.Graph;
+using MongoDB.Bson.Serialization.Attributes;
 
-namespace Fennec.Database.Domain.Layers;
+namespace Fennec.Processing;
 
 /// <summary>
 ///     A list of conditions with either an implicit include or exclude at the end.
@@ -23,33 +26,13 @@ public class FilterList
     [BsonElement("conditions")] 
     public List<FilterCondition> Conditions { get; set; }
 
-    public void Filter(ref List<AggregateTrace> aggregateTraces)
+    public void Filter(ITraceGraph graph)
     {
-        for (var i = 0; i < aggregateTraces.Count; i++)
+        graph.FilterEdges(edge =>
         {
-            var aggregateTrace = aggregateTraces[i];
-            foreach (var condition in Conditions)
-            {
-                if (!condition.MatchesAggregateTrace(aggregateTrace))
-                    continue;
-
-                if (!condition.Include)
-                {
-                    aggregateTraces.RemoveAt(i);
-                    i--;
-                }
-
-                // Skip until the end of the loop
-                goto NextTrace;
-            }
-
-            if (ImplicitInclude)
-                continue;
-            aggregateTraces.RemoveAt(i);
-            i--;
-
-            NextTrace: ;
-        }
+            var condition = Conditions.FirstOrDefault(condition => condition.MatchesTraceEdge(edge));
+            return condition?.Include ?? ImplicitInclude;
+        });
     }
 }
 
@@ -118,30 +101,30 @@ public class FilterCondition
         return res;
     }
 
-    public bool MatchesAggregateTrace(AggregateTrace trace)
+    public bool MatchesTraceEdge(TraceEdge edge)
     {
         // All statements need to match so we can not return true until the end
         
         // Does the source address match?
-        var maskedSource = Combine(trace.SourceIpBytes, SourceAddressMask);
+        var maskedSource = Combine(edge.Source.GetAddressBytes(), SourceAddressMask);
         if (!maskedSource.SequenceEqual(SourceAddress))
             return false;
 
         // Does the source port match?
-        if (SourcePort.HasValue && SourcePort != trace.SourcePort)
+        if (SourcePort.HasValue && SourcePort != edge.SourcePort)
             return false;
 
         // Does the destination address match?
-        var maskedDestination = Combine(trace.DestinationIpBytes, DestinationAddressMask);
+        var maskedDestination = Combine(edge.Target.GetAddressBytes(), DestinationAddressMask);
         if (!maskedDestination.SequenceEqual(DestinationAddress))
             return false;
 
         // Does the destination port match?
-        if (DestinationPort.HasValue && DestinationPort != trace.DestinationPort)
+        if (DestinationPort.HasValue && DestinationPort != edge.TargetPort)
             return false;
         
         // Does the protocol match?
-        if (Protocol.HasValue && Protocol != trace.Protocol)
+        if (Protocol.HasValue && Protocol != edge.DataProtocol)
             return false;
 
         return true;

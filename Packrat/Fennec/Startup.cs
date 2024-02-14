@@ -1,10 +1,10 @@
 ﻿using System.Data;
 using Fennec.Database;
-using Fennec.Database.Domain.Layers;
-using Fennec.Database.Graph;
 using Fennec.Metrics;
 using Fennec.Options;
 using Fennec.Parsers;
+using Fennec.Processing;
+using Fennec.Processing.Graph;
 using Fennec.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -68,7 +68,7 @@ public class Startup
         services.AddSingleton<ILayerRepository, LayerRepository>();
         services.AddSingleton<IMetricRepository, MetricRepository>();
         services.AddSingleton<IMongoClient>(_ => new MongoClient(Configuration.GetConnectionString("MongoConnection")));
-        services.AddSingleton<IMongoDatabase>(s => s.GetRequiredService<IMongoClient>().GetDatabase("packrat"));
+        services.AddSingleton<IMongoDatabase>(s => s.GetRequiredService<IMongoClient>().GetDatabase("netanol"));
 
         // DnsResolverService
         services.Configure<DnsCacheOptions>(Configuration.GetSection("DnsCache"));

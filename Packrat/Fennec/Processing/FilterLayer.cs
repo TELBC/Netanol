@@ -1,7 +1,8 @@
-﻿using Fennec.Controllers;
+﻿using Fennec.Database;
+using Fennec.Processing.Graph;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Fennec.Database.Domain.Layers;
+namespace Fennec.Processing;
 
 /// <summary>
 /// Includes or excludes certain nodes based on their IP address.
@@ -42,9 +43,9 @@ public class FilterLayer : ILayer
     protected FilterLayer() { }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-    public void Execute(ref List<AggregateTrace> aggregateTraces)
+    public void Execute(ITraceGraph graph)
     {
-        FilterList.Filter(ref aggregateTraces);
+        FilterList.Filter(graph);
     }
 }
 

@@ -1,4 +1,7 @@
-﻿namespace Fennec.Database.Domain.Layers;
+﻿using Fennec.Database;
+using Fennec.Processing.Graph;
+
+namespace Fennec.Processing;
 
 /// <summary>
 /// Stores and sets names for nodes.
@@ -10,7 +13,7 @@ public class NameLayer : ILayer
     public bool Enabled { get; set; }
     public string Description => "Not implemented";
     
-    public void Execute(ref List<AggregateTrace> aggregateTraces)
+    public void Execute(ITraceGraph graph)
     {
         throw new NotImplementedException();
     }

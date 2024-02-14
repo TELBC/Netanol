@@ -2,10 +2,10 @@
 using Fennec.Database;
 using Fennec.Database.Domain;
 using Fennec.Parsers;
-using Fennec.Utils;
 
 namespace Fennec.Tests.Integration;
 
+// TODO: use the same database for all tests
 public class QueryConditionTests : MongoDbFactory
 {
     private async Task SeedDatabase()

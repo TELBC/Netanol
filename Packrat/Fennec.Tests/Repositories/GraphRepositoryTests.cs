@@ -1,8 +1,8 @@
 ﻿using System.Net;
 using Fennec.Database;
 using Fennec.Database.Domain;
-using Fennec.Database.Domain.Layers;
-using Fennec.Database.Graph;
+using Fennec.Processing;
+using Fennec.Processing.Graph;
 using NSubstitute;
 
 namespace Fennec.Tests;
@@ -67,7 +67,7 @@ public class GraphRepositoryTests
     }
 
     [Fact]
-    public async Task GenerateGraph_WithEmptyLayout_ShouldCollapseCorrectly()
+    public async Task GenerateGraph_WithEmptyLayout_ReturnsSame()
     {
         // Arrange
         var from = DateTimeOffset.UtcNow.AddDays(-1);
@@ -107,10 +107,10 @@ public class GraphRepositoryTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(2, result.TotalHostCount);
+        Assert.Equal(2, result.TotalTraceCount);
         Assert.Equal(2000, result.TotalByteCount);
         Assert.Equal(60, result.TotalPacketCount);
-        Assert.Equal(1, result.TotalTraceCount);
         Assert.Equal(2, result.Nodes.Count); 
-        Assert.Single(result.Edges); 
+        Assert.Equal(2, result.Edges.Count);
     }
 }

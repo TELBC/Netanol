@@ -8,7 +8,7 @@ public class ByteArrayComparer : IEqualityComparer<byte[]>
         if (x == null || y == null) return false;
         return x.SequenceEqual(y);
     }
-
+    
     public int GetHashCode(byte[] obj)
     {
         if (obj == null) throw new ArgumentNullException(nameof(obj));

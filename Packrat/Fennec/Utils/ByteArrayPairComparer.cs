@@ -1,6 +1,6 @@
 ﻿namespace Fennec.Utils;
 
-public class IpPairComparer : IEqualityComparer<(byte[], byte[])>
+public class ByteArrayPairComparer : IEqualityComparer<(byte[], byte[])>
 {
     public bool Equals((byte[], byte[]) x, (byte[], byte[]) y)
     {
