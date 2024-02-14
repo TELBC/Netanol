@@ -2,7 +2,7 @@
   <div id="graph">
     <svg ref="svg" width="960" height="600"></svg>
     <div id="tooltip" style="visibility: hidden;"></div>
-    <TopologyFooter @recenter="recenterGraph" :metaData="metaData" element-id="graph"/>
+    <TopologyFooter @recenter="recenterGraph" :metaData="metaData" @toggleSimulation="toggleSimulation" @updateDistance="updateLinkDistance" @updateSim="updateSimForce" element-id="graph"/>
   </div>
 </template>
 
@@ -25,7 +25,11 @@ export default {
       isDragging: false,
       graph: null,
       svg: null,
-      zoom: null
+      zoom: null,
+      simulation:null,
+      simulationFrozen: false,
+      linkDistance:50,
+      strengthForce:500
     };
   },
   watch: {
@@ -42,14 +46,46 @@ export default {
       .attr("height", window.innerHeight);
   },
   methods: {
+    updateLinkDistance(distance) {
+      this.linkDistance=distance;
+      if (this.simulation) {
+        this.simulation.force("link").distance(this.linkDistance);
+        if (!this.simulationFrozen) {
+          this.simulation.alpha(0.5).restart();
+        }
+      }
+    },
+    updateSimForce(force){
+      this.strengthForce=force;
+      if (this.simulation) {
+        this.simulation.force("charge", d3.forceManyBody().strength((-1)*this.strengthForce))
+        if (!this.simulationFrozen) {
+          this.simulation.alpha(0.5).restart();
+        }
+      }
+    },
+    toggleSimulation(frozen) {
+      this.simulationFrozen = frozen;
+
+      if (this.simulation) {
+        if (this.simulationFrozen) {
+          this.simulation.stop();
+        } else {
+          this.simulation.restart();
+        }
+      }
+    },
     updateData(newData) {
       this.metaData = newData.graphStatistics;
 
-      const oldNodes = new Map(this.data.nodes.map(d => [d.id, d]));
-      this.data.nodes = newData.nodes.map(d => Object.assign(oldNodes.get(d.id), d));
-
-      const oldLinks = new Map(this.data.edges.map(d => [d.id, d]));
-      this.data.edges = newData.edges.map(d => Object.assign(oldLinks.get(d.id),d));
+      // const oldNodePosVel = new Map(this.data.nodes.map(d=> (({ x,y,vx,vy,id }) => ({ x,y,vx,vy,id}))(d)).map(d => [d.id, d]));
+      // this.data.nodes = newData.nodes.map(d => Object.assign(d, oldNodePosVel.get(d.id)));
+      this.data.nodes = newData.nodes;
+      this.data.edges = newData.edges;
+      // const oldEdgePosVel = new Map(this.data.edges.map(d=> (({ x1,y1,x2,y2,id }) => ({ x1,y1,x2,y2,id}))(d)).map(d => [d.id, d]));
+      // this.data.edges = newData.edges.map(d => Object.assign(d, oldEdgePosVel.get(d.id)));
+      // const oldLinks = new Map(this.data.edges.map(d => [d.id, d]));
+      // this.data.edges = newData.edges.map(d => Object.assign(oldLinks.get(d.id),d));
     },
     renderGraph() {
       this.zoom = d3.zoom().on('zoom', (e) => {
@@ -63,10 +99,11 @@ export default {
       this.svg.call(this.zoom);
 
       const simulation = d3.forceSimulation(this.data.nodes)
-        .force("link", d3.forceLink(this.data.edges).id(d => d.id))
-        .force("charge", d3.forceManyBody().strength(-3000))
+        .force("link", d3.forceLink(this.data.edges).id(d => d.id).distance(this.linkDistance))
+        .force("charge", d3.forceManyBody().strength((-1)*this.strengthForce))
         .force("center", d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2))
         .force("collide", d3.forceCollide(10));
+      this.simulation=simulation;
 
       const drag = d3.drag()
         .on("start", function (event) {
