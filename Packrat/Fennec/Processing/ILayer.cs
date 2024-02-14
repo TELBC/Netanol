@@ -1,4 +1,5 @@
-﻿using Fennec.Controllers;
+﻿using Fennec.Database;
+using Fennec.Processing.Graph;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
@@ -6,7 +7,7 @@ using MongoDB.Bson.Serialization.Serializers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Fennec.Database.Domain.Layers;
+namespace Fennec.Processing;
 
 public static class LayerType
 {
@@ -43,7 +44,7 @@ public interface ILayer
     [BsonIgnore]
     public string Description { get;  }
     
-    public void Execute(ref List<AggregateTrace> aggregateTraces);
+    public void Execute(ITraceGraph graph);
 }
 
 /// <summary>

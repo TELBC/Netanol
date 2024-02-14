@@ -1,8 +1,7 @@
 using System.Diagnostics;
-using System.Net;
 using Fennec.Database;
 using Fennec.Database.Domain;
-using Fennec.Database.Graph;
+using Fennec.Processing.Graph;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -16,8 +15,8 @@ public record GraphStatistics(long TotalHostCount, long TotalByteCount, long Tot
 public record GraphResponse(
     GraphStatistics GraphStatistics,
     QueryConditions QueryConditions,
-    Dictionary<string, Node> Nodes,
-    Dictionary<string, Edge> Edges);
+    Dictionary<string, TraceNodeDto> Nodes,
+    Dictionary<string, TraceEdgeDto> Edges);
 
 [Authorize]
 [Route("graph/{layoutName}")]
@@ -65,7 +64,7 @@ public class GraphController : ControllerBase
                     details.TotalTraceCount),
                 layout.QueryConditions,
                 details.Nodes,
-                details.Edges);
+                details.Edges); 
         
         return Ok(response);
     }

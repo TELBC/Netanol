@@ -1,6 +1,7 @@
 ﻿using Fennec.Database;
 using Fennec.Database.Domain;
-using Fennec.Database.Domain.Layers;
+using Fennec.Processing;
+using Fennec.Processing.Graph;
 
 namespace Fennec.Tests.Filtering;
 
@@ -20,12 +21,15 @@ public class FilterListTests
         {
             new(new byte[] { 192, 168, 1, 101 }, new byte[] { 10, 0, 0, 2 }, 12345, 80, DataProtocol.Tcp, 100, 1000)
         };
+        var graph = new TraceGraph();
+        graph.FillFromTraces(aggregateTraces);
 
         // Act
-        filterList.Filter(ref aggregateTraces);
+        filterList.Filter(graph);
 
         // Assert
-        Assert.Empty(aggregateTraces);
+        Assert.Empty(graph.Nodes);
+        Assert.Empty(graph.Edges);
     }
 
 
@@ -44,12 +48,15 @@ public class FilterListTests
         {
             new(new byte[] { 192, 168, 1, 100 }, new byte[] { 10, 0, 0, 1 }, 12345, 80, DataProtocol.Tcp, 100, 1000)
         };
+        var graph = new TraceGraph();
+        graph.FillFromTraces(aggregateTraces);
 
         // Act
-        filterList.Filter(ref aggregateTraces);
+        filterList.Filter(graph);
 
         // Assert
-        Assert.Single(aggregateTraces);
+        Assert.Single(graph.Edges);
+        Assert.Equal(2, graph.NodeCount);
     }
 
 
@@ -63,12 +70,15 @@ public class FilterListTests
         {
             new(new byte[] { 192, 168, 1, 102 }, new byte[] { 10, 0, 0, 2 }, 54321, 8080, DataProtocol.Udp, 50, 500)
         };
+        var graph = new TraceGraph();
+        graph.FillFromTraces(aggregateTraces);
 
         // Act
-        filterList.Filter(ref aggregateTraces);
+        filterList.Filter(graph);
 
         // Assert
-        Assert.Single(aggregateTraces);
+        Assert.Single(graph.Edges);
+        Assert.Equal(2, graph.NodeCount);
     }
 
     [Fact]
@@ -86,12 +96,15 @@ public class FilterListTests
         {
             new(new byte[] { 192, 168, 1, 100 }, new byte[] { 10, 0, 0, 1 }, 12345, 80, DataProtocol.Tcp, 100, 1000)
         };
+        var graph = new TraceGraph();
+        graph.FillFromTraces(aggregateTraces);
 
         // Act
-        filterList.Filter(ref aggregateTraces);
+        filterList.Filter(graph);
 
         // Assert
-        Assert.Empty(aggregateTraces);
+        Assert.Empty(graph.Edges);
+        Assert.Empty(graph.Nodes);
     }
 
     [Fact]
@@ -110,13 +123,15 @@ public class FilterListTests
         {
             new(new byte[] { 192, 168, 1, 100 }, new byte[] { 10, 0, 0, 1 }, 12345, 80, DataProtocol.Tcp, 100, 1000),
             new(new byte[] { 192, 168, 1, 101 }, new byte[] { 10, 0, 0, 2 }, 54321, 8080, DataProtocol.Udp, 50, 500),
-            new(new byte[] { 192, 168, 1, 100}, new byte[] {10, 0, 0, 2}, 12345,  3123, DataProtocol.Tcp, 10, 10)
+            new(new byte[] { 192, 168, 1, 100 }, new byte[] { 10, 0, 0, 2 }, 12345, 3123, DataProtocol.Tcp, 10, 10)
         };
+        var graph = new TraceGraph();
+        graph.FillFromTraces(aggregateTraces);
 
         // Act
-        filterList.Filter(ref aggregateTraces);
+        filterList.Filter(graph);
 
         // Assert
-        Assert.Equal(2, aggregateTraces.Count); // Both traces match different conditions and should be kept
+        Assert.Equal(2, graph.EdgeCount); // Both traces match different conditions and should be kept
     }
 }
