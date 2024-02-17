@@ -21,7 +21,7 @@
           </div>
       </div>
     </div>
-    <LayerList v-bind:layout="layout" />
+    <GraphFilterMenu v-bind:layout="layout" />
   </div>
 </template>
 
@@ -31,8 +31,8 @@ import debounce from 'lodash/debounce';
 import topologyService from '~/services/topology.service';
 import TopologyMenuBar from "~/components/TopologyMenuBar.vue";
 import Graph from "~/components/Graph.vue";
-import LayerList from "~/components/LayerList.vue";
 import Dropdown from "~/components/Dropdown.vue";
+import GraphFilterMenu from "~/components/GraphFilterMenu.vue";
 
 const layout = ref('');
 const timeframeSelectorFrom = ref(new Date(new Date().getTime() - 2 * 60 * 1000).toISOString().slice(0,16))
