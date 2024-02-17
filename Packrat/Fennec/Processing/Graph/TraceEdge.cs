@@ -28,6 +28,7 @@ public class TraceEdge
 }
 
 public record TraceEdgeDto(
+    string Id,
     string Source,
     string Target,
     DataProtocol DataProtocol,
