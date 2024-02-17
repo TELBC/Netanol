@@ -96,7 +96,7 @@ const formatBytes = (bytes: number): string => {
 }
 
 watch(() => props.metaData?.totalByteCount, (newValue) => {
-  if (newValue !== undefined && newValue !== null) {
+  if (newValue !== undefined) {
     convertedByteCount.value = formatBytes(newValue);
     byteHoverText.value = `${newValue} bytes`;
   }

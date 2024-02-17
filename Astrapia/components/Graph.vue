@@ -2,7 +2,7 @@
   <div id="graph">
     <svg ref="svg" width="960" height="600"></svg>
     <div id="tooltip" style="visibility: hidden;"></div>
-    <TopologyFooter @recenter="recenterGraph" :metaData="metaData" @toggleSimulation="toggleSimulation" @updateDistance="updateLinkDistance" @updateSim="updateSimForce" element-id="graph"/>
+    <TopologyFooter v-if="metaData" @recenter="recenterGraph" :metaData="metaData" @toggleSimulation="toggleSimulation" @updateDistance="updateLinkDistance" @updateSim="updateSimForce" element-id="graph"/>
   </div>
 </template>
 
@@ -26,10 +26,10 @@ export default {
       graph: null,
       svg: null,
       zoom: null,
-      simulation:null,
+      simulation: null,
       simulationFrozen: false,
-      linkDistance:50,
-      strengthForce:500
+      linkDistance: 50,
+      strengthForce: 500
     };
   },
   watch: {
@@ -47,7 +47,7 @@ export default {
   },
   methods: {
     updateLinkDistance(distance) {
-      this.linkDistance=distance;
+      this.linkDistance = distance;
       if (this.simulation) {
         this.simulation.force("link").distance(this.linkDistance);
         if (!this.simulationFrozen) {
@@ -55,10 +55,10 @@ export default {
         }
       }
     },
-    updateSimForce(force){
-      this.strengthForce=force;
+    updateSimForce(force) {
+      this.strengthForce = force;
       if (this.simulation) {
-        this.simulation.force("charge", d3.forceManyBody().strength((-1)*this.strengthForce))
+        this.simulation.force("charge", d3.forceManyBody().strength((-1) * this.strengthForce))
         if (!this.simulationFrozen) {
           this.simulation.alpha(0.5).restart();
         }
@@ -77,19 +77,12 @@ export default {
     },
     updateData(newData) {
       this.metaData = newData.graphStatistics;
-
-      // const oldNodePosVel = new Map(this.data.nodes.map(d=> (({ x,y,vx,vy,id }) => ({ x,y,vx,vy,id}))(d)).map(d => [d.id, d]));
-      // this.data.nodes = newData.nodes.map(d => Object.assign(d, oldNodePosVel.get(d.id)));
       this.data.nodes = newData.nodes;
       this.data.edges = newData.edges;
-      // const oldEdgePosVel = new Map(this.data.edges.map(d=> (({ x1,y1,x2,y2,id }) => ({ x1,y1,x2,y2,id}))(d)).map(d => [d.id, d]));
-      // this.data.edges = newData.edges.map(d => Object.assign(d, oldEdgePosVel.get(d.id)));
-      // const oldLinks = new Map(this.data.edges.map(d => [d.id, d]));
-      // this.data.edges = newData.edges.map(d => Object.assign(oldLinks.get(d.id),d));
     },
     renderGraph() {
       this.zoom = d3.zoom().on('zoom', (e) => {
-        const transform = e.transform;//TODO zooming out and render causes nodes/links to be disconnected and bigger
+        const transform = e.transform;
         this.svg.selectAll(".link").attr('transform', transform);
         this.svg.selectAll(".node").attr('transform', transform);
         this.svg.selectAll(".label").attr('transform', transform);
@@ -100,25 +93,27 @@ export default {
 
       const simulation = d3.forceSimulation(this.data.nodes)
         .force("link", d3.forceLink(this.data.edges).id(d => d.id).distance(this.linkDistance))
-        .force("charge", d3.forceManyBody().strength((-1)*this.strengthForce))
+        .force("charge", d3.forceManyBody().strength((-1) * this.strengthForce))
         .force("center", d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2))
         .force("collide", d3.forceCollide(10));
-      this.simulation=simulation;
+      this.simulation = simulation;
 
       const drag = d3.drag()
         .on("start", function (event) {
           this.isDragging = true;
           if (!event.active) simulation.alphaTarget(0.3).restart();
-          event.subject.fx = null;
-          event.subject.fy = null;
+          d.fx = d.x;
+          d.fy = d.y;
         })
-        .on("drag", function (event) {
-          event.subject.fx = event.x;
-          event.subject.fy = event.y;
+        .on("drag", (event, d) => {
+          d.fx = event.x;
+          d.fy = event.y;
         })
         .on("end", function () {
           this.isDragging = false;
-          simulation.alphaTarget(0).restart();
+          if (!event.active) simulation.alphaTarget(0).restart();
+          d.fx = null;
+          d.fy = null;
         });
 
       //links
@@ -159,7 +154,7 @@ export default {
 
       //nodes
       const nodes = this.svg.selectAll(".node")
-        .data(this.data.nodes, d => d.id);
+        .data(this.data.nodes, d => d.address);
 
       nodes.exit().remove();
 
@@ -175,7 +170,7 @@ export default {
       //label
 
       const labels = this.svg.selectAll(".label")
-        .data(this.data.nodes, d => d.name);
+        .data(this.data.nodes, d => d.address);
 
       labels.exit().remove();
 
@@ -188,7 +183,7 @@ export default {
         .attr("font-family", "Arial")
         .style("fill", "#414141")
         .merge(labels)
-        .text(d => d.id);
+        .text(d => d.address);
 
       //tooltip
       const tooltip = d3.select("#tooltip");
@@ -197,7 +192,7 @@ export default {
         .on("mouseenter", function (event, d) {
           if (!this.isDragging) {
             tooltip.style("visibility", "visible");
-            tooltip.html(d.name);
+            tooltip.html(d.address);
           }
         })
         .on("mousemove", function (event) {

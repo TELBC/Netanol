@@ -25,8 +25,8 @@ public class GraphDetails
     public long TotalPacketCount { get; set; }
     public long TotalTraceCount { get; set; }
 
-    public Dictionary<string, TraceNodeDto> Nodes { get; set; } = new();
-    public Dictionary<string, TraceEdgeDto> Edges { get; set; } = new();
+    public List<TraceNodeDto> Nodes { get; set; } = new();
+    public List<TraceEdgeDto> Edges { get; set; } = new();
 }
 
 public class GraphRepository : IGraphRepository
@@ -57,17 +57,13 @@ public class GraphRepository : IGraphRepository
             TotalTraceCount = graph.EdgeCount,
             TotalByteCount = traces.Sum(trace => (long)trace.ByteCount),
             TotalPacketCount = traces.Sum(trace => (long)trace.PacketCount),
-            Nodes = graph.Nodes.ToDictionary(
-                n => n.Key.ToString(), 
-                n => new TraceNodeDto(n.Value.Address.ToString(), n.Value.Name)),
-            Edges = graph.Edges.ToDictionary(
-                e => $"{e.Value.DataProtocol}/{e.Key.Item1}-{e.Key.Item2}", 
-                e => new TraceEdgeDto(
-                    e.Value.Source.ToString(),
-                    e.Value.Target.ToString(),
-                    e.Value.DataProtocol,
-                    e.Value.PacketCount,
-                    e.Value.ByteCount))
+            Nodes = graph.Nodes.Select(n => new TraceNodeDto(n.Value.Address.ToString(), n.Value.Name)).ToList(),
+            Edges = graph.Edges.Select(e => new TraceEdgeDto(
+                e.Value.Source.ToString(),
+                e.Value.Target.ToString(),
+                e.Value.DataProtocol,
+                e.Value.PacketCount,
+                e.Value.ByteCount)).ToList()
         };
 
         return details;
