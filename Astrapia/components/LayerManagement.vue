@@ -28,8 +28,8 @@
     </div>
   </div>
   <div class="create-form" v-bind:class="{ 'create-layer-open': layerListState.createLayerOpen }">
-    <input type="text" placeholder="Layer Name" />
-    <input type="text" placeholder="Layer Type" />
+    <input class="create-inputs" type="text" placeholder="Layer Name" />
+    <input class="create-inputs" type="text" placeholder="Layer Type" />
     <div class="enable-new-layer">
       <p>Enable?</p>
       <input type="checkbox" class="theme-checkbox" />
@@ -196,12 +196,30 @@ onMounted(() => {
   bottom: 0;
   width: 13vw;
   height: 3%;
+  background-color: white;
 }
 
 .create-form {
   transition: 0.2s ease-in-out;
   visibility: hidden;
   opacity: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 94.5%;
+}
+
+.create-inputs {
+  width: 86%;
+  border: 1px solid #424242;
+  border-radius: 4px;
+  font-size: 2vh;
+  margin-bottom: 1.5vh;
+  padding: 2%;
+}
+
+.create-inputs:focus {
+  outline: none;
 }
 
 .enable-new-layer {
@@ -213,10 +231,6 @@ onMounted(() => {
 }
 
 .create-layer-open {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 94.5%;
   visibility: visible;
   opacity: 1;
 }
@@ -237,7 +251,7 @@ onMounted(() => {
   transform: rotate(-90deg);
 }
 
-.theme-checkbox {
+.theme-checkbox, .create-form:deep(.include-exclude-traffic-switch) {
   position: relative;
   --toggle-size: 16px;
   -webkit-appearance: none;
@@ -258,7 +272,7 @@ onMounted(() => {
   margin-left: auto;
 }
 
-.theme-checkbox::before {
+.theme-checkbox::before, .create-form:deep(.include-exclude-traffic-switch)::before {
   content: "";
   width: 1.3em;
   height: 1.3em;
