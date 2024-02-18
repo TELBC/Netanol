@@ -5,7 +5,7 @@
         <input type="range" min="50" max="800" v-model="distance" @input="updateDistance" class="slider">
       </Tooltip>
       <Tooltip title="Change Simulation force">
-        <input type="range" min="500" max="3000" v-model="force" @input="updateSim" class="slider">
+        <input type="range" min="200" max="3000" v-model="force" @input="updateSim" class="slider">
       </Tooltip>
     </div>
   </div>
@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-const distance = ref(50);
+const distance = ref(100);
 const force = ref(500);
 
 const props = defineProps<{

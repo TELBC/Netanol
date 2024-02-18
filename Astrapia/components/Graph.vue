@@ -1,7 +1,6 @@
 <template>
   <div id="graph">
     <svg ref="svg" width="960" height="600"></svg>
-    <div id="tooltip" style="visibility: hidden;"></div>
     <TopologyFooter v-if="metaData" @recenter="recenterGraph" :metaData="metaData" @toggleSimulation="toggleSimulation" @updateDistance="updateLinkDistance" @updateSim="updateSimForce" element-id="graph"/>
   </div>
 </template>
@@ -20,32 +19,164 @@ export default {
   },
   data() {
     return {
-      previousData: null,
+      previousData: {},
       metaData: null,
-      isDragging: false,
-      graph: null,
-      svg: null,
       zoom: null,
-      simulation: null,
       simulationFrozen: false,
-      linkDistance: 50,
+      linkDistance: 100,
       strengthForce: 500
     };
   },
   watch: {
-    data(newData) {
-      if (newData && this.hasDataChanged(newData)) {
-        this.updateData(newData)
-        this.renderGraph();
+    data: {
+      handler(newData) {
+        if (newData && this.hasDataChanged(newData)) {
+          this.metaData = newData.graphStatistics;
+          this.previousData = newData;
+          this.updateChart(newData);
+          this.recenterGraph();
+        }
       }
     }
   },
   mounted() {
-    this.svg = d3.select(this.$refs.svg)
-      .attr("width", window.innerWidth)
-      .attr("height", window.innerHeight);
+    this.initChart();
   },
   methods: {
+    initChart() {
+      this.simulation = d3.forceSimulation()
+        .force("charge", d3.forceManyBody().strength((-1) * this.strengthForce))
+        .force("link", d3.forceLink().id(d => d.id).distance(this.linkDistance))
+        .force("x", d3.forceX())
+        .force("y", d3.forceY())
+        .on("tick", this.ticked);
+
+      this.chart = d3.select(this.$refs.svg)
+        .attr("viewBox", [-window.innerWidth / 2, -window.innerHeight / 2, window.innerWidth, window.innerHeight])
+        .attr("width", window.innerWidth)
+        .attr("height", window.innerHeight);
+
+      this.zoom = d3.zoom().on('zoom', (e) => {
+        const transform = e.transform;
+        this.chart.selectAll("line").attr('transform', transform);
+        this.chart.selectAll("circle").attr('transform', transform);
+        this.chart.selectAll("text").attr('transform', transform);
+      });
+
+      this.chart.call(this.zoom);
+
+      this.link = this.chart.append("g")
+        .attr("stroke", "#a4a4a4")
+        .attr("stroke-width", 0.5)
+        .selectAll("line");
+
+      this.linkHitArea = this.chart.append("g")
+        .attr("stroke", "transparent")
+        .attr("stroke-width", 5)
+        .attr("opacity", 0)
+        .selectAll("line");
+
+      this.node = this.chart.append("g")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 1)
+        .selectAll("circle");
+
+      this.label = this.chart.append("g")
+        .attr("font-family", "Arial")
+        .style("fill", "#414141")
+        .selectAll("text");
+    },
+    ticked() {
+      this.link
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+
+      this.linkHitArea
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+
+      this.node
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y);
+
+      this.label
+        .attr("x", d => d.x)
+        .attr("y", d => d.y);
+    },
+    updateChart({nodes, edges}) {
+      const old = new Map(this.node.data().map(d => [d.id, d]));
+      nodes = nodes.map(d => ({...old.get(d.id), ...d}));
+      edges = edges.map(d => ({...d}));
+
+      const packetCountScale = d3.scaleLinear()
+        .domain([1, d3.max(edges, d => d.packetCount)])
+        .range([0.5, 2]);
+
+      const colorScale = d3.scaleSequential()
+        .domain([0, d3.max(edges, d => d.byteCount)])
+        .interpolator((t) => d3.interpolate('#d7d7d7', '#494949')(1 - t));
+
+      this.link = this.link
+        .data(edges, d => [d.source, d.target])
+        .join(enter => enter.insert("line", "circle")
+          .attr("stroke-width", d => packetCountScale(d.packetCount))
+          .attr("stroke", d => colorScale(d.byteCount)));
+
+      this.linkHitArea = this.linkHitArea
+        .data(edges, d => [d.source, d.target])
+        .join(enter => enter.insert("line", "circle"))
+        .call(link => link.append("title")
+          .text(d => `Bytes: ${d.byteCount} \nPackets: ${d.packetCount} \nProtocols: ${d.dataProtocol}`));
+
+      this.node = this.node
+        .data(nodes, d => d.id)
+        .join(enter => enter.append("circle")
+          .attr("r", 8)
+          .attr("fill", "#537B87")
+          .call(this.drag(this.simulation))
+          .call(node => node.append("title")
+            .text(d => d.name))
+        );
+
+      this.label = this.label
+        .data(nodes, d => d.name)
+        .join(enter => enter.append("text")
+          .attr("text-anchor", "middle")
+          .attr("dy", "1.8em")
+          .attr("font-size", "10px")
+          .text(d => d.name)
+        );
+
+      this.simulation.nodes(nodes);
+      this.simulation.force("link").links(edges);
+      this.simulation.alpha(1).restart().tick();
+      this.ticked();
+    },
+    drag(simulation) {
+      function dragstarted(event) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        event.subject.fx = null;
+        event.subject.fy = null;
+      }
+
+      function dragged(event) {
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+      }
+
+      function dragended() {
+        simulation.alphaTarget(0).restart();
+      }
+
+      return d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended);
+    },
     updateLinkDistance(distance) {
       this.linkDistance = distance;
       if (this.simulation) {
@@ -75,185 +206,8 @@ export default {
         }
       }
     },
-    updateData(newData) {
-      this.metaData = newData.graphStatistics;
-      this.data.nodes = newData.nodes;
-      this.data.edges = newData.edges;
-    },
-    renderGraph() {
-      this.zoom = d3.zoom().on('zoom', (e) => {
-        const transform = e.transform;
-        this.svg.selectAll(".link").attr('transform', transform);
-        this.svg.selectAll(".node").attr('transform', transform);
-        this.svg.selectAll(".label").attr('transform', transform);
-        this.svg.selectAll(".link-overlay").attr('transform', transform);
-      });
-
-      this.svg.call(this.zoom);
-
-      const simulation = d3.forceSimulation(this.data.nodes)
-        .force("link", d3.forceLink(this.data.edges).id(d => d.id).distance(this.linkDistance))
-        .force("charge", d3.forceManyBody().strength((-1) * this.strengthForce))
-        .force("center", d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2))
-        .force("collide", d3.forceCollide(10));
-      this.simulation = simulation;
-
-      const drag = d3.drag()
-        .on("start", function (event) {
-          this.isDragging = true;
-          if (!event.active) simulation.alphaTarget(0.3).restart();
-          d.fx = d.x;
-          d.fy = d.y;
-        })
-        .on("drag", (event, d) => {
-          d.fx = event.x;
-          d.fy = event.y;
-        })
-        .on("end", function () {
-          this.isDragging = false;
-          if (!event.active) simulation.alphaTarget(0).restart();
-          d.fx = null;
-          d.fy = null;
-        });
-
-      //links
-      const linkWidthScale = d3.scaleLinear()
-        .domain([0, 1000])
-        .clamp(true)
-        .range([0.5, 4]);
-
-      const linkColorScale = d3.scaleLinear()
-        .domain([0, 10000])
-        .clamp(true)
-        .range(["#a4a4a4", "#3f3f3f"]);
-
-      const links = this.svg.selectAll(".link")
-        .data(this.data.edges, d => d.id);
-
-      links.exit().remove();
-
-      const newLinks = links.enter()
-        .insert("line", ".node")
-        .attr("class", "link")
-        .merge(links)
-        .attr("stroke", d => linkColorScale(d.byteCount))
-        .attr("stroke-width", d => linkWidthScale(d.packetCount));
-
-      //linkOverlays
-      const linkOverlays = this.svg.selectAll(".link-overlay")
-        .data(this.data.edges, d => d.id);
-
-      linkOverlays.exit().remove();
-
-      const newLinkOverlays = linkOverlays.enter()
-        .insert("line", ".node")
-        .attr("class", "link-overlay")
-        .merge(links)
-        .attr("stroke", "transparent")
-        .attr("stroke-width", 8);
-
-      //nodes
-      const nodes = this.svg.selectAll(".node")
-        .data(this.data.nodes, d => d.address);
-
-      nodes.exit().remove();
-
-      const newNodes = nodes.enter()
-        .append("circle")
-        .attr("class", "node")
-        .attr("r", 8)
-        .attr("fill", "#537B87")
-        .attr("cx", window.innerWidth / 2 )
-        .attr("cy", window.innerHeight /2)
-        .merge(nodes);
-
-      //label
-
-      const labels = this.svg.selectAll(".label")
-        .data(this.data.nodes, d => d.address);
-
-      labels.exit().remove();
-
-      const newLabels = labels.enter()
-        .append("text")
-        .attr("class", "label")
-        .attr("x", 0)
-        .attr("dy", "1.5em")
-        .attr("text-anchor", "middle")
-        .attr("font-family", "Arial")
-        .style("fill", "#414141")
-        .merge(labels)
-        .text(d => d.address);
-
-      //tooltip
-      const tooltip = d3.select("#tooltip");
-
-      this.svg.selectAll(".node").call(drag)
-        .on("mouseenter", function (event, d) {
-          if (!this.isDragging) {
-            tooltip.style("visibility", "visible");
-            tooltip.html(d.address);
-          }
-        })
-        .on("mousemove", function (event) {
-          if (!this.isDragging) {
-            const [x, y] = d3.pointer(event, this.svg.node());
-            tooltip.style("left", (x + 10) + "px")
-              .style("top", (y + 10) + "px");
-          }
-        })
-        .on("mouseleave", function () {
-          if (!this.isDragging) {
-            tooltip.style("visibility", "hidden");
-          }
-        });
-
-      this.svg.selectAll(".link-overlay")
-        .on("mouseover", function (event, d) {
-          tooltip.style("visibility", "visible");
-          tooltip.html(`Bytes: ${d.byteCount} <br> Traces: ${d.traceCount} <br> Packets: ${d.packetCount}`);
-        })
-        .on("mousemove", function (event) {
-          const tooltipWidth = tooltip.node().getBoundingClientRect().width;
-          tooltip.style("left", (event.pageX - tooltipWidth / 2) + "px")
-            .style("top", (event.pageY + 10) + "px");
-        })
-
-        .on("mouseleave", function () {
-          tooltip.style("visibility", "hidden");
-        });
-
-      simulation.on("tick", () => {
-        newLinks
-          .attr("x1", d => d.source.x)
-          .attr("y1", d => d.source.y)
-          .attr("x2", d => d.target.x)
-          .attr("y2", d => d.target.y);
-
-        newLinkOverlays
-          .attr("x1", d => d.source.x)
-          .attr("y1", d => d.source.y)
-          .attr("x2", d => d.target.x)
-          .attr("y2", d => d.target.y);
-
-        newNodes
-          .attr("cx", d => d.x)
-          .attr("cy", d => d.y);
-
-        newLabels
-          .attr("x", d => d.x)
-          .attr("y", d => d.y);
-      });
-
-      this.previousData = JSON.parse(JSON.stringify(this.data));
-    },
     recenterGraph() {
-      if (!this.data || !this.svg || !this.zoom) return;
-
-      const centerX = this.graph.nodes.reduce((sum, node) => sum + node.x, 0) / this.graph.nodes.length;
-      const centerY = this.graph.nodes.reduce((sum, node) => sum + node.y, 0) / this.graph.nodes.length;
-
-      this.svg.call(this.zoom.translateTo, centerX, centerY);
+      this.chart.transition().duration(250).call(this.zoom.transform, d3.zoomIdentity);
     },
     hasDataChanged(newData) {
       if (this.previousData === null) {
@@ -292,17 +246,5 @@ svg {
   width: 100vw;
   height: 100vh;
   background-color: white;
-}
-
-#tooltip {
-  position: absolute;
-  visibility: hidden;
-  background-color: #D7DFE7;
-  color: black;
-  padding: 2px;
-  border-radius: 5px;
-  text-align: center;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 0.8rem;
 }
 </style>

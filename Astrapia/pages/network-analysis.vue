@@ -4,8 +4,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import FlowImportGraph from '@/components/FlowImportGraph.vue'
+<script>
+import FlowImportGraph from '~/components/FlowImportGraph.vue'
+export default {
+  components: {FlowImportGraph},
+}
 </script>
 
 <style scoped>

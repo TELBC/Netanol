@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch} from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import FullscreenButton from "~/components/FullscreenButton.vue";
 import SlideMenu from "~/components/SlideMenu.vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
@@ -54,7 +54,7 @@ const props = defineProps<{
 }>();
 
 const simulationFrozen = ref(false);
-const distance = ref(50);
+const distance = ref(100);
 const force = ref(500);
 const isMenuOpen = ref(false);
 
@@ -65,7 +65,8 @@ const toggleMenu = () => {
 const emit = defineEmits<{
   toggleSimulation: [simulation: boolean],
   updateDistance: [distance: number],
-  updateSim: [force:number];
+  updateSim: [force:number]
+  recenter: [];
 }>();
 const toggleSimulation = () => {
   simulationFrozen.value = !simulationFrozen.value;
@@ -95,11 +96,14 @@ const formatBytes = (bytes: number): string => {
   return `${bytes.toFixed(2)} ${units[i]}`;
 }
 
-watch(() => props.metaData?.totalByteCount, (newValue) => {
-  if (newValue !== undefined) {
+onMounted(() =>{
+  convertedByteCount.value = formatBytes(props.metaData.totalByteCount);
+  byteHoverText.value = `${props.metaData.totalByteCount} bytes`;
+})
+
+watch(() => props.metaData.totalByteCount, (newValue) => {
     convertedByteCount.value = formatBytes(newValue);
     byteHoverText.value = `${newValue} bytes`;
-  }
 });
 
 interface IGraphStatistics {

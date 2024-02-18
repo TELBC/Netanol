@@ -10,7 +10,7 @@ export interface GraphEdge {
   target: string,
   packetCount: number,
   byteCount: number,
-  traceCount: number
+  dataProtocol: Object
 }
 
 export interface IGraphStatistics {
