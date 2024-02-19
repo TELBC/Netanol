@@ -148,6 +148,10 @@ export interface FlowImport {
   margin: 5vh 0 0 5vw;
 }
 
+.xGrid, .yGrid {
+  stroke: #e0e0e0;
+  stroke-width: 0.5;
+}
 #flowImportContainer:deep(.tooltip) {
   position: absolute;
   visibility: hidden;

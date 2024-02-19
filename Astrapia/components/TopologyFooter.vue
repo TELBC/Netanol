@@ -11,31 +11,31 @@
           <font-awesome-icon :icon="simulationFrozen ? 'fa-solid fa-play' : 'fa-solid fa-pause'" />
         </button>
       </Tooltip>
-      <span class="separator"></span>
+      <span class="separator"/>
       <div class="footer-info" v-if="metaData">
-      <span class="metadata-item">
-        Hosts: <span class="metaData-number">{{ metaData.totalHostCount }}</span>
-      </span>
         <span class="metadata-item">
-        Traces: <span class="metaData-number">{{ metaData.totalTraceCount }}</span>
-      </span>
+          Hosts: <span class="metaData-number">{{ metaData.totalHostCount }}</span>
+        </span>
         <span class="metadata-item">
-        Packets: <span class="metaData-number">{{ metaData.totalPacketCount }}</span>
-      </span>
+          Traces: <span class="metaData-number">{{ metaData.totalTraceCount }}</span>
+        </span>
         <span class="metadata-item">
-        Bytes:
-        <Tooltip :title="byteHoverText">
-          <span class="metaData-number">{{ convertedByteCount }}</span>
-        </Tooltip>
-      </span>
+          Packets: <span class="metaData-number">{{ metaData.totalPacketCount }}</span>
+        </span>
+        <span class="metadata-item">
+          Bytes:
+          <Tooltip :title="byteHoverText">
+            <span class="metaData-number">{{ convertedByteCount }}</span>
+          </Tooltip>
+        </span>
       </div>
-      <span class="separator"></span>
+      <span class="separator"/>
       <Tooltip title="Fullscreen">
         <div class="footer-info">
           <FullscreenButton elementId="graph"/>
         </div>
       </Tooltip>
-      <span class="separator"></span>
+      <span class="separator"/>
       <ArrowComponent :isOpen="isMenuOpen" @click="toggleMenu" />
     </div>
     <SlideMenu :distance="distance" :force="force" :isOpen="isMenuOpen" @updateDistance="updateLinkDistance" @updateSim="updateSim" />
@@ -57,6 +57,8 @@ const simulationFrozen = ref(false);
 const distance = ref(100);
 const force = ref(500);
 const isMenuOpen = ref(false);
+const convertedByteCount = ref('');
+const byteHoverText = ref('');
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
@@ -82,9 +84,6 @@ const updateSim = (newForce: number) => {
   force.value = newForce;
   emit('updateSim', newForce);
 };
-
-const convertedByteCount = ref('');
-const byteHoverText = ref('');
 
 const formatBytes = (bytes: number): string => {
   const units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -125,7 +124,7 @@ interface IGraphStatistics {
   width: 100%;
   display: flex;
   align-items: center;
-  z-index:5;
+  z-index: 5;
 }
 
 .icon-button {

@@ -47,8 +47,8 @@ const updateSim = (event: InputEvent) => {
   transition: transform 0.5s ease, bottom 0.5s ease;
   padding: 5px;
   width: auto;
-  border-radius: 5px;
-  z-index:2;
+  border-radius: 4px;
+  z-index: 2;
 }
 
 .slide-up {
