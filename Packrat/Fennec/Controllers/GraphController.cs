@@ -15,8 +15,8 @@ public record GraphStatistics(long TotalHostCount, long TotalByteCount, long Tot
 public record GraphResponse(
     GraphStatistics GraphStatistics,
     QueryConditions QueryConditions,
-    Dictionary<string, TraceNodeDto> Nodes,
-    Dictionary<string, TraceEdgeDto> Edges);
+    List<TraceNodeDto> Nodes,
+    List<TraceEdgeDto> Edges);
 
 [Authorize]
 [Route("graph/{layoutName}")]
