@@ -15,7 +15,6 @@ import {ref, watch} from "vue";
 import layoutService from "~/services/layoutService";
 import LayerManagement from "~/components/LayerManagement.vue";
 
-
 const props = defineProps({
   layout: String
 });

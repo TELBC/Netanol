@@ -46,7 +46,6 @@ import {onMounted, ref, watch} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import FilterConditionBox from "~/components/FilterConditionBox.vue";
 
-// put into other file!!
 interface Layer {
   name: string;
   type: string;

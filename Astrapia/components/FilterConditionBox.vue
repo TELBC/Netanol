@@ -3,7 +3,7 @@
     <div class="filter-condition-box-menu">
       <div class="list-icons-container" v-bind:class="{'list-icons-container-editing': filterConditionBoxState.isEditing}">
         <font-awesome-icon icon="fa-solid fa-plus" class="conditions-list-icons" v-bind:class="{'conditions-list-editing': filterConditionBoxState.isEditing}" @click="toggleIsEditing('edit')" />
-        <font-awesome-icon icon="fa-solid fa-minus" class="conditions-list-icons" v-bind:class="{'conditions-list-editing': filterConditionBoxState.isEditing}" />
+        <font-awesome-icon icon="fa-solid fa-minus" class="conditions-list-icons" v-bind:class="{'conditions-list-editing': filterConditionBoxState.isEditing}" @click="deleteSelectedFilterCondition" />
       </div>
       <div class="edit-icons-container" v-bind:class="{'editing-icons-container-editing': filterConditionBoxState.isEditing}">
         <font-awesome-icon icon="fa-solid fa-arrow-left" class="editing-condition-icons" v-bind:class="{'editing-condition': filterConditionBoxState.isEditing}" @click="toggleIsEditing('list')" />
@@ -11,8 +11,20 @@
       </div>
     </div>
     <div class="filter-condition-list" v-bind:class="{'editing-filter-condition-list': filterConditionBoxState.isEditing}">
-
+      <div class="conditions" v-for="(condition, index) in filterConditionBoxState.filterConditions" :key="index" @click="setFilterConditionSelected(index)" v-bind:class="{'selected-filter-condition': filterConditionBoxState.filterConditionSelected == index}" @dblclick="">
+        <p class="src-address-container">
+          <p class="include-exclude-filter-src">
+            Src:&nbsp;
+          </p>
+          {{ condition.sourceAddress }}
+        </p>
+        <!-- add destination address -->
+        <p class="include-exclude-filter-src">
+          {{ condition.include ? 'Include' : 'Exclude' }}
+        </p>
+      </div>
     </div>
+    <!-- change height in extra class without transition? -->
     <div class="filter-condition-editing" v-bind:class="{'editing-filter-condition-editing': filterConditionBoxState.isEditing}">
       <!--
       instead of dropdowns expanding and collapsing lists:
@@ -48,9 +60,9 @@
       <input class="filter-condition-editing-input" type="text" placeholder="Destination Port" @focus="setOpenEditSelector('')" />
       <input class="filter-condition-editing-input" type="text" placeholder="Protocol" @focus="setOpenEditSelector('')" />
       <div class="scrollable-selector-include-exclude-traffic">
-        <p>Include</p>
-        <input class="include-exclude-traffic-switch" type="checkbox" />
         <p>Exclude</p>
+        <input class="include-exclude-traffic-switch" type="checkbox" />
+        <p>Include</p>
       </div>
     </div>
   </div>
@@ -58,9 +70,8 @@
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {ref} from "vue";
+import {ref,onMounted} from "vue";
 
-// put into other file
 interface filterCondition {
   "sourceAddress": string
   "sourceAddressMask": string,
@@ -80,15 +91,83 @@ const filterConditionBoxState = ref({
   ports: [] as Array<number>,
   protocols: [] as Array<string>,
   editSelectorOpen: '',
+  filterConditionSelected: -1,
 })
 
 function toggleIsEditing(to: string) {
   filterConditionBoxState.value.isEditing = to === 'edit';
+  filterConditionBoxState.value.filterConditionSelected = -1;
 }
 
 function setOpenEditSelector(selector: string) {
   filterConditionBoxState.value.editSelectorOpen = selector;
 }
+
+function setFilterConditionSelected(condition: number) {
+  filterConditionBoxState.value.filterConditionSelected = condition;
+}
+
+function deleteSelectedFilterCondition() {
+  if (filterConditionBoxState.value.filterConditionSelected != -1) {
+    filterConditionBoxState.value.filterConditions.splice(filterConditionBoxState.value.filterConditionSelected, 1);
+    filterConditionBoxState.value.filterConditionSelected = -1;
+  }
+}
+
+onMounted(() => {
+  filterConditionBoxState.value.filterConditions = [
+    {
+      "sourceAddress": "1.1.1.1",
+      "sourceAddressMask": "255.255.255.0",
+      "sourcePort": 80,
+      "destinationAddress": "2.2.2.2",
+      "destinationAddressMask": "255.255.255.0",
+      "destinationPort": 80,
+      "protocol": "TCP",
+      "include": true
+    },
+    {
+      "sourceAddress": "2.2.2.1",
+      "sourceAddressMask": "255.255.255.0",
+      "sourcePort": 80,
+      "destinationAddress": "3.3.3.3",
+      "destinationAddressMask": "255.255.255.0",
+      "destinationPort": 80,
+      "protocol": "TCP",
+      "include": true
+    },
+    {
+      "sourceAddress": "3.3.3.1",
+      "sourceAddressMask": "255.255.255.0",
+      "sourcePort": 80,
+      "destinationAddress": "4.4.4.4",
+      "destinationAddressMask": "255.255.255.0",
+      "destinationPort": 80,
+      "protocol": "TCP",
+      "include": true
+    },
+    {
+      "sourceAddress": "4.4.4.1",
+      "sourceAddressMask": "255.255.255.0",
+      "sourcePort": 80,
+      "destinationAddress": "5.5.5.5",
+      "destinationAddressMask": "255.255.255.0",
+      "destinationPort": 80,
+      "protocol": "TCP",
+      "include": false
+    },
+    {
+      "sourceAddress": "5.5.5.1",
+      "sourceAddressMask": "255.255.255.0",
+      "sourcePort": 80,
+      "destinationAddress": "6.6.6.6",
+      "destinationAddressMask": "255.255.255.0",
+      "destinationPort": 80,
+      "protocol": "TCP",
+      "include": false
+    }
+  ]
+})
 </script>
 
 <style scoped>
@@ -162,14 +241,48 @@ function setOpenEditSelector(selector: string) {
 
 .filter-condition-list {
   width: 100%;
+  height: 100%;
   visibility: visible;
   opacity: 1;
   transition: 0.2s ease-in-out;
   overflow-y: auto;
+  overflow-x: hidden;
   word-break: break-word;
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.conditions {
+  width: 90%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 2vh;
+  font-weight: bolder;
+  cursor: pointer;
+  height: 2.9vh;
+  transition: 0.2s ease-in-out;
+  padding: 0 5% 0 5%;
+}
+
+.selected-filter-condition {
+  background-color: #e0e0e0;
+}
+
+.src-address-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  margin-left: -0.5vw;
+}
+
+.include-exclude-filter-src {
+  font-size: 1.5vh;
+  font-weight: normal;
+  margin-left: 0.5vw;
 }
 
 .filter-condition-editing {
@@ -189,6 +302,7 @@ function setOpenEditSelector(selector: string) {
   width: 0;
   visibility: hidden;
   opacity: 0;
+  height: 0;
 }
 
 .editing-filter-condition-editing {
