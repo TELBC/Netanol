@@ -12,12 +12,12 @@
     </div>
     <div class="filter-condition-list" v-bind:class="{'editing-filter-condition-list': filterConditionBoxState.isEditing}">
       <div class="conditions" v-for="(condition, index) in filterConditionBoxState.filterConditions" :key="index" @click="setFilterConditionSelected(index)" v-bind:class="{'selected-filter-condition': filterConditionBoxState.filterConditionSelected == index}" @dblclick="">
-        <p class="src-address-container">
+        <div class="src-address-container">
           <p class="include-exclude-filter-src">
             Src:&nbsp;
           </p>
           {{ condition.sourceAddress }}
-        </p>
+        </div>
         <!-- add destination address -->
         <p class="include-exclude-filter-src">
           {{ condition.include ? 'Include' : 'Exclude' }}
