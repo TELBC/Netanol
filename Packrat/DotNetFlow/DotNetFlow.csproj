@@ -20,6 +20,8 @@
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="PcapDotNet" Version="0.10.2" />
+        <PackageReference Include="PcapDotNet.Base" Version="1.0.4.1" />
+        <PackageReference Include="PcapDotNet.Packets" Version="1.0.4.1" />
     </ItemGroup>
 
     <ItemGroup>

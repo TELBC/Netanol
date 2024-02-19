@@ -1,0 +1,194 @@
+﻿@startuml
+
+class Datagram {
+    Header Header
+    List<ISample> Samples
+}
+
+class Header {
+    uint Version
+    uint AgentAddressType
+    IPAddress AgentAddress
+    uint SubAgentId
+    uint SequenceNumber
+    uint SysUpTime
+    uint NumSamples
+}
+
+interface IRecord {
+    Enterprise Enterprise
+}
+
+interface ISample {
+    Enterprise Enterprise
+    SampleType Type
+}
+
+class FlowSample {
+    Enterprise Enterprise
+    SampleType Type
+    uint SampleLength
+    uint SequenceNumber
+    ushort SourceIdClass
+    ushort SourceIdIndex
+    uint SamplingRate
+    uint SamplePool
+    uint Drops
+    uint InputInterface
+    OutputInterface OutputInterface
+    FlowFormat FlowFormat
+    FlowRecord FlowRecord
+}
+
+class OutputInterface {
+    ushort OutputInterfaceFormat
+    ushort OutputInterfaceValue
+}
+
+class CounterSample {
+    Enterprise Enterprise
+    SampleType Type
+    uint SampleLength
+    uint SequenceNumber
+    ushort SourceIdType
+    ushort SourceIdIndex
+    CounterFormat CounterType
+    CounterRecord CounterRecord
+}
+
+enum SampleType {
+    FlowSample = 1
+    CounterSample = 2
+    ExpandedFlowSample = 3
+    ExpandedCounterSample = 4
+}
+
+enum Enterprise {
+    StandardSflow = 0
+}
+
+enum FlowFormat {
+    RawPacketHeader = 1
+    EthernetFrame = 2
+    IPv4Header = 3
+    IPv6Header = 4
+    ExtendedSwitchData = 1001
+    ExtendedRouterData = 1002
+    ExtendedGatewayData = 1003
+    ExtendedUserFlowData = 1004
+}
+
+enum CounterFormat {
+    GenericInterfaceCounters = 1
+    EthernetInterfaceCounters = 2
+    VlanCounters = 5
+    InfiniBandCounters = 9
+}
+
+abstract class FlowRecord {
+    Enterprise Enterprise
+    FlowFormat Format
+}
+
+abstract class CounterRecord {
+    Enterprise Enterprise
+    CounterFormat Format
+}
+
+class GenericInterfaceCounters {
+    Enterprise Enterprise
+    CounterFormat Format
+    uint FlowDataLength
+    uint IfIndex
+    uint IfType
+    uint IfSpeed
+    IfDirection IfDirection
+    ushort IfAdminStatus
+    ushort IfOperStatus
+    ulong InputOctets
+    uint InputPackets
+    uint InputMulticastPackets
+    uint InputBroadcastPackets
+    uint InputDiscardedPackets
+    uint InputErrors
+    uint InputUnknownProtocolPackets
+    ulong OutputOctets
+    uint OutputPackets
+    uint OutputMulticastPackets
+    uint OutputBroadcastPackets
+    uint OutputDiscardedPackets
+    uint OutputErrors
+    uint PromiscuousMode
+}
+
+enum IfDirection {
+    Unknown = 0
+    FullDuplex = 1
+    HalfDuplex = 2
+    In = 3
+    Out = 4
+}
+
+class RawPacketHeader {
+    Enterprise Enterprise
+    FlowFormat Format
+    uint FlowDataLength
+    HeaderProtocol HeaderProtocol
+    uint FrameLength
+    uint StrippedBytes
+    uint SampledHeaderLength
+    Packet Packet
+}
+
+enum HeaderProtocol {
+    Ethernet = 1
+    Ppp = 7
+    Ipv4 = 11
+    Ipv6 = 12
+    Mpls = 13
+}
+
+'interface ISflowReader {
+'    Header ReadHeader(Stream datagramStream)
+'    IEnumerable<ISample> ReadSamples(Stream datagramStream, uint numSamples)
+'}
+
+Datagram -- Header
+Datagram -- ISample
+ISample -- FlowSample
+ISample -- CounterSample
+
+IRecord -- Enterprise
+GenericInterfaceCounters -- Enterprise
+RawPacketHeader -- Enterprise
+CounterRecord -- Enterprise
+FlowRecord -- Enterprise
+
+FlowSample -- RawPacketHeader
+CounterSample -- GenericInterfaceCounters
+
+FlowSample -- OutputInterface
+
+ISample -- SampleType
+FlowSample -- SampleType
+CounterSample -- SampleType
+
+GenericInterfaceCounters -- IfDirection
+
+RawPacketHeader -- FlowFormat
+FlowSample -- FlowFormat
+FlowRecord -- FlowFormat
+
+GenericInterfaceCounters -- CounterFormat
+CounterSample -- CounterFormat
+CounterRecord -- CounterFormat
+
+RawPacketHeader -- HeaderProtocol
+
+CounterSample -- CounterRecord
+FlowSample -- FlowRecord
+
+IRecord -- FlowRecord
+IRecord -- CounterRecord
+
+@enduml

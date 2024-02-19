@@ -35,14 +35,13 @@ public record TraceImportInfo(
     ushort SrcPort,
     IPAddress DstIp,
     ushort DstPort,
-    bool Duplicate,
     ulong PacketCount,
     ulong ByteCount,
     DataProtocol DataProtocol,
     FlowProtocol FlowProtocol)
 {
-    public bool Duplicate { get; set; } = Duplicate;
-}
+    public bool Duplicate { get; set; }
+};
 
 public class AggregateTrace
 {
