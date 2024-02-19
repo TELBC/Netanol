@@ -54,7 +54,6 @@ export default defineNuxtConfig({
   },
   build: {transpile: ["@fortawesome/vue-fontawesome"]},
   css: [
-    "@fortawesome/fontawesome-svg-core/styles.css",
-    "v-network-graph/lib/style.css",
+    "@fortawesome/fontawesome-svg-core/styles.css"
   ],
 });

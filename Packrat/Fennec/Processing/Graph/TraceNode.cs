@@ -14,4 +14,4 @@ public class TraceNode
     }
 }
 
-public record TraceNodeDto(string Address, string Name);
+public record TraceNodeDto(string Id, string Name);

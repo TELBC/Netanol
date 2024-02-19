@@ -7,7 +7,7 @@
 <script setup lang="ts">
 import {onMounted, ref} from 'vue';
 import {axisBottom, axisLeft, extent, isoParse, line, pointer, scaleLinear, scaleTime, select,} from 'd3';
-import networkAnalysisService, {FlowImport} from '~/services/networkAnalysisService';
+import networkAnalysisService from '~/services/networkAnalysisService';
 
 
 let svgRef = ref(null);
@@ -135,6 +135,10 @@ onMounted(async() => {
     .classed('chart-title', true)
     .text('Flow Import');
 });
+export interface FlowImport {
+  dateTime: string;
+  endpoints: { [key: string]: number };
+}
 </script>
 
 <style scoped>
@@ -144,6 +148,10 @@ onMounted(async() => {
   margin: 5vh 0 0 5vw;
 }
 
+.xGrid, .yGrid {
+  stroke: #e0e0e0;
+  stroke-width: 0.5;
+}
 #flowImportContainer:deep(.tooltip) {
   position: absolute;
   visibility: hidden;
@@ -153,11 +161,6 @@ onMounted(async() => {
   border-radius: 4px;
   border: 0.1vh solid #424242;
   font-family: "Open Sans", sans-serif;
-}
-
-.xGrid, .yGrid {
-  stroke: #e0e0e0;
-  stroke-width: 0.5;
 }
 
 #flowImportContainer:deep(.chart-title) {

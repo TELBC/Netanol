@@ -1,13 +1,16 @@
 import ApiService from "~/services/restService";
-import { type Edge, type Node} from "v-network-graph";
 
-export interface GraphNode extends Node {
+export interface GraphNode {
+  id: string
   name: string
 }
 
-export interface GraphEdge extends Edge {
+export interface GraphEdge {
+  source: string,
+  target: string,
   packetCount: number,
-  byteCount: number
+  byteCount: number,
+  dataProtocol: Object
 }
 
 export interface IGraphStatistics {
@@ -17,7 +20,7 @@ export interface IGraphStatistics {
   totalTraceCount: number
 }
 
-interface GraphResponse {
+export interface GraphResponse {
   graphStatistics: IGraphStatistics
   nodes: { [key: string]: GraphNode },
   edges: { [key: string]: GraphEdge }

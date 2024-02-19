@@ -12,12 +12,9 @@
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/vue-fontawesome": "^3.0.3",
-    "@programic/vue3-tooltip": "^1.0.0",
     "@types/lodash": "^4.14.201",
     "axios": "^1.5.1",
     "d3": "^7.8.5",
-    "d3-force": "^3.0.0",
-    "v-network-graph": "^0.9.5",
     "vuetify": "^3.3.11"
   },
   "devDependencies": {
