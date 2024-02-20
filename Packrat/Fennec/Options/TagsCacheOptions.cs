@@ -8,5 +8,5 @@ public class TagsCacheOptions
     /// <summary>
     /// Refresh Period represented as string
     /// </summary>
-    public string RefreshPeriod { get; set; }
+    public TimeSpan RefreshPeriod { get; set; } = TimeSpan.FromHours(12);
 } 

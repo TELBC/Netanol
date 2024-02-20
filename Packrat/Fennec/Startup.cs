@@ -48,11 +48,7 @@ public class Startup
         BsonSerializer.RegisterSerializer(typeof(ILayer), new MongoLayerSerializer());
         services.AddAutoMapper(typeof(MapperProfile));
 
-        services.AddHttpClient();
-        
         // Options
-        // services.Configure<Netflow9ParserOptions>(Configuration.GetSection("Parsers:Netflow9"));
-        // services.Configure<IpfixParserOptions>(Configuration.GetSection("Parsers:Ipfix"));
         services.Configure<DuplicateFlaggingOptions>(Configuration.GetSection("DuplicateFlagging"));
         services
             .AddOptions<SecurityOptions>()
@@ -64,7 +60,6 @@ public class Startup
         services.AddSingleton<IFlowImporterMetric, FlowImporterMetric>();
 
         // Database services
-        // services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddSingleton<ITraceRepository, TraceRepository>();
         services.AddSingleton<ITimeService, TimeService>();
         services.AddSingleton<IDuplicateFlaggingService, DuplicateFlaggingService>();
@@ -85,40 +80,39 @@ public class Startup
         services.AddSingleton<IpFixParser>(); 
 
         // Vmware API 
-        var tagsRequest = Configuration.GetSection("TagsRequest").Get<TagsRequestOptions>();
-
+        var tagsRequest = Configuration.GetSection("TagsRequest").Get<TagsRequestOptions>()!;
         if (tagsRequest.Enabled)
         {
-            Log.Information("Starting to configure Tagging Service!");
+            Log.Information("Enabling the Vmware tagging services... Layers using Vmware tags will be available");
+            
             services.AddHttpClient("VmWareApiClient")
                 .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
                 {
-                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                    ServerCertificateCustomValidationCallback = (_, _, _, _) => true
                 })
-                .ConfigureHttpClient((serviceProvider, client) =>
+                .ConfigureHttpClient((_, client) =>
                 {
                     if(tagsRequest.VmWareRequest.VmWareTargetAddress.IsNullOrEmpty())
-                        throw new Exception("Target machine address not provided for Tagging service!");
+                        throw new NullReferenceException("No target machine address was provided for Vmware tagging... Either disable Vmware tagging or set the target machine address.");
                     
                     if(tagsRequest.VmWareRequest.VmWareCredentials.Username.IsNullOrEmpty() ||
                        tagsRequest.VmWareRequest.VmWareCredentials.Password.IsNullOrEmpty())
-                        throw new Exception("Username and/or password is not configured properly!");
+                        throw new NullReferenceException("Username and/or password is not configured for Vmware tagging... Either disable Vmware tagging or set the username and password.");
                     
-                    client.BaseAddress = new Uri(tagsRequest.VmWareRequest.VmWareTargetAddress.StartsWith("https://")
-                            ? tagsRequest.VmWareRequest.VmWareTargetAddress
-                            : "https://" + tagsRequest.VmWareRequest.VmWareTargetAddress);
-
+                    
+                    client.BaseAddress = new Uri($"https://{tagsRequest.VmWareRequest.VmWareTargetAddress}");
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
                                 Convert.ToBase64String(Encoding.ASCII.GetBytes(
                                     $"{tagsRequest.VmWareRequest.VmWareCredentials.Username}:{tagsRequest.VmWareRequest.VmWareCredentials.Password}")));
                 });
+            
             services.Configure<TagsRequestOptions>(Configuration.GetSection("TagsRequest"));
             services.Configure<TagsCacheOptions>(Configuration.GetSection("TagsCache"));
             services.AddSingleton<ITagsRequestService, TagsRequestService>();
             services.AddSingleton<ITagsCacheService, TagsCacheService>();
-            services.AddHostedService<TagsCacheRefresherService>(t => ActivatorUtilities.CreateInstance<TagsCacheRefresherService>(t));
-            Log.Information("Finished configuring Tagging Service Successfully!");
-        }
+            services.AddHostedService<TagsCacheRefresherService>();
+        } else 
+            Log.Information("Vmware tagging is disabled... Layers using Vmware tagging will be unavailable");
         
         // Protocol multiplexer
         var multiplexerOptions = Configuration.GetSection("Multiplexers").Get<List<MultiplexerOptions>>();
@@ -153,9 +147,7 @@ public class Startup
             });
         }
         else
-        {
             Log.Information("CORS is disabled... No CORS header will be added");
-        }
 
         if (StartupOptions.EnableSwagger)
             services.AddSwaggerGen(c =>

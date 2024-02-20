@@ -13,6 +13,10 @@ namespace Fennec.Services;
 /// </summary>
 public interface ITagsRequestService
 {
+    /// <summary>
+    ///     Request and return the tags associated with every IP.
+    /// </summary>
+    /// <returns></returns>
     public Task<Dictionary<IPAddress, List<string>>> GetLatestTagsAndIps();
 }
 
@@ -37,18 +41,16 @@ public class TagsRequestService : ITagsRequestService
         await RequestSessionTokenAsync();
         await RequestTagsAsync();
         await RequestIpAddressesAsync();
-        await RequestIpAddressesAsync();
         return await RequestTagDetailsAsync();
     }
 
     /// <summary>
     ///     Request SessionToken from target machine
     /// </summary>
-    /// <param name="cancellationToken"></param>
     /// <exception cref="InvalidCredentialException">Thrown when the given credentials are incorrect</exception>
     private async Task RequestSessionTokenAsync()
     {
-        _log.Information("SessionToken acquiring started for target machine {TargetMachine}",
+        _log.Debug("Acquiring session token for target machine {TargetMachine}",
             _options.VmWareTargetAddress);
         var response = await _httpClient.PostAsync(_options.VmWareApiPaths.SessionPath, new StringContent(string.Empty));
 
@@ -62,7 +64,7 @@ public class TagsRequestService : ITagsRequestService
         _httpClient.DefaultRequestHeaders.Remove("Cookie");
         _httpClient.DefaultRequestHeaders.Add("Cookie", $"vmware-api-session-id={sessionId}");
 
-        _log.Information("SessionToken acquired for target machine {TargetMachine}", _options.VmWareTargetAddress);
+        _log.Debug("SessionToken acquired for target machine {TargetMachine}", _options.VmWareTargetAddress);
     }
 
     /// <summary>
@@ -75,6 +77,8 @@ public class TagsRequestService : ITagsRequestService
 
         var result = await response.Content.ReadAsStringAsync();
         var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(result);
+        if (apiResponse == null)
+            throw new InvalidDataException("The Vmware server returned a response which could not be parsed correctly.");
 
         _vmWareMachines.Clear();
         _vmWareMachines.AddRange(apiResponse.Associations.Select(association => new VmWareMachine
@@ -86,7 +90,7 @@ public class TagsRequestService : ITagsRequestService
     }
 
     /// <summary>
-    ///     Sends a request to the ipv4 addresses of the machines.
+    ///     Sends a request to the addresses of the machine.
     /// </summary>
     private async Task RequestIpAddressesAsync()
     {
@@ -118,6 +122,8 @@ public class TagsRequestService : ITagsRequestService
                 await Task.Delay(delayMilliseconds - (int)elapsedMilliseconds);
             }
         }
+        
+        return;
 
         async Task HandleRequest(string id)
         {
@@ -131,7 +137,6 @@ public class TagsRequestService : ITagsRequestService
                     .ForContext("Vm-Id", id)
                     .Warning("Could not find the interfaces for Vm-Id {Id}... It is apparently " +
                              "wrongly formatted | {ExceptionName}: {ExceptionMessage}", id,e.GetType().Name, e.Message);
-                throw e;
             }
         }
     }
@@ -149,6 +154,8 @@ public class TagsRequestService : ITagsRequestService
         {
             var jsonResponse = await response.Content.ReadAsStringAsync();
             var ipAddressInfos = JsonConvert.DeserializeObject<List<IpAddressInfo>>(jsonResponse);
+            if (ipAddressInfos == null)
+                throw new InvalidDataException("The Vmware server returned an invalid response");
 
             foreach (var ipAddressInfo in ipAddressInfos)
             {
@@ -186,35 +193,8 @@ public class TagsRequestService : ITagsRequestService
                 await Task.Delay(1000);
             }
         }
-        
-        async Task HandleRequest(string tag)
-        {
-            try
-            {
-                await ProcessTagAsync(tag);
-            }
-            catch (Exception e)
-            {
-                _log.ForContext("Exception", e)
-                    .ForContext("Tag", tag)
-                    .Warning("Could not find name for Tag.. It is apparently | {ExceptionName}: {ExceptionMessage}", e.GetType().Name, e.Message);
-                throw e;
-            }
-        }
-        
-        
-        async Task ProcessTagAsync(string tag)
-        {
-            var response = await _httpClient.GetAsync($"https://{_options.VmWareTargetAddress}/api/cis/tagging/tag/{tag}");
-            response.EnsureSuccessStatusCode();
 
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            var tagInfo = JsonConvert.DeserializeObject<TagInfo>(jsonResponse);
 
-            if (!_tags.ContainsKey(tag))
-                _tags.Add(tag, tagInfo.Name);
-        }
-        
         foreach (var vm in _vmWareMachines)
             for (var i = 0; i < vm.Tag.Count; i++)
                 if (_tags.TryGetValue(vm.Tag[i], out var newTag))
@@ -231,6 +211,34 @@ public class TagsRequestService : ITagsRequestService
         }
 
         return ipTagDict;
+
+        async Task ProcessTagAsync(string tag)
+        {
+            var response = await _httpClient.GetAsync($"https://{_options.VmWareTargetAddress}/api/cis/tagging/tag/{tag}");
+            response.EnsureSuccessStatusCode();
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var tagInfo = JsonConvert.DeserializeObject<TagInfo>(jsonResponse);
+            if (tagInfo == null)
+                throw new InvalidDataException("The Vmware server returned invalid data");
+
+            if (!_tags.ContainsKey(tag))
+                _tags.Add(tag, tagInfo.Name);
+        }
+
+        async Task HandleRequest(string tag)
+        {
+            try
+            {
+                await ProcessTagAsync(tag);
+            }
+            catch (Exception e)
+            {
+                _log.ForContext("Exception", e)
+                    .ForContext("Tag", tag)
+                    .Warning("Could not find name for Tag.. It is apparently | {ExceptionName}: {ExceptionMessage}", e.GetType().Name, e.Message);
+            }
+        }
     }
 }
 
@@ -274,7 +282,7 @@ internal class IpAddressInfo
 internal class IpDetails
 {
     [JsonProperty("ip_addresses")]
-    public List<IpAddress> IpAddresses { get; set; } = new List<IpAddress>();
+    public List<IpAddress> IpAddresses { get; set; } = new ();
 }
 
 internal class IpAddress

@@ -8,12 +8,12 @@ public class TagsRequestOptions
     /// <summary>
     ///     Enable or disable the tag service.
     /// </summary>
-    public bool Enabled { get; set; }
+    public bool Enabled { get; set; } = false;
 
     /// <summary>
     ///     Configuration for the requesting of the tags.
     /// </summary>
-    public VmWareRequestConfigOptions VmWareRequest { get; set; }
+    public VmWareRequestConfigOptions VmWareRequest { get; set; } = new();
 }
 
 /// <summary>
@@ -24,22 +24,22 @@ public class VmWareRequestConfigOptions
     /// <summary>
     ///     The target's machine IP address (IPv4).
     /// </summary>
-    public string VmWareTargetAddress { get; set; }
+    public string? VmWareTargetAddress { get; set; }
 
     /// <summary>
     ///     Credentials for the VMWare API.
     /// </summary>
-    public VmWareCredentialsOptions VmWareCredentials { get; set; }
+    public VmWareCredentialsOptions VmWareCredentials { get; set; } = new();
 
     /// <summary>
     ///     Paths for getting certain information from the Vmware API.
     /// </summary>
-    public VmWareApiPathsOptions VmWareApiPaths { get; set; }
+    public VmWareApiPathsOptions VmWareApiPaths { get; set; } = new();
 
     /// <summary>
     ///     Defines how many request can be send per second to target machine
     /// </summary>
-    public int MaxRequestPerSecond { get; set; } 
+    public int MaxRequestPerSecond { get; set; } = 10;
 }
 
 /// <summary>
@@ -50,12 +50,12 @@ public class VmWareCredentialsOptions
     /// <summary>
     ///     The Username of the VMware client for the API.
     /// </summary>
-    public string Username { get; set; }
+    public string? Username { get; set; }
 
     /// <summary>
     ///     The password of the VMware client for the API.
     /// </summary>
-    public string Password { get; set; }
+    public string? Password { get; set; }
 }
 
 /// <summary>
@@ -66,10 +66,10 @@ public class VmWareApiPathsOptions
     /// <summary>
     ///     Path for getting a session token.
     /// </summary>
-    public string SessionPath { get; set; }
+    public string SessionPath { get; set; } = "/rest/com/vmware/cis/session";
 
     /// <summary>
     ///     Path for getting all machines with their tag.
     /// </summary>
-    public string TaggingAssociationsPath { get; set; }
+    public string TaggingAssociationsPath { get; set; } = "/api/vcenter/tagging/associations";
 }
