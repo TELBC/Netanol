@@ -222,8 +222,7 @@ public class TagsRequestService : ITagsRequestService
             if (tagInfo == null)
                 throw new InvalidDataException("The Vmware server returned invalid data");
 
-            if (!_tags.ContainsKey(tag))
-                _tags.Add(tag, tagInfo.Name);
+            _tags.TryAdd(tag, tagInfo.Name);
         }
 
         async Task HandleRequest(string tag)
