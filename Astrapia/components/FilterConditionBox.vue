@@ -12,14 +12,21 @@
     </div>
     <div class="filter-condition-list" v-bind:class="{'editing-filter-condition-list': filterConditionBoxState.isEditing}">
       <div class="conditions" v-for="(condition, index) in filterConditionBoxState.filterConditions" :key="index" @click="setFilterConditionSelected(index)" v-bind:class="{'selected-filter-condition': filterConditionBoxState.filterConditionSelected == index}" @dblclick="">
-        <div class="src-address-container">
-          <p class="include-exclude-filter-src">
-            Src:&nbsp;
-          </p>
-          {{ condition.sourceAddress }}
+        <div class="conditions-src-dest">
+          <div class="src-dest-address-container">
+            <p class="include-exclude-filter-src-dest">
+              Src:&nbsp;
+            </p>
+            {{ condition.sourceAddress }}
+          </div>
+          <div class="src-dest-address-container">
+            <p class="include-exclude-filter-src-dest">
+              Dest:&nbsp;
+            </p>
+            {{ condition.destinationAddress }}
+          </div>
         </div>
-        <!-- add destination address -->
-        <p class="include-exclude-filter-src">
+        <p class="include-exclude-filter-src-dest">
           {{ condition.include ? 'Include' : 'Exclude' }}
         </p>
       </div>
@@ -262,24 +269,31 @@ onMounted(() => {
   font-size: 2vh;
   font-weight: bolder;
   cursor: pointer;
-  height: 2.9vh;
+  height: 4.9vh;
   transition: 0.2s ease-in-out;
-  padding: 0 5% 0 5%;
+  padding: 2.5% 5% 2.5% 5%;
 }
 
 .selected-filter-condition {
   background-color: #e0e0e0;
 }
 
-.src-address-container {
+.conditions-src-dest {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.src-dest-address-container {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
   margin-left: -0.5vw;
+  height: 45%;
 }
 
-.include-exclude-filter-src {
+.include-exclude-filter-src-dest {
   font-size: 1.5vh;
   font-weight: normal;
   margin-left: 0.5vw;
@@ -287,6 +301,7 @@ onMounted(() => {
 
 .filter-condition-editing {
   width: 0;
+  height: 0;
   visibility: hidden;
   opacity: 0;
   transition: 0.2s ease-in-out;
@@ -307,6 +322,7 @@ onMounted(() => {
 
 .editing-filter-condition-editing {
   width: 100%;
+  height: 100%;
   visibility: visible;
   opacity: 1;
 }
