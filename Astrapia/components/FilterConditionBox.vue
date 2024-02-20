@@ -6,12 +6,12 @@
         <font-awesome-icon icon="fa-solid fa-minus" class="conditions-list-icons" v-bind:class="{'conditions-list-editing': filterConditionBoxState.isEditing}" @click="deleteSelectedFilterCondition" />
       </div>
       <div class="edit-icons-container" v-bind:class="{'editing-icons-container-editing': filterConditionBoxState.isEditing}">
-        <font-awesome-icon icon="fa-solid fa-arrow-left" class="editing-condition-icons" v-bind:class="{'editing-condition': filterConditionBoxState.isEditing}" @click="toggleIsEditing('list')" />
+        <font-awesome-icon icon="fa-solid fa-arrow-left" class="editing-condition-icons" v-bind:class="{'editing-condition': filterConditionBoxState.isEditing}" @click="clearEditingInputs('list')" />
         <font-awesome-icon icon="fa-solid fa-floppy-disk" class="editing-condition-icons" v-bind:class="{'editing-condition': filterConditionBoxState.isEditing}" />
       </div>
     </div>
     <div class="filter-condition-list" v-bind:class="{'editing-filter-condition-list': filterConditionBoxState.isEditing}">
-      <div class="conditions" v-for="(condition, index) in filterConditionBoxState.filterConditions" :key="index" @click="setFilterConditionSelected(index)" v-bind:class="{'selected-filter-condition': filterConditionBoxState.filterConditionSelected == index}" @dblclick="">
+      <div class="conditions" v-for="(condition, index) in filterConditionBoxState.filterConditions" :key="index" @click="setFilterConditionSelected(index)" v-bind:class="{'selected-filter-condition': filterConditionBoxState.filterConditionSelected == index}" @dblclick="doubleClickFilterCondition(index)">
         <div class="conditions-src-dest">
           <div class="src-dest-address-container">
             <p class="include-exclude-filter-src-dest">
@@ -31,7 +31,6 @@
         </p>
       </div>
     </div>
-    <!-- change height in extra class without transition? -->
     <div class="filter-condition-editing" v-bind:class="{'editing-filter-condition-editing': filterConditionBoxState.isEditing}">
       <!--
       instead of dropdowns expanding and collapsing lists:
@@ -40,35 +39,35 @@
       Search Bar for Source Addresses, styled to look like an expandable list, dropdownish, live searching
       -->
       <div class="scrollable-selector" v-bind:class="{'scrollable-selector-open': filterConditionBoxState.editSelectorOpen === 'source'}">
-        <input class="scrollable-selector-input" type="text" placeholder="Source Address" @focus="setOpenEditSelector('source')" />
+        <input id="source-input" class="scrollable-selector-input" type="text" placeholder="Source Address" v-model="filterConditionBoxState.editingCondition.sourceAddress" @focus="setOpenEditSelector('source')" />
         <div class="scrollable-selector-options">
           List of available addresses, scrollable
         </div>
       </div>
       <div class="scrollable-selector" v-bind:class="{'scrollable-selector-open': filterConditionBoxState.editSelectorOpen === 'sourceMask'}">
-        <input class="scrollable-selector-input" type="text" placeholder="Source Address Mask" @focus="setOpenEditSelector('sourceMask')" />
+        <input id="source-mask-input" class="scrollable-selector-input" type="text" placeholder="Source Address Mask" v-model="filterConditionBoxState.editingCondition.sourceAddressMask" @focus="setOpenEditSelector('sourceMask')" />
         <div class="scrollable-selector-options">
           List of available addresses, scrollable
         </div>
       </div>
-      <input class="filter-condition-editing-input" type="text" placeholder="Source Port" @focus="setOpenEditSelector('')" />
+      <input id="source-port-input" class="filter-condition-editing-input" type="text" placeholder="Source Port" v-model="filterConditionBoxState.editingCondition.sourcePort" @focus="setOpenEditSelector('')" />
       <div class="scrollable-selector" v-bind:class="{'scrollable-selector-open': filterConditionBoxState.editSelectorOpen === 'destination'}">
-        <input class="scrollable-selector-input" type="text" placeholder="Destination Address" @focus="setOpenEditSelector('destination')" />
+        <input id="destination-input" class="scrollable-selector-input" type="text" placeholder="Destination Address" v-model="filterConditionBoxState.editingCondition.destinationAddress" @focus="setOpenEditSelector('destination')" />
         <div class="scrollable-selector-options">
           List of available addresses, scrollable
         </div>
       </div>
       <div class="scrollable-selector" v-bind:class="{'scrollable-selector-open': filterConditionBoxState.editSelectorOpen === 'destinationMask'}">
-        <input class="scrollable-selector-input" type="text" placeholder="Destination Address Mask" @focus="setOpenEditSelector('destinationMask')" />
+        <input id="destination-mask-input" class="scrollable-selector-input" type="text" placeholder="Destination Address Mask" v-model="filterConditionBoxState.editingCondition.destinationAddressMask" @focus="setOpenEditSelector('destinationMask')" />
         <div class="scrollable-selector-options">
           List of available addresses, scrollable
         </div>
       </div>
-      <input class="filter-condition-editing-input" type="text" placeholder="Destination Port" @focus="setOpenEditSelector('')" />
-      <input class="filter-condition-editing-input" type="text" placeholder="Protocol" @focus="setOpenEditSelector('')" />
+      <input id="destination-port-input" class="filter-condition-editing-input" type="text" placeholder="Destination Port" v-model="filterConditionBoxState.editingCondition.destinationPort" @focus="setOpenEditSelector('')" />
+      <input id="protocol-input" class="filter-condition-editing-input" type="text" placeholder="Protocol" v-model="filterConditionBoxState.editingCondition.protocol" @focus="setOpenEditSelector('')" />
       <div class="scrollable-selector-include-exclude-traffic">
         <p>Exclude</p>
-        <input class="include-exclude-traffic-switch" type="checkbox" />
+        <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.include" />
         <p>Include</p>
       </div>
     </div>
@@ -99,11 +98,26 @@ const filterConditionBoxState = ref({
   protocols: [] as Array<string>,
   editSelectorOpen: '',
   filterConditionSelected: -1,
+  editingCondition: {} as filterCondition,
 })
 
 function toggleIsEditing(to: string) {
   filterConditionBoxState.value.isEditing = to === 'edit';
   filterConditionBoxState.value.filterConditionSelected = -1;
+}
+
+function clearEditingInputs(to: string) {
+  toggleIsEditing(to)
+  filterConditionBoxState.value.editingCondition = {
+    "sourceAddress": "",
+    "sourceAddressMask": "",
+    "sourcePort": null,
+    "destinationAddress": "",
+    "destinationAddressMask": "",
+    "destinationPort": null,
+    "protocol": "",
+    "include": true
+  }
 }
 
 function setOpenEditSelector(selector: string) {
@@ -119,6 +133,11 @@ function deleteSelectedFilterCondition() {
     filterConditionBoxState.value.filterConditions.splice(filterConditionBoxState.value.filterConditionSelected, 1);
     filterConditionBoxState.value.filterConditionSelected = -1;
   }
+}
+
+function doubleClickFilterCondition(index: number) {
+  toggleIsEditing('edit');
+  filterConditionBoxState.value.editingCondition = { ...filterConditionBoxState.value.filterConditions[index] };
 }
 
 onMounted(() => {

@@ -230,6 +230,7 @@ onMounted(() => {
 }
 
 .create-layer-open {
+  padding-top: 1vh;
   visibility: visible;
   opacity: 1;
 }
