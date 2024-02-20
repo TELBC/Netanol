@@ -36,9 +36,16 @@
         </div>
       </Tooltip>
       <span class="separator"/>
-      <ArrowComponent :isOpen="isMenuOpen" @click="toggleMenu" />
+      <Tooltip title="Simulation Controls">
+        <ArrowComponent :isOpen="isSlideMenuOpen" @click="toggleSlideMenu" />
+      </Tooltip>
+      <span class="separator"/>
+      <Tooltip title="Interval Control">
+        <IntervalToggle :is-checked="isIntervalToggle" @input="toggleIntervalMenu"/>
+      </Tooltip>
     </div>
-    <SlideMenu :distance="distance" :force="force" :isOpen="isMenuOpen" @updateDistance="updateLinkDistance" @updateSim="updateSim" />
+    <SlideMenu :distance="distance" :force="force" :isOpen="isSlideMenuOpen" @updateDistance="updateLinkDistance" @updateSim="updateSim" />
+    <IntervalMenu title="Interval Selection" description="Current Interval set to:" :isOpen="isIntervalMenuOpen" @change="handleIntervalChange"/>
   </div>
 </template>
 
@@ -46,6 +53,7 @@
 import {onMounted, ref, watch} from 'vue';
 import FullscreenButton from "~/components/FullscreenButton.vue";
 import SlideMenu from "~/components/SlideMenu.vue";
+import IntervalMenu from "~/components/IntervalMenu.vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const props = defineProps<{
@@ -56,23 +64,40 @@ const props = defineProps<{
 const simulationFrozen = ref(false);
 const distance = ref(100);
 const force = ref(500);
-const isMenuOpen = ref(false);
 const convertedByteCount = ref('');
 const byteHoverText = ref('');
-
-const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value;
-};
+const isSlideMenuOpen = ref(false);
+const isIntervalMenuOpen = ref(false);
+const isIntervalToggle = ref(false);
 
 const emit = defineEmits<{
   toggleSimulation: [simulation: boolean],
   updateDistance: [distance: number],
-  updateSim: [force:number]
-  recenter: [];
+  updateSim: [force: number],
+  recenter: [],
+  intervalAmount: [amount: number],
 }>();
+
 const toggleSimulation = () => {
   simulationFrozen.value = !simulationFrozen.value;
   emit('toggleSimulation', simulationFrozen.value);
+};
+
+const toggleSlideMenu = () => {
+  isSlideMenuOpen.value = !isSlideMenuOpen.value;
+  if (isIntervalMenuOpen.value && isIntervalToggle.value) {
+    isIntervalMenuOpen.value = false;
+    isIntervalToggle.value = false;
+  }
+};
+
+const toggleIntervalMenu = (checked: boolean) => {
+  isIntervalMenuOpen.value = checked;
+  isIntervalToggle.value = checked;
+  emit('intervalAmount', 0);
+  if (checked && isSlideMenuOpen.value) {
+    isSlideMenuOpen.value = false;
+  }
 };
 
 const updateLinkDistance = (newDistance: number) => {
@@ -83,6 +108,12 @@ const updateLinkDistance = (newDistance: number) => {
 const updateSim = (newForce: number) => {
   force.value = newForce;
   emit('updateSim', newForce);
+};
+
+const handleIntervalChange = (value: number) => {
+  isIntervalMenuOpen.value = false;
+  isIntervalToggle.value = true;
+  emit('intervalAmount', value);
 };
 
 const formatBytes = (bytes: number): string => {
