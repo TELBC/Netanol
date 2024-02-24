@@ -61,7 +61,7 @@ public record ShortLayerDto(string Type, string Name, bool Enabled, string Descr
 public interface ILayerDto
 {
     public string Type { get; }
-    public string Name { get; }
+    public string? Name { get; }
     public bool Enabled { get; }
 }
 
@@ -85,10 +85,9 @@ public class LayerModelBinder : IModelBinder
         // Here you should implement logic to determine the concrete type
         // For example, based on the "Type" property in JSON
         var type = jsonObject["type"]?.ToString();
-        
         if (type == null)
         {
-            bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Missing type attribute");
+            bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Can not parse JSON to ILayer without `type` attribute to distinguish.");
             return;
         }
         
@@ -98,14 +97,23 @@ public class LayerModelBinder : IModelBinder
                 var optLayer = jsonObject.ToObject<FilterLayerDto>();
                 if (optLayer == null)
                 {
-                    bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Failed to parse layer");
+                    bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Failed to parse layer from JSON.");
                     return;
                 }
                 layer = optLayer;
                 break;
+            case LayerType.Aggregation:
+                var aggLayer = jsonObject.ToObject<AggregationLayerDto>();
+                if (aggLayer == null)
+                {
+                    bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Failed to parse layer layer from JSON.");
+                    return;
+                }
+                layer = aggLayer;
+                break;
             // Add cases for other types
             default:
-                bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Unknown layer type");
+                bindingContext.ModelState.AddModelError(bindingContext.ModelName, $"The layer type {type} is not supported and must be one of [{LayerType.Filter}, {LayerType.Aggregation}]."); // , {LayerType.Name}, {LayerType.Position}.");
                 return;
         }
 
@@ -117,8 +125,15 @@ public class MongoLayerSerializer : SerializerBase<ILayer>
 {
     public override void Serialize(BsonSerializationContext context, BsonSerializationArgs args, ILayer value)
     {
-        if (value is FilterLayer filterLayer)
-            BsonSerializer.Serialize(context.Writer, filterLayer);
+        switch (value)
+        {
+            case FilterLayer filterLayer:
+                BsonSerializer.Serialize(context.Writer, filterLayer);
+                break;
+            case AggregationLayer aggregationLayer:
+                BsonSerializer.Serialize(context.Writer, aggregationLayer);
+                break;
+        }
     }
 
     public override ILayer Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
@@ -150,14 +165,14 @@ public class JsonLayerSerializer : JsonConverter<ILayerDto>
         var type = jsonObject["type"]?.Value<string>();
 
         if (type == null)
-            throw new FormatException("Can not parse JSON to ILayer without Type attribute to distinguish.");
+            throw new FormatException("Can not parse JSON to ILayer without `type` attribute to distinguish.");
 
         return type switch
         {
             LayerType.Filter => jsonObject.ToObject<FilterLayerDto>(),
-            // LayerType.Aggregation => jsonObject.ToObject<AggregationLayer>(),
-            // LayerType.Name => jsonObject.ToObject<NameLayer>(),
-            // LayerType.Position => jsonObject.ToObject<PositionLayer>(),
+            LayerType.Aggregation => jsonObject.ToObject<AggregationLayerDto>(),
+            // LayerType.Name => jsonObject.ToObject<NameLayerDto>(),
+            // LayerType.Position => jsonObject.ToObject<PositionLayerDto>(),
             _ => throw new NotSupportedException($"Unknown layer type: {type}")
         };
     }

@@ -44,7 +44,7 @@ public class GraphRepository : IGraphRepository
         var graph = new TraceGraph();
         graph.FillFromTraces(traces);
 
-        foreach (var layer in layout.Layers)
+        foreach (var layer in layout.Layers.Where(l => l.Enabled))
             layer.Execute(graph);
 
         CollapseGraph(graph);
