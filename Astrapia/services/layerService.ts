@@ -34,8 +34,8 @@ class LayerService {
     return ApiService.put(`/api/layout/${layoutName}/layers/${oldIndex}/${newIndex}`);
   }
 
-  public async editLayer(layoutName: string, index: number) {
-    return ApiService.put(`/api/layout/${layoutName}/layers/${index}`);
+  public async editLayer(layoutName: string, index: number, layer: Layer) {
+    return ApiService.put(`/api/layout/${layoutName}/layers/${index}`, layer);
   }
 
 public async deleteLayer(layoutName: string, index: number) {

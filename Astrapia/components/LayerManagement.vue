@@ -34,10 +34,11 @@
       <p>Enable?</p>
       <input type="checkbox" class="theme-checkbox" v-model="createLayerData.enabled" />
     </div>
-    <FilterConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" @update-filter-conditions="handleFilterConditionsEmit" />
+    <FilterConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
   </div>
   <div class="create-layer" @click="toggleCreateLayerOpen">
-    <font-awesome-icon icon="fa-solid fa-plus" class="fa-plus" :class="{ 'rotate-icon': layerListState.createLayerOpen }" />
+    <font-awesome-icon icon="fa-solid fa-plus" v-if="layerListState.isEditExistingLayer === -1" class="fa-plus" :class="{ 'rotate-icon': layerListState.createLayerOpen }" />
+    <font-awesome-icon icon="fa-solid fa-pen" v-if="layerListState.isEditExistingLayer > -1" class="fa-create-layer-pen" />
   </div>
 </template>
 
@@ -79,6 +80,8 @@ const layerListState = ref({
   layerOpen: '',
   createLayerOpen: false,
   emitFilterConditions: false,
+  isEditExistingLayer: -1,
+  doneEmittingFilterConditions: false,
 });
 
 const rerenderer = ref({
@@ -86,6 +89,15 @@ const rerenderer = ref({
 })
 
 const getLayersOfLayout = inject<() => void>('getLayersOfLayout');
+
+async function getExistingLayer(index: number) {
+  const layerToEdit = await layerService.getLayer(layerListState.value.selectedLayout.name, index);
+  Object.assign(createLayerData.value, layerToEdit);
+}
+
+async function editExistingLayer(index: number) {
+  await layerService.editLayer(layerListState.value.selectedLayout.name, index, createLayerData.value);
+}
 
 function openCloseLayer(layerName: string) {
   if (layerListState.value.layerOpen === layerName) {
@@ -107,22 +119,26 @@ function getLayerEnabled(layerName: string) {
   return layer ? layer.enabled : false;
 }
 
-function handleFilterConditionsEmit(newConditions: Array<FilterConditions>) {
+function handleFilterConditionsEmit(newConditions: Array<FilterConditions>, doneEmitting: boolean) {
   createLayerData.value.filterList.conditions = newConditions;
+  layerListState.value.doneEmittingFilterConditions = doneEmitting;
 }
 
 function toggleCreateLayerOpen() {
   if (layerListState.value.createLayerOpen) {
     layerListState.value.emitFilterConditions = true;
-    console.log("i am here")
   } else {
     layerListState.value.createLayerOpen = true;
   }
 }
 
-watch(() => createLayerData.value.filterList.conditions, async (newConditions) => {
+watch([() => createLayerData.value.filterList.conditions, () => layerListState.value.doneEmittingFilterConditions], async ([newConditions, doneEmitting], [oldConditions, oldDoneEmitting]) => {
   if (newConditions.length > 0 && layerListState.value.emitFilterConditions) {
-    try {
+    if (layerListState.value.isEditExistingLayer > -1) {
+      await editExistingLayer(layerListState.value.isEditExistingLayer);
+      layerListState.value.isEditExistingLayer = -1;
+      layerListState.value.emitFilterConditions = false;
+    } else {
       const layer = createLayerData.value;
       const response = await layerService.createLayer(layer, layerListState.value.selectedLayout.name);
       if (response.status === 200) {
@@ -138,17 +154,15 @@ watch(() => createLayerData.value.filterList.conditions, async (newConditions) =
           }
         });
         layerListState.value.emitFilterConditions = false;
-      } else {
-        console.log(response.status)
       }
-    } catch (error) {
-      // add error messages to UI
     }
   }
 });
 
 function toggleEditExistingLayer(index: number) {
-  console.log(layerListState.value.selectedLayout.layers[index])
+  toggleCreateLayerOpen();
+  getExistingLayer(index);
+  layerListState.value.isEditExistingLayer = index;
 }
 
 async function deleteLayerFromLayout(index: number) {
@@ -317,6 +331,11 @@ onMounted(() => {
 
 .fa-plus {
   transition: transform 0.2s ease-in-out;
+  font-weight: bolder;
+  font-size: 2.5vh;
+}
+
+.fa-create-layer-pen {
   font-weight: bolder;
   font-size: 2.5vh;
 }

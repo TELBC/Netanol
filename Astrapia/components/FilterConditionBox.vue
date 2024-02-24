@@ -79,7 +79,8 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {ref, defineProps, watch} from "vue";
 
 const props = defineProps<{
-  emitFilterConditions: Boolean
+  emitFilterConditions: Boolean,
+  editLayerFilterConditions: Array<filterCondition>,
 }>();
 
 interface filterCondition {
@@ -173,14 +174,24 @@ function doubleClickFilterCondition(index: number) {
   filterConditionBoxState.value.editingCondition = { ...filterConditionBoxState.value.filterConditions[index] };
 }
 
-const emit = defineEmits(['update-filter-conditions'])
+const emit = defineEmits({
+  'update-filter-conditions': (payload: { filterConditions: Array<filterCondition>, done: boolean }) => true,
+});
+
 
 watch(() => props.emitFilterConditions, (newVal) => {
   if (newVal === true) {
-    emit('update-filter-conditions', filterConditionBoxState.value.filterConditions);
+    emit('update-filter-conditions', {
+      filterConditions: filterConditionBoxState.value.filterConditions,
+      done: true
+    });
   } else {
     filterConditionBoxState.value.filterConditions = [];
   }
+});
+
+watch(() => props.editLayerFilterConditions, (newVal) => {
+  filterConditionBoxState.value.filterConditions = newVal;
 });
 </script>
 
