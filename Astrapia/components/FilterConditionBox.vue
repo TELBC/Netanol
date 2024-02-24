@@ -7,7 +7,7 @@
       </div>
       <div class="edit-icons-container" v-bind:class="{'editing-icons-container-editing': filterConditionBoxState.isEditing}">
         <font-awesome-icon icon="fa-solid fa-arrow-left" class="editing-condition-icons" v-bind:class="{'editing-condition': filterConditionBoxState.isEditing}" @click="clearEditingInputs('list')" />
-        <font-awesome-icon icon="fa-solid fa-floppy-disk" class="editing-condition-icons" v-bind:class="{'editing-condition': filterConditionBoxState.isEditing}" />
+        <font-awesome-icon icon="fa-solid fa-floppy-disk" class="editing-condition-icons" v-bind:class="{'editing-condition': filterConditionBoxState.isEditing}" @click="saveFilterCondition" />
       </div>
     </div>
     <div class="filter-condition-list" v-bind:class="{'editing-filter-condition-list': filterConditionBoxState.isEditing}">
@@ -76,7 +76,7 @@
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {ref,onMounted} from "vue";
+import {ref, inject, watch, Ref} from "vue";
 
 interface filterCondition {
   "sourceAddress": string
@@ -86,7 +86,8 @@ interface filterCondition {
   "destinationAddressMask": string,
   "destinationPort": number | null,
   "protocol": string,
-  "include": boolean
+  "include": boolean,
+  [key: string]: string | number | boolean | null
 }
 
 const filterConditionBoxState = ref({
@@ -107,8 +108,8 @@ function toggleIsEditing(to: string) {
 }
 
 function clearEditingInputs(to: string) {
-  toggleIsEditing(to)
-  filterConditionBoxState.value.editingCondition = {
+  toggleIsEditing(to);
+  Object.assign(filterConditionBoxState.value.editingCondition, {
     "sourceAddress": "",
     "sourceAddressMask": "",
     "sourcePort": null,
@@ -117,6 +118,35 @@ function clearEditingInputs(to: string) {
     "destinationPort": null,
     "protocol": "",
     "include": true
+  });
+}
+
+function saveFilterCondition() {
+  let newFilterCondition: filterCondition = { ...filterConditionBoxState.value.editingCondition };
+  const defaultValues: filterCondition = {
+    "sourceAddress": "0.0.0.0",
+    "sourceAddressMask": "0.0.0.0",
+    "sourcePort": null,
+    "destinationAddress": "0.0.0.0",
+    "destinationAddressMask": "0.0.0.0",
+    "destinationPort": null,
+    "protocol": "tcp",
+    "include": false
+  };
+  for (let key in defaultValues as {[key: string]: any}) {
+    if (!newFilterCondition.hasOwnProperty(key)) {
+      newFilterCondition[key] = defaultValues[key];
+    }
+  }
+  const isDuplicate = filterConditionBoxState.value.filterConditions.some(condition =>
+    JSON.stringify(condition) === JSON.stringify(newFilterCondition)
+  );
+  if (!isDuplicate) {
+    filterConditionBoxState.value.filterConditions.push(newFilterCondition);
+    clearEditingInputs('list');
+    console.log(newFilterCondition)
+  } else {
+    // add error messages to the UI
   }
 }
 
@@ -140,60 +170,14 @@ function doubleClickFilterCondition(index: number) {
   filterConditionBoxState.value.editingCondition = { ...filterConditionBoxState.value.filterConditions[index] };
 }
 
-onMounted(() => {
-  filterConditionBoxState.value.filterConditions = [
-    {
-      "sourceAddress": "1.1.1.1",
-      "sourceAddressMask": "255.255.255.0",
-      "sourcePort": 80,
-      "destinationAddress": "2.2.2.2",
-      "destinationAddressMask": "255.255.255.0",
-      "destinationPort": 80,
-      "protocol": "TCP",
-      "include": true
-    },
-    {
-      "sourceAddress": "2.2.2.1",
-      "sourceAddressMask": "255.255.255.0",
-      "sourcePort": 80,
-      "destinationAddress": "3.3.3.3",
-      "destinationAddressMask": "255.255.255.0",
-      "destinationPort": 80,
-      "protocol": "TCP",
-      "include": true
-    },
-    {
-      "sourceAddress": "3.3.3.1",
-      "sourceAddressMask": "255.255.255.0",
-      "sourcePort": 80,
-      "destinationAddress": "4.4.4.4",
-      "destinationAddressMask": "255.255.255.0",
-      "destinationPort": 80,
-      "protocol": "TCP",
-      "include": true
-    },
-    {
-      "sourceAddress": "4.4.4.1",
-      "sourceAddressMask": "255.255.255.0",
-      "sourcePort": 80,
-      "destinationAddress": "5.5.5.5",
-      "destinationAddressMask": "255.255.255.0",
-      "destinationPort": 80,
-      "protocol": "TCP",
-      "include": false
-    },
-    {
-      "sourceAddress": "5.5.5.1",
-      "sourceAddressMask": "255.255.255.0",
-      "sourcePort": 80,
-      "destinationAddress": "6.6.6.6",
-      "destinationAddressMask": "255.255.255.0",
-      "destinationPort": 80,
-      "protocol": "TCP",
-      "include": false
-    }
-  ]
-})
+const emitUpdateFilterConditions = inject('emitUpdateFilterConditions') as Ref<boolean>;
+const emit = defineEmits(['update-filter-conditions'])
+
+watch(emitUpdateFilterConditions, (newValue) => {
+  if (newValue) {
+    emit('update-filter-conditions', filterConditionBoxState.value.filterConditions);
+  }
+});
 </script>
 
 <style scoped>

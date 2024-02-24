@@ -1,6 +1,6 @@
 <template>
   <div class="layer-list-overflow-container" v-bind:class="{ 'create-open-hide': layerListState.createLayerOpen }">
-    <div class="layer-container" v-for="layer in layerListState.selectedLayout.layers" :key="rerenderer.layerListRerender" @click="openCloseLayer(layer.name)">
+    <div class="layer-container" v-for="(layer, index) in layerListState.selectedLayout.layers" :key="rerenderer.layerListRerender" @click="openCloseLayer(layer.name)">
       <div class="layer">
         <div>
           <font-awesome-icon icon="fa-solid fa-chevron-right" v-bind:class="{'expand-layer-icon': layerListState.layerOpen === layer.name}" class="expand-layer" />
@@ -12,8 +12,8 @@
       </div>
       <div class="layer-info" v-bind:class="{ 'expand-layer-info': layerListState.layerOpen === layer.name }">
         <div class="update-delete-layer">
-          <font-awesome-icon icon="fa-solid fa-pen" class="edit-layer" />
-          <font-awesome-icon icon="fa-solid fa-trash" />
+          <font-awesome-icon icon="fa-solid fa-pen" class="edit-layer upd-del-layer-icon" />
+          <font-awesome-icon icon="fa-solid fa-trash" class="upd-del-layer-icon" @click="deleteLayerFromLayout(index)" />
         </div>
         <!-- fix p and layer.type and layer.description not aligned flex start -->
         <div class="infos">
@@ -28,23 +28,25 @@
     </div>
   </div>
   <div class="create-form" v-bind:class="{ 'create-layer-open': layerListState.createLayerOpen }">
-    <input class="create-inputs" type="text" placeholder="Layer Name" />
-    <input class="create-inputs" type="text" placeholder="Layer Type" />
+    <input class="create-inputs" type="text" placeholder="Layer Name" v-model="createLayerData.name" />
+    <input class="create-inputs" type="text" placeholder="Layer Type" v-model="createLayerData.type" />
     <div class="enable-new-layer">
       <p>Enable?</p>
-      <input type="checkbox" class="theme-checkbox" />
+      <input type="checkbox" class="theme-checkbox" v-model="createLayerData.enabled" />
     </div>
-    <FilterConditionBox />
+    <FilterConditionBox @update-filter-conditions="updateFilterConditions" />
   </div>
-  <div class="create-layer" @click="layerListState.createLayerOpen = !layerListState.createLayerOpen">
+  <div class="create-layer" @click="createLayerSwitchCreate">
     <font-awesome-icon icon="fa-solid fa-plus" class="fa-plus" :class="{ 'rotate-icon': layerListState.createLayerOpen }" />
   </div>
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, watch} from "vue";
+import {onMounted, ref, watch, provide, inject} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import FilterConditionBox from "~/components/FilterConditionBox.vue";
+import layerService from "~/services/layerService";
+import {FilterConditions} from "~/services/layerService";
 
 interface Layer {
   name: string;
@@ -57,6 +59,16 @@ const props = defineProps<{
   layout: string;
   layers: Array<Layer>;
 }>();
+
+const createLayerData = ref({
+  name: '',
+  type: '',
+  enabled: false,
+  filterList: {
+    conditions: [] as Array<FilterConditions>,
+    implicitInclude: false
+  }
+})
 
 const layerListState = ref({
   isExpanded: false,
@@ -71,6 +83,8 @@ const layerListState = ref({
 const rerenderer = ref({
   layerListRerender: 0
 })
+
+const getLayersOfLayout = inject<() => void>('getLayersOfLayout');
 
 function openCloseLayer(layerName: string) {
   if (layerListState.value.layerOpen === layerName) {
@@ -90,6 +104,48 @@ function setLayerEnabled(layerName: string, value: boolean) {
 function getLayerEnabled(layerName: string) {
   const layer = layerListState.value.selectedLayout.layers.find((layer) => layer.name === layerName);
   return layer ? layer.enabled : false;
+}
+
+function updateFilterConditions(newConditions: Array<FilterConditions>) {
+  createLayerData.value.filterList.conditions = newConditions;
+}
+
+async function createLayerSwitchCreate() {
+  if (layerListState.value.createLayerOpen) {
+    provide('emitUpdateFilterConditions', true);
+    try {
+      const layer = createLayerData.value
+      const response = await layerService.createLayer(layer, layerListState.value.selectedLayout.name);
+      if (response.status === 200) {
+        layerListState.value.createLayerOpen = false;
+        getLayersOfLayout!();
+        Object.assign(createLayerData.value, {
+          name: '',
+          type: '',
+          enabled: false,
+          filterList: {
+            conditions: [] as Array<FilterConditions>,
+            implicitInclude: false
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  } else {
+    layerListState.value.createLayerOpen = true;
+  }
+}
+
+async function deleteLayerFromLayout(index: number) {
+  try {
+    const response = await layerService.deleteLayer(layerListState.value.selectedLayout.name, index);
+    if (response.status === 200) {
+      getLayersOfLayout!();
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
 }
 
 watch(() => props.layout!, (newLayout, oldLayout) => {
@@ -176,6 +232,10 @@ onMounted(() => {
   align-items: center;
   justify-content: flex-end;
   color: #7EA0A9;
+}
+
+.upd-del-layer-icon {
+  cursor: pointer;
 }
 
 .edit-layer {
