@@ -12,7 +12,7 @@
       </div>
       <div class="layer-info" v-bind:class="{ 'expand-layer-info': layerListState.layerOpen === layer.name }">
         <div class="update-delete-layer">
-          <font-awesome-icon icon="fa-solid fa-pen" class="edit-layer upd-del-layer-icon" />
+          <font-awesome-icon icon="fa-solid fa-pen" class="edit-layer upd-del-layer-icon" @click="toggleEditExistingLayer(index)" />
           <font-awesome-icon icon="fa-solid fa-trash" class="upd-del-layer-icon" @click="deleteLayerFromLayout(index)" />
         </div>
         <!-- fix p and layer.type and layer.description not aligned flex start -->
@@ -34,15 +34,15 @@
       <p>Enable?</p>
       <input type="checkbox" class="theme-checkbox" v-model="createLayerData.enabled" />
     </div>
-    <FilterConditionBox @update-filter-conditions="updateFilterConditions" />
+    <FilterConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" @update-filter-conditions="handleFilterConditionsEmit" />
   </div>
-  <div class="create-layer" @click="createLayerSwitchCreate">
+  <div class="create-layer" @click="toggleCreateLayerOpen">
     <font-awesome-icon icon="fa-solid fa-plus" class="fa-plus" :class="{ 'rotate-icon': layerListState.createLayerOpen }" />
   </div>
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, watch, provide, inject} from "vue";
+import {onMounted, ref, watch, inject} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import FilterConditionBox from "~/components/FilterConditionBox.vue";
 import layerService from "~/services/layerService";
@@ -78,6 +78,7 @@ const layerListState = ref({
   },
   layerOpen: '',
   createLayerOpen: false,
+  emitFilterConditions: false,
 });
 
 const rerenderer = ref({
@@ -106,15 +107,23 @@ function getLayerEnabled(layerName: string) {
   return layer ? layer.enabled : false;
 }
 
-function updateFilterConditions(newConditions: Array<FilterConditions>) {
+function handleFilterConditionsEmit(newConditions: Array<FilterConditions>) {
   createLayerData.value.filterList.conditions = newConditions;
 }
 
-async function createLayerSwitchCreate() {
+function toggleCreateLayerOpen() {
   if (layerListState.value.createLayerOpen) {
-    provide('emitUpdateFilterConditions', true);
+    layerListState.value.emitFilterConditions = true;
+    console.log("i am here")
+  } else {
+    layerListState.value.createLayerOpen = true;
+  }
+}
+
+watch(() => createLayerData.value.filterList.conditions, async (newConditions) => {
+  if (newConditions.length > 0 && layerListState.value.emitFilterConditions) {
     try {
-      const layer = createLayerData.value
+      const layer = createLayerData.value;
       const response = await layerService.createLayer(layer, layerListState.value.selectedLayout.name);
       if (response.status === 200) {
         layerListState.value.createLayerOpen = false;
@@ -128,13 +137,18 @@ async function createLayerSwitchCreate() {
             implicitInclude: false
           }
         });
+        layerListState.value.emitFilterConditions = false;
+      } else {
+        console.log(response.status)
       }
     } catch (error) {
-      console.error('Error:', error);
+      // add error messages to UI
     }
-  } else {
-    layerListState.value.createLayerOpen = true;
   }
+});
+
+function toggleEditExistingLayer(index: number) {
+  console.log(layerListState.value.selectedLayout.layers[index])
 }
 
 async function deleteLayerFromLayout(index: number) {

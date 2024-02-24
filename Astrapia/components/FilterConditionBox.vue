@@ -76,7 +76,11 @@
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {ref, inject, watch, Ref} from "vue";
+import {ref, defineProps, watch} from "vue";
+
+const props = defineProps<{
+  emitFilterConditions: Boolean
+}>();
 
 interface filterCondition {
   "sourceAddress": string
@@ -144,7 +148,6 @@ function saveFilterCondition() {
   if (!isDuplicate) {
     filterConditionBoxState.value.filterConditions.push(newFilterCondition);
     clearEditingInputs('list');
-    console.log(newFilterCondition)
   } else {
     // add error messages to the UI
   }
@@ -170,12 +173,13 @@ function doubleClickFilterCondition(index: number) {
   filterConditionBoxState.value.editingCondition = { ...filterConditionBoxState.value.filterConditions[index] };
 }
 
-const emitUpdateFilterConditions = inject('emitUpdateFilterConditions') as Ref<boolean>;
 const emit = defineEmits(['update-filter-conditions'])
 
-watch(emitUpdateFilterConditions, (newValue) => {
-  if (newValue) {
+watch(() => props.emitFilterConditions, (newVal) => {
+  if (newVal === true) {
     emit('update-filter-conditions', filterConditionBoxState.value.filterConditions);
+  } else {
+    filterConditionBoxState.value.filterConditions = [];
   }
 });
 </script>
