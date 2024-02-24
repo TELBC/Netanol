@@ -49,4 +49,4 @@ public class FilterLayer : ILayer
     }
 }
 
-public record FilterLayerDto(string Type, string Name, bool Enabled, FilterListDto FilterList) : ILayerDto;
+public record FilterLayerDto(string Type, string? Name, bool Enabled, FilterListDto FilterList) : ILayerDto;

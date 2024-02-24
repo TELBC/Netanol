@@ -42,6 +42,9 @@ public class LayerController : ControllerBase
     public async Task<IActionResult> InsertLayer(string layoutName, [FromQuery] int? index,
         [FromBody] ILayerDto layerDto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        
         var layout = await _layouts.GetLayout(layoutName);
         if (layout == null)
             return NotFound("The given layout could not be found.");
@@ -121,6 +124,7 @@ public class LayerController : ControllerBase
     /// </summary>
     /// <param name="layoutName"></param>
     /// <param name="index"></param>
+    /// <param name="layerDto"></param>
     /// <returns></returns>
     [HttpPut("{index}")]
     [SwaggerResponse(StatusCodes.Status200OK, "Layer successfully updated", typeof(ILayerDto))]
@@ -128,6 +132,9 @@ public class LayerController : ControllerBase
         "Invalid data was provided, reference the message for more information.")]
     public async Task<IActionResult> UpdateLayer(string layoutName, int index, [FromBody] ILayerDto layerDto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        
         var layout = await _layouts.GetLayout(layoutName);
         if (layout == null)
             return NotFound("The given layout could not be found.");

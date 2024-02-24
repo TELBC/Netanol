@@ -33,14 +33,14 @@ public class QueryConditions
     ///     condition is ignored.
     /// </summary>
     [BsonElement("dataProtocolsWhitelist")]
-    public DataProtocol[]? DataProtocolsWhitelist { get; set; } = null;
+    public DataProtocol[]? DataProtocolsWhitelist { get; set; }
 
     /// <summary>
     ///     If specified a list of allowed source and destination ports that should be included in the result. If either
     ///     source or destination port matches any of the ports in the list the trace is included in the result.
     /// </summary>
     [BsonElement("portsWhitelist")]
-    public int[]? PortsWhitelist { get; set; } = null;
+    public int[]? PortsWhitelist { get; set; }
 }
 
 public record QueryConditionsDto(

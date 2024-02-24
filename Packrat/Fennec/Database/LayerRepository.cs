@@ -75,7 +75,7 @@ public class LayerRepository : ILayerRepository
         index ??= layout.Layers.Count;
 
         if (index < 0 || index > layout.Layers.Count)
-            throw new IndexOutOfRangeException("The given index is out of bounds.");
+            throw new IndexOutOfRangeException($"The given index is out of bounds, actual count is {layout.Layers.Count}.");
 
         layout.Layers.Insert(index.Value, layer);
         await _layouts.UpdateLayout(layout);
@@ -85,10 +85,10 @@ public class LayerRepository : ILayerRepository
     public Task<Layout> MoveLayer(Layout layout, int oldIndex, int newIndex)
     {
         if (oldIndex < 0 || oldIndex >= layout.Layers.Count)
-            throw new IndexOutOfRangeException("The given old index is out of bounds.");
+            throw new IndexOutOfRangeException($"The given old index is out of bounds, actual count is {layout.Layers.Count}.");
 
         if (newIndex < 0 || newIndex >= layout.Layers.Count)
-            throw new IndexOutOfRangeException("The given new index is out of bounds.");
+            throw new IndexOutOfRangeException($"The given new index is out of bounds, actual count is {layout.Layers.Count}.");
 
         var layer = layout.Layers[oldIndex];
         layout.Layers.RemoveAt(oldIndex);
@@ -99,7 +99,7 @@ public class LayerRepository : ILayerRepository
     public async Task<(Layout layout, ILayer layer)> DeleteLayer(Layout layout, int index)
     {
         if (index < 0 || index >= layout.Layers.Count)
-            throw new IndexOutOfRangeException("The given index is out of bounds.");
+            throw new IndexOutOfRangeException($"The given index is out of bounds, actual count is {layout.Layers.Count}.");
 
         var layer = layout.Layers[index];
         layout.Layers.RemoveAt(index);
@@ -110,7 +110,7 @@ public class LayerRepository : ILayerRepository
         ILayer newLayer)
     {
         if (index < 0 || index >= layout.Layers.Count)
-            throw new IndexOutOfRangeException("The given index is out of bounds.");
+            throw new IndexOutOfRangeException($"The given index is out of bounds, actual count is {layout.Layers.Count}.");
 
         var oldLayer = layout.Layers[index];
         layout.Layers.RemoveAt(index);
