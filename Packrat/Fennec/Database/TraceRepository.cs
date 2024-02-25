@@ -43,13 +43,13 @@ public record TraceImportInfo(
 public class AggregateTrace
 {
     public AggregateTrace(byte[] sourceIpBytes, byte[] destinationIpBytes, ushort sourcePort, ushort destinationPort,
-        DataProtocol protocol, ulong packetCount, ulong byteCount)
+        DataProtocol dataProtocol, ulong packetCount, ulong byteCount)
     {
         SourceIpBytes = sourceIpBytes;
         DestinationIpBytes = destinationIpBytes;
         SourcePort = sourcePort;
         DestinationPort = destinationPort;
-        Protocol = protocol;
+        DataProtocol = dataProtocol;
         PacketCount = packetCount;
         ByteCount = byteCount;
     }
@@ -60,19 +60,26 @@ public class AggregateTrace
     }
 #pragma warning restore CS8618
 
-    [BsonElement("sourceIpBytes")] public byte[] SourceIpBytes { get; set; }
+    [BsonElement("sourceIpBytes")] 
+    public byte[] SourceIpBytes { get; set; }
 
-    [BsonElement("destinationIpBytes")] public byte[] DestinationIpBytes { get; set; }
+    [BsonElement("destinationIpBytes")] 
+    public byte[] DestinationIpBytes { get; set; }
 
-    [BsonElement("sourcePort")] public ushort SourcePort { get; set; }
+    [BsonElement("sourcePort")] 
+    public ushort SourcePort { get; set; }
 
-    [BsonElement("destinationPort")] public ushort DestinationPort { get; set; }
+    [BsonElement("destinationPort")] 
+    public ushort DestinationPort { get; set; }
 
-    [BsonElement("protocol")] public DataProtocol Protocol { get; set; }
+    [BsonElement("dataProtocol")] 
+    public DataProtocol DataProtocol { get; set; }
 
-    [BsonElement("packetCount")] public ulong PacketCount { get; set; }
+    [BsonElement("packetCount")] 
+    public ulong PacketCount { get; set; }
 
-    [BsonElement("byteCount")] public ulong ByteCount { get; set; }
+    [BsonElement("byteCount")] 
+    public ulong ByteCount { get; set; }
 }
 
 public class TraceRepository : ITraceRepository
@@ -137,7 +144,8 @@ public class TraceRepository : ITraceRepository
                             { "sourcePort", "$source.port" },
                             { "destinationIp", "$destination.ipBytes" },
                             { "destinationPort", "$destination.port" },
-                            { "protocol", "$protocol" }
+                            // When the frontend is ready to display the dataProtocol, uncomment these lines
+                            // { "dataProtocol", "$dataProtocol" }
                         }
                     },
                     { "totalBytes", new BsonDocument("$sum", "$byteCount") },
@@ -152,7 +160,7 @@ public class TraceRepository : ITraceRepository
                     { "sourcePort", "$_id.sourcePort" },
                     { "destinationIpBytes", "$_id.destinationIp" },
                     { "destinationPort", "$_id.destinationPort" },
-                    { "protocol", "$_id.protocol" },
+                    // { "dataProtocol", "$_id.dataProtocol" },
                     { "byteCount", "$totalBytes" },
                     { "packetCount", "$totalPackets" }
                 }

@@ -13,7 +13,7 @@ public class NameLayer : ILayer
     public bool Enabled { get; set; }
     public string Description => "Not implemented";
     
-    public void Execute(ITraceGraph graph)
+    public void Execute(ITraceGraph graph, IServiceProvider _)
     {
         throw new NotImplementedException();
     }

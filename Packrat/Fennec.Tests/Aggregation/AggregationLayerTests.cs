@@ -31,7 +31,7 @@ public class AggregationLayerTests
         // Act
         graph.AddManyNodes(new[] { n1, n2, n3, n4 });
         graph.AddManyEdges(new[] { e1, e2 });
-        layer.Execute(graph);
+        layer.Execute(graph, null!);
 
         // Assert
         Assert.Equal(3, graph.NodeCount);
@@ -70,7 +70,7 @@ public class AggregationLayerTests
         // Act
         graph.AddManyNodes(new[] { n1, n2, n3, n4, n5, n6 });
         graph.AddManyEdges(new[] { e1, e2, e3, e4, e5, e6 });
-        layer.Execute(graph);
+        layer.Execute(graph, null!);
         
         // Assert
         Assert.Equal(5, graph.NodeCount);
@@ -100,7 +100,7 @@ public class AggregationLayerTests
         // Act
         graph.AddManyNodes(new[] { n1, n2, n3 });
         graph.AddManyEdges(new[] { e1, e2 });
-        layer.Execute(graph);
+        layer.Execute(graph, null!);
 
         // Assert
         Assert.Equal(2, graph.NodeCount);

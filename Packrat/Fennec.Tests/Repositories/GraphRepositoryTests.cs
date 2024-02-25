@@ -34,7 +34,7 @@ public class GraphRepositoryTests
                 SourcePort = 80,
                 DestinationIpBytes = IPAddress.Parse("10.0.0.1").GetAddressBytes(),
                 DestinationPort = 5603,
-                Protocol = DataProtocol.Tcp,
+                DataProtocol = DataProtocol.Tcp,
                 PacketCount = 100,
                 ByteCount = 2000
             },
@@ -44,14 +44,14 @@ public class GraphRepositoryTests
                 SourcePort = 120,
                 DestinationIpBytes = IPAddress.Parse("10.0.0.2").GetAddressBytes(),
                 DestinationPort = 3293,
-                Protocol = DataProtocol.Tcp,
+                DataProtocol = DataProtocol.Tcp,
                 PacketCount = 150,
                 ByteCount = 3000
             }
         };
 
         var traceRepository = GetMockTraceRepository(sampleTraces);
-        var graphRepository = new GraphRepository(traceRepository);
+        var graphRepository = new GraphRepository(traceRepository, null!);
 
         // Act
         var result = await graphRepository.GenerateGraph(from, to, emptyLayout);
@@ -82,7 +82,7 @@ public class GraphRepositoryTests
                 SourcePort = 80,
                 DestinationIpBytes = IPAddress.Parse("10.0.0.1").GetAddressBytes(),
                 DestinationPort = 5603,
-                Protocol = DataProtocol.Udp,
+                DataProtocol = DataProtocol.Udp,
                 PacketCount = 10,
                 ByteCount = 1000
             },
@@ -92,14 +92,14 @@ public class GraphRepositoryTests
                 SourcePort = 120,
                 DestinationIpBytes = IPAddress.Parse("10.0.0.1").GetAddressBytes(),
                 DestinationPort = 3293,
-                Protocol = DataProtocol.Tcp,
+                DataProtocol = DataProtocol.Tcp,
                 PacketCount = 50,
                 ByteCount = 1000
             }
         };
         
         var traceRepository = GetMockTraceRepository(sampleTraces);
-        var graphRepository = new GraphRepository(traceRepository);
+        var graphRepository = new GraphRepository(traceRepository, null!);
         
         // Act
         var result = await graphRepository.GenerateGraph(from, to, emptyLayout);
