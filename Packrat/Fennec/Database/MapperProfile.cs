@@ -102,5 +102,10 @@ public class MapperProfile : Profile
 
         CreateMap<VmwareTaggingLayer, VmwareTaggingLayerDto>();
         CreateMap<VmwareTaggingLayerDto, VmwareTaggingLayer>();
+        
+        CreateMap<TagFilterLayer, TagFilterLayerDto>();
+        CreateMap<TagFilterLayerDto, TagFilterLayer>();
+        CreateMap<TagFilterCondition, TagFilterConditionDto>();
+        CreateMap<TagFilterConditionDto, TagFilterCondition>();
     }
 }

@@ -2,6 +2,8 @@
 using Fennec.Processing;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Fennec.Database.Domain;
 
@@ -23,10 +25,9 @@ public class QueryConditions
     /// <summary>
     ///     A list of allowed flow protocols that should be included in the result.
     /// </summary>
-    /// <remarks>This is intended to help differentiate between SFlow and other protocols.</remarks>
+    /// <remarks>This is intended to help differentiate between SFlow and other flow protocols.</remarks>
     [BsonElement("flowProtocolsWhitelist")]
-    public FlowProtocol[]? FlowProtocolsWhitelist { get; set; } =
-        { FlowProtocol.Ipfix, FlowProtocol.Netflow5, FlowProtocol.Netflow9 };
+    public FlowProtocol[]? FlowProtocolsWhitelist { get; set; } 
 
     /// <summary>
     ///     A list of allowed only those data carrying protocols that should be included in the result. If null this
@@ -45,8 +46,8 @@ public class QueryConditions
 
 public record QueryConditionsDto(
     bool? AllowDuplicates, 
-    FlowProtocol[]? FlowProtocolsWhitelist, 
-    DataProtocol[]? DataProtocolsWhitelist, 
+    [JsonConverter(typeof(StringEnumConverter))] FlowProtocol[]? FlowProtocolsWhitelist, 
+    [JsonConverter(typeof(StringEnumConverter))] DataProtocol[]? DataProtocolsWhitelist, 
     int[]? PortsWhitelist);
 
 /// <summary>

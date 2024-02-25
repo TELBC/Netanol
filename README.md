@@ -45,9 +45,4 @@ An intuitive Flow based Network Traffic Visualizer & Analyzer.
 
 [![view - Documentation](https://img.shields.io/badge/view-Documentation-537B87?style=for-the-badge)](https://github.com/TELBC/Netanol/wiki "Go to project documentation")
 
-## License
-
-Under the MIT license.  
-See [LICENSE](https://github.com/dash14/v-network-graph/blob/main/LICENSE) file for more details.
-
 </div>
