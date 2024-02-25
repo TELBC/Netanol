@@ -16,7 +16,10 @@ public interface ITraceGraph
     public SortedList<IPAddress, TraceNode> Nodes { get; }
 
     public void FillFromTraces(List<AggregateTrace> traces);
+    
     public void FilterEdges(Func<TraceEdge, bool> filter);
+    
+    public void FilterNodes(Func<TraceNode, bool> filter);
 
     public void GroupEdges<T>(Func<(IPAddress, IPAddress, ushort, ushort, DataProtocol), TraceEdge, T> keySelector,
         Func<T, IEnumerable<TraceEdge>, TraceEdge> valueSelector);
@@ -93,6 +96,32 @@ public class TraceGraph : ITraceGraph
 
         foreach (var potentialOrphan in potentialOrphans)
             RemoveNodeIfOrphan(potentialOrphan);
+    }
+    
+    public void FilterNodes(Func<TraceNode, bool> filter)
+    {
+        var removedNodes = new List<IPAddress>();
+        foreach (var node in Nodes)
+        {
+            if (filter(node.Value))
+                continue;
+
+            removedNodes.Add(node.Key);
+        }
+
+        foreach (var node in removedNodes)
+            Nodes.Remove(node);
+
+        var removedEdges = new List<(IPAddress, IPAddress, ushort, ushort, DataProtocol)>();
+        foreach (var edge in Edges)
+        {
+            if (removedNodes.Contains(edge.Value.Source) || removedNodes.Contains(edge.Value.Target))
+                removedEdges.Add(edge.Key);
+        }
+        
+        // TODO: potentially the graph is at an invalid state here?
+        foreach (var edge in removedEdges)
+            Edges.Remove(edge);
     }
 
     public void AddEdge(TraceEdge traceEdge)

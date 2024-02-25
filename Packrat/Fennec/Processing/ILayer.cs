@@ -15,6 +15,7 @@ public static class LayerType
     public const string Name = "name";
     public const string Position = "position";
     public const string VmwareTagging = "vmware-tagging";
+    public const string TagFilter = "tag-filter";
 
     public static readonly Dictionary<string, (Type LayerType, Type DtoType)> LookupTable = new()
     {
@@ -22,7 +23,8 @@ public static class LayerType
         { Aggregation, (typeof(AggregationLayer), typeof(AggregationLayerDto)) },
         { Name, (typeof(NameLayer), typeof(string)) },
         { Position, (typeof(PositionLayer), typeof(string)) },
-        { VmwareTagging, (typeof(VmwareTaggingLayer), typeof(VmwareTaggingLayerDto)) }
+        { VmwareTagging, (typeof(VmwareTaggingLayer), typeof(VmwareTaggingLayerDto)) },
+        { TagFilter, (typeof(TagFilterLayer), typeof(TagFilterLayerDto)) }
     };
 }
 
