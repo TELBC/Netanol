@@ -20,22 +20,24 @@ public interface IGraphRepository
 
 public class GraphDetails
 {
-    public long TotalHostCount { get; set; }
-    public long TotalByteCount { get; set; }
-    public long TotalPacketCount { get; set; }
-    public long TotalTraceCount { get; set; }
+    public long TotalHostCount { get; init; }
+    public long TotalByteCount { get; init; }
+    public long TotalPacketCount { get; init; }
+    public long TotalTraceCount { get; init; }
 
-    public List<TraceNodeDto> Nodes { get; set; } = new();
-    public List<TraceEdgeDto> Edges { get; set; } = new();
+    public List<TraceNodeDto> Nodes { get; init; } = new();
+    public List<TraceEdgeDto> Edges { get; init; } = new();
 }
 
 public class GraphRepository : IGraphRepository
 {
     private readonly ITraceRepository _traceRepository;
+    private readonly IServiceProvider _serviceProvider;
 
-    public GraphRepository(ITraceRepository traceRepository)
+    public GraphRepository(ITraceRepository traceRepository, IServiceProvider serviceProvider)
     {
         _traceRepository = traceRepository;
+        _serviceProvider = serviceProvider;
     }
 
     public async Task<GraphDetails> GenerateGraph(DateTimeOffset from, DateTimeOffset to, Layout layout)
@@ -45,7 +47,7 @@ public class GraphRepository : IGraphRepository
         graph.FillFromTraces(traces);
 
         foreach (var layer in layout.Layers.Where(l => l.Enabled))
-            layer.Execute(graph);
+            layer.Execute(graph, _serviceProvider);
 
         CollapseGraph(graph);
         
@@ -57,7 +59,7 @@ public class GraphRepository : IGraphRepository
             TotalTraceCount = graph.EdgeCount,
             TotalByteCount = traces.Sum(trace => (long)trace.ByteCount),
             TotalPacketCount = traces.Sum(trace => (long)trace.PacketCount),
-            Nodes = graph.Nodes.Select(n => new TraceNodeDto(n.Value.Address.ToString(), n.Value.Name)).ToList(),
+            Nodes = graph.Nodes.Select(n => new TraceNodeDto(n.Value.Address.ToString(), n.Value.Name, n.Value.Tags)).ToList(),
             Edges = graph.Edges.Select(e => new TraceEdgeDto(
                 $"{e.Value.DataProtocol}/{e.Value.Source}-{e.Value.Target}",
                 e.Value.Source.ToString(),

@@ -34,11 +34,7 @@ public class MapperProfile : Profile
                 DataProtocol? protocol = dto.Protocol == null ? null : Enum.Parse<DataProtocol>(dto.Protocol);
                 return new FilterCondition(srcAdd, srcMask, srcPort, dstAdd, dstMask, dstPort, protocol, dto.Include);
             })
-            .ForMember(dest => dest.SourceAddress, opt => opt.Ignore())
-            .ForMember(dest => dest.SourceAddressMask, opt => opt.Ignore())
-            .ForMember(dest => dest.DestinationAddress, opt => opt.Ignore())
-            .ForMember(dest => dest.DestinationAddressMask, opt => opt.Ignore());
-        ;
+            .ForAllMembers(m => m.AllowNull());
 
         CreateMap<FilterCondition, FilterConditionDto>()
             .ConstructUsing((filterCondition, _) =>
@@ -57,96 +53,54 @@ public class MapperProfile : Profile
                     filterCondition.Protocol?.ToString(),
                     filterCondition.Include);
             })
-            .ForMember(dest => dest.SourceAddress, opt => opt.Ignore())
-            .ForMember(dest => dest.SourceAddressMask, opt => opt.Ignore())
-            .ForMember(dest => dest.DestinationAddress, opt => opt.Ignore())
-            .ForMember(dest => dest.DestinationAddressMask, opt => opt.Ignore());
+            .ForAllMembers(m => m.AllowNull());
 
 
-        CreateMap<FilterList, FilterListDto>()
-            .ConstructUsing((layer, ctx) => new FilterListDto(
-                layer.Conditions.Select(condition => ctx.Mapper.Map<FilterConditionDto>(condition)).ToList(),
-                layer.ImplicitInclude));
+        CreateMap<FilterList, FilterListDto>();
+        CreateMap<FilterListDto, FilterList>();
 
-        CreateMap<FilterListDto, FilterList>()
-            .ConstructUsing((layer, ctx) => new FilterList(
-                layer.ImplicitInclude,
-                layer.Conditions.Select(condition => ctx.Mapper.Map<FilterCondition>(condition)).ToList()));
-
-        CreateMap<FilterLayer, ILayerDto>()
-            .ConstructUsing((layer, ctx) => new FilterLayerDto(
-                layer.Type,
-                layer.Name,
-                layer.Enabled,
-                ctx.Mapper.Map<FilterListDto>(layer.FilterList)));
-        ;
-
-        CreateMap<FilterLayer, FilterLayerDto>()
-            .ConstructUsing((layer, ctx) => new FilterLayerDto(
-                layer.Type,
-                layer.Name,
-                layer.Enabled,
-                ctx.Mapper.Map<FilterListDto>(layer.FilterList)));
-
-        CreateMap<FilterLayerDto, FilterLayer>()
-            .ConstructUsing((layer, ctx) => new FilterLayer(
-                layer.Name,
-                layer.Enabled,
-                ctx.Mapper.Map<FilterList>(layer.FilterList)));
+        CreateMap<FilterLayer, ILayerDto>();
+        CreateMap<FilterLayer, FilterLayerDto>();
+        CreateMap<FilterLayerDto, FilterLayer>();
 
         CreateMap<ILayer, ShortLayerDto>();
-
+        
         CreateMap<ILayerDto, ILayer>()
-            .ConstructUsing((layer, ctx) =>
+            .ConstructUsing((dto, ctx) =>
             {
-                return layer switch
-                {
-                    FilterLayerDto filterLayer => ctx.Mapper.Map<FilterLayer>(filterLayer),
-                    AggregationLayerDto aggregationLayer => ctx.Mapper.Map<AggregationLayer>(aggregationLayer),
-                    _ => throw new ArgumentException("No AutoMapper mapping for the given layer type.")
-                };
+                if (!LayerType.LookupTable.TryGetValue(dto.Type, out var layerType))
+                    throw new ArgumentException("No layer type found in the lookup table.");
+                
+                return (ILayer) ctx.Mapper.Map(dto, dto.GetType(), layerType.LayerType);
             });
         
         CreateMap<ILayer, ILayerDto>()
             .ConstructUsing((layer, ctx) =>
             {
-                return layer switch
-                {
-                    FilterLayer filterLayer => ctx.Mapper.Map<FilterLayerDto>(filterLayer),
-                    AggregationLayer aggregationLayer => ctx.Mapper.Map<AggregationLayerDto>(aggregationLayer),
-                    _ => throw new ArgumentException("No AutoMapper mapping for the given layer type.")
-                };
+                if (!LayerType.LookupTable.TryGetValue(layer.Type, out var layerType))
+                    throw new ArgumentException("No layer type found in the lookup table.");
+                
+                return (ILayerDto) ctx.Mapper.Map(layer, layer.GetType(), layerType.DtoType);
             });
 
         CreateMap<Layout, ShortLayoutDto>()
-            .ConstructUsing(src => new ShortLayoutDto(src.Name, src.Layers.Count));
+            .ForCtorParam("LayerCount", opt => 
+                opt.MapFrom(src => src.Layers.Count));
 
-        CreateMap<Layout, FullLayoutDto>()
-            .ConstructUsing((src, ctx) => new FullLayoutDto(src.Name,
-                ctx.Mapper.Map<QueryConditionsDto>(src.QueryConditions),
-                src.Layers.Select(layer => ctx.Mapper.Map<ShortLayerDto>(layer)).ToList()));
+        CreateMap<Layout, FullLayoutDto>();
 
         CreateMap<QueryConditions, QueryConditionsDto>()
-            .ConstructUsing(src => new QueryConditionsDto(
-                src.AllowDuplicates,
-                src.FlowProtocolsWhitelist,
-                src.DataProtocolsWhitelist,
-                src.PortsWhitelist))
             .ForAllMembers(opts => opts.AllowNull());
 
         CreateMap<QueryConditionsDto, QueryConditions>()
-            .ConstructUsing(src => new QueryConditions
-            {
-                AllowDuplicates = src.AllowDuplicates,
-                FlowProtocolsWhitelist = src.FlowProtocolsWhitelist,
-                DataProtocolsWhitelist = src.DataProtocolsWhitelist,
-                PortsWhitelist = src.PortsWhitelist
-            })
             .ForAllMembers(opts => opts.AllowNull());
 
         CreateMap<AggregationLayer, AggregationLayerDto>();
         CreateMap<AggregationLayerDto, AggregationLayer>();
         CreateMap<IpAddressMatcher, IpAddressMatcherDto>();
         CreateMap<IpAddressMatcherDto, IpAddressMatcher>();
+
+        CreateMap<VmwareTaggingLayer, VmwareTaggingLayerDto>();
+        CreateMap<VmwareTaggingLayerDto, VmwareTaggingLayer>();
     }
 }

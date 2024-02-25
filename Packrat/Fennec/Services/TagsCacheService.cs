@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Fennec.Services;
 
+// TODO: rename all TagsCacheServices to VmwareTaggingServices
 /// <summary>
 ///     Provides the tags for specified IPs.
 /// </summary>
@@ -40,6 +41,13 @@ public class TagsCacheService : ITagsCacheService
         _ipTagsDict = await _tagsRequestService.GetLatestTagsAndIps();
         _log.Information("Updated Vmware tags cache... Cache now has {CacheSize} IP entries", _ipTagsDict.Count);
     }
+}
+
+public class MockTagsCacheService : ITagsCacheService
+{
+    public List<string> GetTags(IPAddress ipAddress) => new() { "mock-tag-1/switch", "mock-tag-2/infra" };
+
+    public Task RequestLatestTagAndIps() => Task.CompletedTask;
 }
 
 public class TagsCacheRefresherService : BackgroundService

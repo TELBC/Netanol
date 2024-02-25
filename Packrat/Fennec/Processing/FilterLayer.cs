@@ -1,5 +1,4 @@
-﻿using Fennec.Database;
-using Fennec.Processing.Graph;
+﻿using Fennec.Processing.Graph;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Fennec.Processing;
@@ -13,13 +12,13 @@ public class FilterLayer : ILayer
     public string Type { get; set; } = LayerType.Filter;
     
     [BsonElement("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
     
     [BsonElement("enabled")]
     public bool Enabled { get; set; }
-    
-    [BsonElement("filterList")]
-    public FilterList FilterList { get; set; }
+
+    [BsonElement("filterList")] 
+    public FilterList FilterList { get; set; } 
     
     [BsonIgnore]
     public string Description
@@ -32,7 +31,7 @@ public class FilterLayer : ILayer
         }
     }
 
-    public FilterLayer(string name, bool enabled, FilterList filterList)
+    public FilterLayer(string? name, bool enabled, FilterList filterList)
     {
         Name = name;
         Enabled = enabled;
@@ -43,7 +42,7 @@ public class FilterLayer : ILayer
     protected FilterLayer() { }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-    public void Execute(ITraceGraph graph)
+    public void Execute(ITraceGraph graph, IServiceProvider _)
     {
         FilterList.Filter(graph);
     }

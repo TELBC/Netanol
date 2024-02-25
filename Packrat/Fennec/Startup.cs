@@ -111,8 +111,17 @@ public class Startup
             services.AddSingleton<ITagsRequestService, TagsRequestService>();
             services.AddSingleton<ITagsCacheService, TagsCacheService>();
             services.AddHostedService<TagsCacheRefresherService>();
-        } else 
-            Log.Information("Vmware tagging is disabled... Layers using Vmware tagging will be unavailable");
+        }
+        else
+        {
+            if (environment.IsDevelopment())
+            {
+                services.AddSingleton<ITagsCacheService, MockTagsCacheService>();
+                Log.Information("Vmware tagging is mocked... Mocking is enabled in development environment when Vmware tagging is otherwise disabled");
+            }
+            else 
+                Log.Information("Vmware tagging is disabled... Layers using Vmware tagging will be unavailable");
+        }
         
         // Protocol multiplexer
         var multiplexerOptions = Configuration.GetSection("Multiplexers").Get<List<MultiplexerOptions>>();

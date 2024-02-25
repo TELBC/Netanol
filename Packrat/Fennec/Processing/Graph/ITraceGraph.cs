@@ -66,7 +66,7 @@ public class TraceGraph : ITraceGraph
                     new IPAddress(trace.DestinationIpBytes),
                     trace.SourcePort,
                     trace.DestinationPort,
-                    trace.Protocol,
+                    trace.DataProtocol,
                     trace.PacketCount,
                     trace.ByteCount));
 
