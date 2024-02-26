@@ -50,7 +50,27 @@ import {ref, watch, inject} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import FilterConditionBox from "~/components/FilterConditionBox.vue";
 import layerService from "~/services/layerService";
-import {FilterConditions, Layer} from "~/services/layerService";
+
+export interface FilterConditions {
+  sourceAddress: string,
+  sourceAddressMask: string,
+  sourcePort: number,
+  destinationAddress: string,
+  destinationAddressMask: string,
+  destinationPort: number,
+  protocol: string,
+  include: boolean
+}
+
+export interface Layer {
+  name: string,
+  type: string,
+  enabled: boolean,
+  filterList: {
+    conditions: FilterConditions[],
+    implicitInclude: boolean
+  }
+}
 
 interface Layers {
   name: string;
