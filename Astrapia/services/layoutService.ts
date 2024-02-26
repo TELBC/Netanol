@@ -5,9 +5,18 @@ export interface Layouts {
   layerCount: number
 }
 
+export interface Layout {
+  name: string,
+  layers: []
+}
+
 class LayoutService {
   public async getLayouts() {
     return await ApiService.get<Layouts[]>(`/api/layout`).then(x => x.data);
+  }
+
+  public async getLayoutByName(name: string) {
+    return await ApiService.get<Layout>(`/api/layout/${name}`).then(x => x.data);
   }
 
   public createLayout(name: string) {

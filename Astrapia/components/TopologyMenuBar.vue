@@ -5,7 +5,6 @@
       <div class="topology-menu-options" @click="toggleMenuBarOptions('timeframe')">Timeframe</div>
       <div class="topology-menu-options" @click="toggleMenuBarOptions('clusters')">Clusters</div>
       <div class="topology-menu-options">Freeze</div>
-      <div class="layout-dropdown"><Dropdown @changeLayout="handleLayoutChange" /></div>
     </div>
     <div class="menu-bar-options" v-if="menuBarOptions==='grouping'">
       <button class="menu-option-content grouping-buttons">Group selection</button>
@@ -19,7 +18,6 @@
 </template>
 
 <script setup lang="ts">
-import {Dropdown} from "#components";
 import { ref } from 'vue';
 import TopologyTimeframeSelector from "~/components/TopologyTimeframeSelector.vue";
 
@@ -43,13 +41,8 @@ const toggleMenuBarOptions = (option: string) => {
 }
 
 const emit = defineEmits<{
-  changeLayout: [selectedLayout: string];
   change: [from: string, to: string];
 }>();
-
-const handleLayoutChange = (selectedLayout: string) => {
-  emit('changeLayout', selectedLayout);
-}
 
 const handleTimeframeSelection = (from: string, to: string) => {
   emit('change', from, to);
@@ -61,7 +54,6 @@ const handleTimeframeSelection = (from: string, to: string) => {
   display: flex;
   flex-direction: column;
   position: fixed;
-  z-index: 12;
 }
 
 #topology-menu {
@@ -124,10 +116,5 @@ const handleTimeframeSelection = (from: string, to: string) => {
 .grouping-buttons:active {
   background-color: #617F87;
   color: white;
-}
-
-.layout-dropdown {
-  margin-left: auto;
-  margin-right: 4vw;
 }
 </style>
