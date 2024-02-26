@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Security.Authentication;
 using Fennec.Options;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 
 namespace Fennec.Services;
@@ -52,7 +53,8 @@ public class TagsRequestService : ITagsRequestService
     {
         _log.Debug("Acquiring session token for target machine {TargetMachine}",
             _options.VmWareTargetAddress);
-        var response = await _httpClient.PostAsync(_options.VmWareApiPaths.SessionPath, new StringContent(string.Empty));
+        var response =
+            await _httpClient.PostAsync(_options.VmWareApiPaths.SessionPath, new StringContent(string.Empty));
 
         if (response.StatusCode == HttpStatusCode.Unauthorized)
             throw new InvalidCredentialException(
@@ -78,7 +80,8 @@ public class TagsRequestService : ITagsRequestService
         var result = await response.Content.ReadAsStringAsync();
         var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(result);
         if (apiResponse == null)
-            throw new InvalidDataException("The Vmware server returned a response which could not be parsed correctly.");
+            throw new InvalidDataException(
+                "The Vmware server returned a response which could not be parsed correctly.");
 
         _vmWareMachines.Clear();
         _vmWareMachines.AddRange(apiResponse.Associations.Select(association => new VmWareMachine
@@ -114,15 +117,12 @@ public class TagsRequestService : ITagsRequestService
             await Task.WhenAll(tasks);
 
             stopwatch.Stop();
-            
+
             var elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
 
-            if (elapsedMilliseconds < delayMilliseconds)
-            {
-                await Task.Delay(delayMilliseconds - (int)elapsedMilliseconds);
-            }
+            if (elapsedMilliseconds < delayMilliseconds) await Task.Delay(delayMilliseconds - (int)elapsedMilliseconds);
         }
-        
+
         return;
 
         async Task HandleRequest(string id)
@@ -136,7 +136,8 @@ public class TagsRequestService : ITagsRequestService
                 _log.ForContext("Exception", e)
                     .ForContext("Vm-Id", id)
                     .Warning("Could not find the interfaces for Vm-Id {Id}... It is apparently " +
-                             "wrongly formatted | {ExceptionName}: {ExceptionMessage}", id,e.GetType().Name, e.Message);
+                             "wrongly formatted | {ExceptionName}: {ExceptionMessage}", id, e.GetType().Name,
+                        e.Message);
             }
         }
     }
@@ -177,23 +178,22 @@ public class TagsRequestService : ITagsRequestService
     {
         _tags.Clear();
         var batchSize = _options.MaxRequestPerSecond;
-        
-        var tasks = new List<Task>();
-        
-        foreach (var vm in _vmWareMachines)
-        {
-            foreach (var tag in vm.Tag)
-            {
-                if (_tags.ContainsKey(tag)) continue;
-                tasks.Add(HandleRequest(tag));
 
-                if (tasks.Count < batchSize) continue;
-                await Task.WhenAll(tasks);
-                tasks.Clear();
-                await Task.Delay(1000);
-            }
+        var tasks = new List<Task>();
+
+        foreach (var tag in _vmWareMachines.SelectMany(s => s.Tag))
+        {
+            if (_tags.ContainsKey(tag)) continue;
+            tasks.Add(HandleRequest(tag));
+
+            if (tasks.Count < batchSize) continue;
+            await Task.WhenAll(tasks);
+            tasks.Clear();
+            await Task.Delay(1000);
         }
 
+        if (!tasks.IsNullOrEmpty())
+            await Task.WhenAll(tasks);
 
         foreach (var vm in _vmWareMachines)
             for (var i = 0; i < vm.Tag.Count; i++)
@@ -214,7 +214,8 @@ public class TagsRequestService : ITagsRequestService
 
         async Task ProcessTagAsync(string tag)
         {
-            var response = await _httpClient.GetAsync($"https://{_options.VmWareTargetAddress}/api/cis/tagging/tag/{tag}");
+            var response =
+                await _httpClient.GetAsync($"https://{_options.VmWareTargetAddress}/api/cis/tagging/tag/{tag}");
             response.EnsureSuccessStatusCode();
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -235,7 +236,8 @@ public class TagsRequestService : ITagsRequestService
             {
                 _log.ForContext("Exception", e)
                     .ForContext("Tag", tag)
-                    .Warning("Could not find name for Tag.. It is apparently | {ExceptionName}: {ExceptionMessage}", e.GetType().Name, e.Message);
+                    .Warning("Could not find name for Tag.. It is apparently | {ExceptionName}: {ExceptionMessage}",
+                        e.GetType().Name, e.Message);
             }
         }
     }
@@ -243,7 +245,6 @@ public class TagsRequestService : ITagsRequestService
 
 /// Helper classes
 /// Needed for parsing the API responses
-
 [JsonObject]
 internal class Object
 {
@@ -254,7 +255,7 @@ internal class Object
 internal class Association
 {
     public string Tag { get; set; } = default!;
-    
+
     public Object Object { get; set; } = default!;
 }
 
@@ -263,10 +264,11 @@ internal class ApiResponse
 {
     public List<Association> Associations { get; set; } = default!;
 }
+
 [JsonObject]
 internal class VmWareMachine
 {
-    public string Id { get; set; } = default!; 
+    public string Id { get; set; } = default!;
     public List<string> Tag { get; set; } = default!;
     public List<IPAddress> IpAddresses { get; set; } = default!;
 }
@@ -274,20 +276,17 @@ internal class VmWareMachine
 [JsonObject]
 internal class IpAddressInfo
 {
-    [JsonProperty("ip")]
-    public IpDetails Ip { get; set; } = default!;
+    [JsonProperty("ip")] public IpDetails Ip { get; set; } = default!;
 }
 
 internal class IpDetails
 {
-    [JsonProperty("ip_addresses")]
-    public List<IpAddress> IpAddresses { get; set; } = new ();
+    [JsonProperty("ip_addresses")] public List<IpAddress> IpAddresses { get; set; } = new();
 }
 
 internal class IpAddress
 {
-    [JsonProperty("ip_address")]
-    public string IpAddressValue { get; set; } = default!;
+    [JsonProperty("ip_address")] public string IpAddressValue { get; set; } = default!;
 }
 
 [JsonObject]

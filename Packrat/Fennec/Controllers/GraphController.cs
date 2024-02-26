@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Fennec.Controllers;
 
-public record GraphRequest(DateTimeOffset From, DateTimeOffset To);
+public record GraphRequest(DateTimeOffset From, DateTimeOffset To, bool RemoveDisconnectedNodes = true);
 
 public record GraphStatistics(long TotalHostCount, long TotalByteCount, long TotalPacketCount, long TotalTraceCount);
 
@@ -52,7 +52,7 @@ public class GraphController : ControllerBase
             return NotFound("The given layout could not be found.");
 
         var stopwatch = Stopwatch.StartNew();
-        var details = await _graphRepository.GenerateGraph(request.From, request.To, layout);
+        var details = await _graphRepository.GenerateGraph(request, layout);
         stopwatch.Stop();
         
         // TODO: rework the return type

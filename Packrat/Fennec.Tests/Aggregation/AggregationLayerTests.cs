@@ -16,8 +16,8 @@ public class AggregationLayerTests
         var n3 = new TraceNode(IPAddress.Parse("2.2.2.1"), "");
         var n4 = new TraceNode(IPAddress.Parse("2.2.2.2"), "");
 
-        var e1 = new TraceEdge(n1.Address, n3.Address, 10, 20, DataProtocol.Unknown, 10, 1000);
-        var e2 = new TraceEdge(n2.Address, n4.Address, 10, 20, DataProtocol.Unknown, 10, 1000);
+        var e1 = new TraceEdge(n1.Key, n3.Key, 10, 20, DataProtocol.Unknown, 10, 1000);
+        var e2 = new TraceEdge(n2.Key, n4.Key, 10, 20, DataProtocol.Unknown, 10, 1000);
 
         var graph = new TraceGraph();
         var layer = new AggregationLayer
@@ -49,12 +49,12 @@ public class AggregationLayerTests
         var n5 = new TraceNode(IPAddress.Parse("2.2.2.1"), "");
         var n6 = new TraceNode(IPAddress.Parse("2.2.2.2"), "");
         
-        var e1 = new TraceEdge(n1.Address, n5.Address, 10, 20, DataProtocol.Unknown, 10, 1000);
-        var e2 = new TraceEdge(n2.Address, n6.Address, 10, 20, DataProtocol.Unknown, 10, 1000);
-        var e3 = new TraceEdge(n3.Address, n5.Address, 10, 20, DataProtocol.Unknown, 10, 1000);
-        var e4 = new TraceEdge(n4.Address, n5.Address, 10, 20, DataProtocol.Unknown, 10, 1000);
-        var e5 = new TraceEdge(n5.Address, n1.Address, 10, 20, DataProtocol.Unknown, 10, 1000);
-        var e6 = new TraceEdge(n6.Address, n4.Address, 10, 20, DataProtocol.Unknown, 10, 1000);
+        var e1 = new TraceEdge(n1.Key, n5.Key, 10, 20, DataProtocol.Unknown, 10, 1000);
+        var e2 = new TraceEdge(n2.Key, n6.Key, 10, 20, DataProtocol.Unknown, 10, 1000);
+        var e3 = new TraceEdge(n3.Key, n5.Key, 10, 20, DataProtocol.Unknown, 10, 1000);
+        var e4 = new TraceEdge(n4.Key, n5.Key, 10, 20, DataProtocol.Unknown, 10, 1000);
+        var e5 = new TraceEdge(n5.Key, n1.Key, 10, 20, DataProtocol.Unknown, 10, 1000);
+        var e6 = new TraceEdge(n6.Key, n4.Key, 10, 20, DataProtocol.Unknown, 10, 1000);
 
         var graph = new TraceGraph();
         var layer = new AggregationLayer
@@ -85,10 +85,13 @@ public class AggregationLayerTests
         var n2 = new TraceNode(IPAddress.Parse("1.1.1.2"), "");
         var n3 = new TraceNode(IPAddress.Parse("2.2.2.1"), "");
 
-        var e1 = new TraceEdge(n1.Address, n3.Address, 10, 20, DataProtocol.Unknown, 10, 1000);
-        var e2 = new TraceEdge(n2.Address, n3.Address, 10, 20, DataProtocol.Unknown, 10, 1000);
+        var e1 = new TraceEdge(n1.Key, n3.Key, 10, 20, DataProtocol.Unknown, 10, 1000);
+        var e2 = new TraceEdge(n2.Key, n3.Key, 10, 20, DataProtocol.Unknown, 10, 1000);
 
-        var graph = new TraceGraph();
+        var graph = new TraceGraph
+        {
+            RemoveDisconnectedNodes = true
+        };
         var layer = new AggregationLayer
         {
             Matchers = new List<IpAddressMatcher>

@@ -13,7 +13,7 @@ public class TraceGraphTests
 
     private TraceEdge Edge(string from, string target)
     {
-        return new TraceEdge(IPAddress.Parse(from), IPAddress.Parse(target), 0, 0, DataProtocol.Tcp, 0, 0);
+        return new TraceEdge(new TraceNodeKey(IPAddress.Parse(from)), new TraceNodeKey(IPAddress.Parse(target)), 0, 0, DataProtocol.Tcp, 0, 0);
     }
 
     [Fact]
@@ -28,12 +28,12 @@ public class TraceGraphTests
         // Act
         graph.AddNode(node);
         Assert.Equal(1, graph.NodeCount);
-        Assert.True(graph.HasNode(address));
-        graph.RemoveNode(address);
+        Assert.True(graph.HasNode(node.Key));
+        graph.RemoveNode(node.Key);
 
         // Assert
         Assert.Equal(0, graph.NodeCount);
-        Assert.False(graph.HasNode(address));
+        Assert.False(graph.HasNode(node.Key));
     }
 
     [Fact]
@@ -52,10 +52,10 @@ public class TraceGraphTests
         // Act
         g.AddManyNodes(new[] { n1, n2, n3 });
         g.AddManyEdges(new[] { e1, e2 });
-        g.FilterEdges(e => e.Source.Equals(IPAddress.Parse("2.2.2.2")));
+        g.FilterEdges(e => e.Source.Address.Equals(IPAddress.Parse("2.2.2.2")));
         
         // Assert
         Assert.Equal(1, g.EdgeCount);
-        Assert.Equal(IPAddress.Parse("3.3.3.3"), g.Edges.First().Value.Target);
+        Assert.Equal(IPAddress.Parse("3.3.3.3"), g.Edges.First().Value.Target.Address);
     }
 }

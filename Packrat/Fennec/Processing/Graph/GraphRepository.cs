@@ -1,4 +1,5 @@
-﻿using Fennec.Database;
+﻿using Fennec.Controllers;
+using Fennec.Database;
 using Fennec.Database.Domain;
 
 namespace Fennec.Processing.Graph;
@@ -11,11 +12,10 @@ public interface IGraphRepository
     /// <summary>
     ///     Generate the graph for a given layout within a specified timespan.
     /// </summary>
-    /// <param name="from"></param>
-    /// <param name="to"></param>
+    /// <param name="request"></param>
     /// <param name="layout"></param>
     /// <returns></returns>
-    public Task<GraphDetails> GenerateGraph(DateTimeOffset from, DateTimeOffset to, Layout layout);
+    public Task<GraphDetails> GenerateGraph(GraphRequest request, Layout layout);
 }
 
 public class GraphDetails
@@ -40,10 +40,13 @@ public class GraphRepository : IGraphRepository
         _serviceProvider = serviceProvider;
     }
 
-    public async Task<GraphDetails> GenerateGraph(DateTimeOffset from, DateTimeOffset to, Layout layout)
+    public async Task<GraphDetails> GenerateGraph(GraphRequest request, Layout layout)
     {
-        var traces = await _traceRepository.AggregateTraces(layout.QueryConditions, from, to);
-        var graph = new TraceGraph();
+        var traces = await _traceRepository.AggregateTraces(layout.QueryConditions, request.From, request.To);
+        var graph = new TraceGraph
+        {
+            RemoveDisconnectedNodes = request.RemoveDisconnectedNodes
+        };
         graph.FillFromTraces(traces);
 
         foreach (var layer in layout.Layers.Where(l => l.Enabled))
@@ -74,12 +77,11 @@ public class GraphRepository : IGraphRepository
 
     private static void CollapseGraph(ITraceGraph graph)
     {
-        graph.GroupEdges((key, _) => 
-                (key.Item1, key.Item2, (ushort)0, (ushort)0, key.Item5),
+        graph.GroupEdges((key, _) => key with { SourcePort = 0, TargetPort = 0 },
             (key, value) =>
             {
                 var traceEdges = value.ToList();
-                return new TraceEdge(key.Item1, key.Item2, 0, 0, key.Item5,
+                return new TraceEdge(key.Source, key.Target, 0, 0, key.DataProtocol,
                     (ulong)traceEdges.Sum(t => (long)t.PacketCount),
                     (ulong)traceEdges.Sum(t => (long)t.ByteCount));
             });

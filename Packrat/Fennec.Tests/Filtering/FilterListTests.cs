@@ -91,7 +91,7 @@ public class FilterListTests
             new(new byte[] { 192, 168, 1, 100 }, new byte[] { 255, 255, 255, 255 }, 12345, new byte[] { 10, 0, 0, 1 },
                 new byte[] { 255, 255, 255, 255 }, 80, DataProtocol.Tcp, false)
         };
-        var filterList = new FilterList(false, conditions);
+        var filterList = new FilterList(true, conditions);
         var aggregateTraces = new List<AggregateTrace>
         {
             new(new byte[] { 192, 168, 1, 100 }, new byte[] { 10, 0, 0, 1 }, 12345, 80, DataProtocol.Tcp, 100, 1000)

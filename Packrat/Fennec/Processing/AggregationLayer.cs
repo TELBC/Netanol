@@ -41,7 +41,7 @@ public class AggregationLayer : ILayer
         // var nodesToGroup = graph.Nodes.Where((key, value) => true);
         graph.GroupNodes((key, _) =>
         {
-            var matcher = GetMatcherForAddress(key);
+            var matcher = GetMatcherForAddress(key.Address);
             if (matcher is not { Include: true })
                 return null;
 

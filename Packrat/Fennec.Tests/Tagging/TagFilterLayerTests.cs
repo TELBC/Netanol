@@ -14,9 +14,9 @@ public class TagFilterLayerTests
         var n3 = new TraceNode(IPAddress.Parse("3.3.3.3"), "") { Tags = new List<string> { "infra-3", "switch" } };
         var n4 = new TraceNode(IPAddress.Parse("4.4.4.4"), "") { Tags = new List<string>() };
 
-        var e1 = new TraceEdge(n1.Address, n2.Address, 0, 0, DataProtocol.Unknown, 0, 0);
-        var e2 = new TraceEdge(n2.Address, n3.Address, 0, 0, DataProtocol.Unknown, 0, 0);
-        var e3 = new TraceEdge(n3.Address, n4.Address, 0, 0, DataProtocol.Unknown, 0, 0);
+        var e1 = new TraceEdge(n1.Key, n2.Key, 0, 0, DataProtocol.Unknown, 0, 0);
+        var e2 = new TraceEdge(n2.Key, n3.Key, 0, 0, DataProtocol.Unknown, 0, 0);
+        var e3 = new TraceEdge(n3.Key, n4.Key, 0, 0, DataProtocol.Unknown, 0, 0);
 
         var graph = new TraceGraph();
         graph.AddManyNodes(new[] { n1, n2, n3, n4 });
