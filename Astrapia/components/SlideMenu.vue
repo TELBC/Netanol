@@ -53,7 +53,7 @@ const updateSim = (event: InputEvent) => {
 
 .slide-up {
   bottom: 0;
-  transform: translate(-50%, calc(-21%));
+  transform: translate(-50%, calc(-27%));
 }
 
 .slider-container {

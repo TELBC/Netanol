@@ -2,7 +2,7 @@
   <div>
     <TopologyMenuBar class="topology-menu" @change="handleTimeframeSelection" :from-value="timeframeSelectorFrom" :to-value="timeframeSelectorTo" />
     <Dropdown class="layout-dropdown" @changeLayout="handleLayoutChange" />
-    <Graph :data="data"/>
+    <Graph :data="data" @intervalAmount="handleIntervalAmount"/>
     <GraphFilterMenu v-bind:layout="layout" />
   </div>
 </template>
@@ -19,18 +19,34 @@ import GraphFilterMenu from "~/components/GraphFilterMenu.vue";
 const layout = ref('');
 const timeframeSelectorFrom = ref(new Date(new Date().getTime() - 2 * 60 * 1000).toISOString().slice(0,16))
 const timeframeSelectorTo = ref(new Date().toISOString().slice(0,16))
+const data = ref();
+const intervalAmount = ref<number>(0);
+
+let fetchInterval: NodeJS.Timeout | null = null;
 
 const handleTimeframeSelection = (from: string, to: string) => {
   timeframeSelectorFrom.value = from
   timeframeSelectorTo.value = to
 }
 
+const handleIntervalAmount = (amount: number) => {
+  intervalAmount.value = amount;
+  if (fetchInterval) {
+    clearInterval(fetchInterval);
+    fetchInterval = null;
+  }
+
+  if (intervalAmount.value !== 0) {
+    fetchAndUpdateGraph();
+    const intervalMs = intervalAmount.value * 1000;
+    fetchInterval = setInterval(debouncedFetchGraphData, intervalMs);
+  }
+}
+
 const handleLayoutChange = (selectedLayout: string) => {
   layout.value = selectedLayout;
   fetchAndUpdateGraph();
 }
-
-const data = ref(null);
 
 const fetchAndUpdateGraph: () => Promise<void> = async () => {
   const dateRange: { from: Date; to: Date } = {
@@ -43,11 +59,18 @@ const fetchAndUpdateGraph: () => Promise<void> = async () => {
 const debouncedFetchGraphData = debounce(fetchAndUpdateGraph, 100);
 
 onMounted(async () => {
-  const fetchInterval = setInterval(debouncedFetchGraphData, 5000);
-  onBeforeUnmount(() => {
+  if (intervalAmount.value !== 0) {
+    await fetchAndUpdateGraph();
+    const intervalMs = intervalAmount.value * 1000;
+    fetchInterval = setInterval(debouncedFetchGraphData, intervalMs);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (fetchInterval) {
     clearInterval(fetchInterval);
-  });
-  await fetchAndUpdateGraph();
+    fetchInterval = null;
+  }
 });
 </script>
 

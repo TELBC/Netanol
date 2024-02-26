@@ -1,7 +1,7 @@
 <template>
   <div id="graph">
     <svg ref="svg" width="960" height="600"></svg>
-    <TopologyFooter v-if="metaData" @recenter="recenterGraph" :metaData="metaData" @toggleSimulation="toggleSimulation" @updateDistance="updateLinkDistance" @updateSim="updateSimForce" element-id="graph"/>
+    <TopologyFooter v-if="metaData" @recenter="recenterGraph" :metaData="metaData" @toggleSimulation="toggleSimulation" @updateDistance="updateLinkDistance" @updateSim="updateSimForce" @intervalAmount="$emit('intervalAmount', $event)" element-id="graph"/>
   </div>
 </template>
 
@@ -33,8 +33,8 @@ export default {
         if (newData && this.hasDataChanged(newData)) {
           this.metaData = newData.graphStatistics;
           this.previousData = newData;
-          this.updateChart(newData);
           this.recenterGraph();
+          this.updateChart(newData);
         }
       }
     }
