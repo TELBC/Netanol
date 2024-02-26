@@ -125,6 +125,7 @@ public class TraceRepository : ITraceRepository
         var filter = BuildQueryConditions(conditions);
         return await _traces 
             .Aggregate()
+            .Match(t => t.Timestamp >= start && t.Timestamp <= end)
             .Match(filter)
             .Group(
                 new BsonDocument

@@ -1,5 +1,4 @@
-﻿using Fennec.Database;
-using Fennec.Metrics;
+﻿using Fennec.Metrics;
 using Fennec.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +20,6 @@ public class MetricController : ControllerBase
     {
         _metricService = metricService;
         _metricFlowImporter = flowImporterMetric;
-
     }
     
     /// <summary>

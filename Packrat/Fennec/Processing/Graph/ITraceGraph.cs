@@ -21,6 +21,9 @@ public interface ITraceGraph
     public void GroupEdges<T>(Func<(IPAddress, IPAddress, ushort, ushort, DataProtocol), TraceEdge, T> keySelector,
         Func<T, IEnumerable<TraceEdge>, TraceEdge> valueSelector);
 
+    public void GroupNodes<T>(Func<IPAddress, TraceNode, T?> keySelector,
+        Func<T, IEnumerable<TraceNode>, TraceNode> valueSelector) where T : notnull;
+
     public void AddEdge(TraceEdge traceEdge);
     public void AddNode(TraceNode traceNode);
 
@@ -40,8 +43,10 @@ public class TraceGraph : ITraceGraph
     public int NodeCount => Nodes.Count;
 
     // TODO: create an EdgeKey type
-    public SortedList<(IPAddress, IPAddress, ushort, ushort, DataProtocol), TraceEdge> Edges { get; private set; } = new(new IpAddressPairComparer());
-    public SortedList<IPAddress, TraceNode> Nodes { get; private set;  } = new(new IpAddressComparer());
+    public SortedList<(IPAddress, IPAddress, ushort, ushort, DataProtocol), TraceEdge> Edges { get; private set; } =
+        new(new IpAddressPairComparer());
+
+    public SortedList<IPAddress, TraceNode> Nodes { get; } = new(new IpAddressComparer());
 
     public void FillFromTraces(List<AggregateTrace> traces)
     {
@@ -148,6 +153,66 @@ public class TraceGraph : ITraceGraph
 
         foreach (var node in Nodes)
             RemoveNodeIfOrphan(node.Key);
+    }
+
+    public void GroupNodes<T>(Func<IPAddress, TraceNode, T?> keySelector,
+        Func<T, IEnumerable<TraceNode>, TraceNode> valueSelector) where T : notnull
+    {
+        var dict = new Dictionary<T, List<TraceNode>>();
+        foreach (var (nodeKey, nodeValue) in Nodes)
+        {
+            var key = keySelector(nodeKey, nodeValue);
+            if (key == null)
+                continue;
+            
+            if (!dict.ContainsKey(key))
+                dict[key] = new List<TraceNode>();
+            dict[key].Add(nodeValue);
+        }
+
+        foreach (var (key, value) in dict)
+        {
+            // if (value.Count == 1)
+                // continue;
+
+            // Create a new node and remove the old ones
+            // Point all edges to the new node
+            var newNode = valueSelector(key, value);
+            // RemoveNode(key);
+            AddNode(newNode);
+            foreach (var node in value)
+            {
+                // Delete all old nodes
+                Nodes.Remove(node.Address);
+                RepointEdges(node.Address, newNode.Address);
+            }
+        }
+    }
+    
+    private void RepointEdges(IPAddress oldAddress, IPAddress newAddress)
+    {
+        var edgesToRepoint = Edges.Where(kp =>
+            kp.Value.Source.Equals(oldAddress) || kp.Value.Target.Equals(oldAddress)).ToList();
+        foreach (var (oldEdgeKey, oldEdgeValue) in edgesToRepoint)
+        {
+            Edges.Remove(oldEdgeKey);
+
+            // Deliberately set the ports to 0 to prevent inconsistent behavior
+            // This is the case when different edges have different ports and are later filtered
+            var newKey = (
+                oldEdgeKey.Item1.Equals(oldAddress) ? newAddress : oldEdgeKey.Item1,
+                oldEdgeKey.Item2.Equals(oldAddress) ? newAddress : oldEdgeKey.Item2,
+                (ushort) 0, (ushort) 0, oldEdgeKey.Item5);
+
+            if (Edges.TryGetValue(newKey, out var existingEdge))
+            {
+                existingEdge.PacketCount += oldEdgeValue.PacketCount;
+                existingEdge.ByteCount += oldEdgeValue.ByteCount;
+                continue;
+            }
+            
+            Edges.Add(newKey, oldEdgeValue);
+        }
     }
 
     private void RemoveNodeIfOrphan(IPAddress key)

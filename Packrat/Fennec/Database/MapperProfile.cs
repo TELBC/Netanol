@@ -10,6 +10,18 @@ public class MapperProfile : Profile
     public MapperProfile()
     {
         // TODO: rethink all this dto madness
+        CreateMap<IPAddress, string>()
+            .ConvertUsing(ip => ip.ToString());
+        
+        CreateMap<string, IPAddress>()
+            .ConvertUsing(str => IPAddress.Parse(str));
+        
+        CreateMap<string, byte[]>()
+            .ConvertUsing(str => IPAddress.Parse(str).GetAddressBytes());
+        
+        CreateMap<byte[], string>()
+            .ConvertUsing(bytes => new IPAddress(bytes).ToString());
+        
         CreateMap<FilterConditionDto, FilterCondition>()
             .ConstructUsing((dto, _) =>
             {
@@ -90,7 +102,19 @@ public class MapperProfile : Profile
                 return layer switch
                 {
                     FilterLayerDto filterLayer => ctx.Mapper.Map<FilterLayer>(filterLayer),
-                    _ => throw new ArgumentException("Unknown layer type")
+                    AggregationLayerDto aggregationLayer => ctx.Mapper.Map<AggregationLayer>(aggregationLayer),
+                    _ => throw new ArgumentException("No AutoMapper mapping for the given layer type.")
+                };
+            });
+        
+        CreateMap<ILayer, ILayerDto>()
+            .ConstructUsing((layer, ctx) =>
+            {
+                return layer switch
+                {
+                    FilterLayer filterLayer => ctx.Mapper.Map<FilterLayerDto>(filterLayer),
+                    AggregationLayer aggregationLayer => ctx.Mapper.Map<AggregationLayerDto>(aggregationLayer),
+                    _ => throw new ArgumentException("No AutoMapper mapping for the given layer type.")
                 };
             });
 
@@ -101,12 +125,12 @@ public class MapperProfile : Profile
             .ConstructUsing((src, ctx) => new FullLayoutDto(src.Name,
                 ctx.Mapper.Map<QueryConditionsDto>(src.QueryConditions),
                 src.Layers.Select(layer => ctx.Mapper.Map<ShortLayerDto>(layer)).ToList()));
-        
+
         CreateMap<QueryConditions, QueryConditionsDto>()
             .ConstructUsing(src => new QueryConditionsDto(
                 src.AllowDuplicates,
-                 src.FlowProtocolsWhitelist,
-                 src.DataProtocolsWhitelist,
+                src.FlowProtocolsWhitelist,
+                src.DataProtocolsWhitelist,
                 src.PortsWhitelist))
             .ForAllMembers(opts => opts.AllowNull());
 
@@ -119,5 +143,10 @@ public class MapperProfile : Profile
                 PortsWhitelist = src.PortsWhitelist
             })
             .ForAllMembers(opts => opts.AllowNull());
+
+        CreateMap<AggregationLayer, AggregationLayerDto>();
+        CreateMap<AggregationLayerDto, AggregationLayer>();
+        CreateMap<IpAddressMatcher, IpAddressMatcherDto>();
+        CreateMap<IpAddressMatcherDto, IpAddressMatcher>();
     }
 }
