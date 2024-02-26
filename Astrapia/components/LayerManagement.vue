@@ -1,28 +1,27 @@
 <template>
   <div class="layer-list-overflow-container" v-bind:class="{ 'create-open-hide': layerListState.createLayerOpen }">
-    <div class="layer-container" v-for="(layer, index) in layerListState.selectedLayout.layers" :key="rerenderer.layerListRerender" @click="openCloseLayer(layer.name)">
+    <div class="layer-container" v-for="(layer, index) in layerListState.selectedLayout.layers" :key="rerenderer.layerListRerender" @click="openCloseLayer(index)">
       <div class="layer">
         <div>
-          <font-awesome-icon icon="fa-solid fa-chevron-right" v-bind:class="{'expand-layer-icon': layerListState.layerOpen === layer.name}" class="expand-layer" />
+          <font-awesome-icon icon="fa-solid fa-chevron-right" v-bind:class="{'expand-layer-icon': layerListState.layerOpen === index}" class="expand-layer" />
         </div>
         <div class="layer-name">
           {{ layer.name }}
         </div>
-        <input type="checkbox" :checked="getLayerEnabled(layer.name)" @change="setLayerEnabled(layer.name, $event.target.checked)" class="theme-checkbox" @click.stop>
+        <input type="checkbox" :checked="layer.enabled" @change="setLayerEnabled(index, $event.target.checked)" class="theme-checkbox" @click.stop>
       </div>
-      <div class="layer-info" v-bind:class="{ 'expand-layer-info': layerListState.layerOpen === layer.name }">
+      <div class="layer-info" v-bind:class="{ 'expand-layer-info': layerListState.layerOpen === index }">
         <div class="update-delete-layer">
           <font-awesome-icon icon="fa-solid fa-pen" class="edit-layer upd-del-layer-icon" @click="toggleEditExistingLayer(index)" />
           <font-awesome-icon icon="fa-solid fa-trash" class="upd-del-layer-icon" @click="deleteLayerFromLayout(index)" />
         </div>
-        <!-- fix p and layer.type and layer.description not aligned flex start -->
         <div class="infos">
           <p>type: </p>
           {{ layer.type }}
         </div>
         <div class="infos">
           <p>description: </p>
-          <div>{{ layer.description }}</div>
+          <div>{{ removeBoldTagsFromDescription(layer.description) }}</div>
         </div>
       </div>
     </div>
@@ -35,6 +34,10 @@
       <input type="checkbox" class="theme-checkbox" v-model="createLayerData.enabled" />
     </div>
     <FilterConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+    <div class="enable-new-layer">
+      <p>Implicit Include?</p>
+      <input type="checkbox" class="theme-checkbox" v-model="createLayerData.filterList.implicitInclude" />
+    </div>
   </div>
   <div class="create-layer" @click="toggleCreateLayerOpen">
     <font-awesome-icon icon="fa-solid fa-plus" v-if="layerListState.isEditExistingLayer === -1" class="fa-plus" :class="{ 'rotate-icon': layerListState.createLayerOpen }" />
@@ -43,13 +46,13 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, watch, inject} from "vue";
+import {ref, watch, inject} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import FilterConditionBox from "~/components/FilterConditionBox.vue";
 import layerService from "~/services/layerService";
-import {FilterConditions} from "~/services/layerService";
+import {FilterConditions, Layer} from "~/services/layerService";
 
-interface Layer {
+interface Layers {
   name: string;
   type: string;
   enabled: boolean;
@@ -58,16 +61,17 @@ interface Layer {
 
 const props = defineProps<{
   layout: string;
-  layers: Array<Layer>;
+  layers: Array<Layers>;
 }>();
 
+// holds the data of the layer that is being created or edited
 const createLayerData = ref({
   name: '',
   type: '',
   enabled: false,
   filterList: {
     conditions: [] as Array<FilterConditions>,
-    implicitInclude: false
+    implicitInclude: true
   }
 })
 
@@ -75,20 +79,25 @@ const layerListState = ref({
   isExpanded: false,
   selectedLayout: {
     name: '',
-    layers: [] as Array<Layer>,
+    layers: [] as Array<Layers>,
   },
-  layerOpen: '',
+  layerOpen: -1,
   createLayerOpen: false,
   emitFilterConditions: false,
   isEditExistingLayer: -1,
   doneEmittingFilterConditions: false,
 });
 
+// used to rerender the layer list when it is modified
 const rerenderer = ref({
   layerListRerender: 0
 })
 
 const getLayersOfLayout = inject<() => void>('getLayersOfLayout');
+
+function removeBoldTagsFromDescription(description: string) {
+  return description.replace(/<b>|<\/b>/g, '');
+}
 
 async function getExistingLayer(index: number) {
   const layerToEdit = await layerService.getLayer(layerListState.value.selectedLayout.name, index);
@@ -97,67 +106,66 @@ async function getExistingLayer(index: number) {
 
 async function editExistingLayer(index: number) {
   await layerService.editLayer(layerListState.value.selectedLayout.name, index, createLayerData.value);
+  getLayersOfLayout!();
 }
 
-function openCloseLayer(layerName: string) {
-  if (layerListState.value.layerOpen === layerName) {
-    layerListState.value.layerOpen = '';
+async function createNewLayer(layer: Layer) {
+  const response = await layerService.createLayer(layer, layerListState.value.selectedLayout.name);
+  getLayersOfLayout!();
+  return response;
+}
+
+function openCloseLayer(index: number) {
+  if (layerListState.value.layerOpen === index) {
+    layerListState.value.layerOpen = -1;
   } else {
-    layerListState.value.layerOpen = layerName;
+    layerListState.value.layerOpen = index;
   }
 }
 
-function setLayerEnabled(layerName: string, value: boolean) {
-  const layer = layerListState.value.selectedLayout.layers.find((layer) => layer.name === layerName);
-  if (layer) {
-    layer.enabled = value;
-  }
+function setLayerEnabled(index: number, value: boolean) {
+  const layer = layerListState.value.selectedLayout.layers[index];
+  layer.enabled = value;
+  Object.assign(createLayerData.value, layer);
+  setTimeout(() => {
+    editExistingLayer(index);
+    Object.assign(createLayerData.value, {
+      name: '',
+      type: '',
+      enabled: false,
+      filterList: {
+        conditions: [] as Array<FilterConditions>,
+        implicitInclude: false
+      }
+    })
+    getLayersOfLayout!();
+  }, 250);
 }
 
-function getLayerEnabled(layerName: string) {
-  const layer = layerListState.value.selectedLayout.layers.find((layer) => layer.name === layerName);
-  return layer ? layer.enabled : false;
-}
-
+// handle emitted filter conditions from FilterConditionBox
 function handleFilterConditionsEmit(newConditions: Array<FilterConditions>, doneEmitting: boolean) {
   createLayerData.value.filterList.conditions = newConditions;
   layerListState.value.doneEmittingFilterConditions = doneEmitting;
 }
 
+// opens or closes create/edit dialog and on close calls either createNewLayerAndReset or editExistingLayerAndReset
 function toggleCreateLayerOpen() {
   if (layerListState.value.createLayerOpen) {
-    layerListState.value.emitFilterConditions = true;
-  } else {
-    layerListState.value.createLayerOpen = true;
-  }
-}
-
-watch([() => createLayerData.value.filterList.conditions, () => layerListState.value.doneEmittingFilterConditions], async ([newConditions, doneEmitting], [oldConditions, oldDoneEmitting]) => {
-  if (newConditions.length > 0 && layerListState.value.emitFilterConditions) {
+    layerListState.value.createLayerOpen = false;
     if (layerListState.value.isEditExistingLayer > -1) {
-      await editExistingLayer(layerListState.value.isEditExistingLayer);
-      layerListState.value.isEditExistingLayer = -1;
-      layerListState.value.emitFilterConditions = false;
-    } else {
-      const layer = createLayerData.value;
-      const response = await layerService.createLayer(layer, layerListState.value.selectedLayout.name);
-      if (response.status === 200) {
-        layerListState.value.createLayerOpen = false;
-        getLayersOfLayout!();
-        Object.assign(createLayerData.value, {
-          name: '',
-          type: '',
-          enabled: false,
-          filterList: {
-            conditions: [] as Array<FilterConditions>,
-            implicitInclude: false
-          }
-        });
-        layerListState.value.emitFilterConditions = false;
-      }
+      editExistingLayerAndReset();
+    }
+    else {
+      createNewLayerAndReset();
     }
   }
-});
+  else {
+    layerListState.value.createLayerOpen = true;
+    if (layerListState.value.isEditExistingLayer > -1) {
+      layerListState.value.emitFilterConditions = true;
+    }
+  }
+}
 
 function toggleEditExistingLayer(index: number) {
   toggleCreateLayerOpen();
@@ -165,14 +173,39 @@ function toggleEditExistingLayer(index: number) {
   layerListState.value.isEditExistingLayer = index;
 }
 
-async function deleteLayerFromLayout(index: number) {
-  try {
-    const response = await layerService.deleteLayer(layerListState.value.selectedLayout.name, index);
-    if (response.status === 200) {
-      getLayersOfLayout!();
+function editExistingLayerAndReset() {
+  editExistingLayer(layerListState.value.isEditExistingLayer);
+  layerListState.value.isEditExistingLayer = -1;
+  layerListState.value.emitFilterConditions = false;
+  Object.assign(createLayerData.value, {
+    name: '',
+    type: '',
+    enabled: false,
+    filterList: {
+      conditions: [] as Array<FilterConditions>,
+      implicitInclude: false
     }
-  } catch (error) {
-    console.error('Error:', error);
+  });
+}
+
+function createNewLayerAndReset() {
+  const layer = createLayerData.value;
+  createNewLayer(layer);
+  Object.assign(createLayerData.value, {
+    name: '',
+    type: '',
+    enabled: false,
+    filterList: {
+      conditions: [] as Array<FilterConditions>,
+      implicitInclude: false
+    }
+  });
+}
+
+async function deleteLayerFromLayout(index: number) {
+  const response = await layerService.deleteLayer(layerListState.value.selectedLayout.name, index);
+  if (response.status === 200) {
+    getLayersOfLayout!();
   }
 }
 
@@ -182,11 +215,6 @@ watch(() => props.layout!, (newLayout, oldLayout) => {
 
 watch(() => props.layers!, (newLayers, oldLayers) => {
   layerListState.value.selectedLayout.layers = newLayers;
-  rerenderer.value.layerListRerender += 1;
-});
-
-onMounted(() => {
-  layerListState.value.selectedLayout.layers = props.layers!;
   rerenderer.value.layerListRerender += 1;
 });
 </script>
@@ -239,7 +267,6 @@ onMounted(() => {
   visibility: hidden;
   opacity: 0;
   height: 0;
-  transition: 0.2s ease-in-out;
   display: flex;
   flex-direction: column;
 }
@@ -247,7 +274,7 @@ onMounted(() => {
 .expand-layer-info {
   display: flex;
   flex-direction: column;
-  min-height: 10vh;
+  height: auto;
   visibility: visible;
   opacity: 1;
   padding: 0 1vw 2.5vh 1vw;
@@ -257,7 +284,7 @@ onMounted(() => {
   margin: 0;
   display: flex;
   flex-direction: row;
-  align-items: center;
+
   justify-content: flex-end;
   color: #7EA0A9;
 }
@@ -382,28 +409,29 @@ onMounted(() => {
   transition: 0.4s;
 }
 
-.theme-checkbox:checked::before {
+.theme-checkbox:checked::before, .create-form:deep(.include-exclude-traffic-switch):checked::before {
   left: calc(100% - 1.3em - 0.1em);
   background-position: 0;
 }
 
-.theme-checkbox:checked {
+.theme-checkbox:checked, .create-form:deep(.include-exclude-traffic-switch):checked {
   background-position: 100%;
 }
 
 .infos {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: flex-start;
-  min-height: 1vh;
+  height: auto;
+  margin-bottom: 0.5vh;
 }
 
-.infos p {
+.infos > p {
   font-weight: bolder;
-  margin-right: 0.5vw;
+  margin: 0 0.5vw 0 0;
 }
 
-.infos div {
+.infos > div {
   display: inline-flex;
   word-wrap: anywhere;
 }

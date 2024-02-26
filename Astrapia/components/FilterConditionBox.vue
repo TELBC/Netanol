@@ -32,39 +32,13 @@
       </div>
     </div>
     <div class="filter-condition-editing" v-bind:class="{'editing-filter-condition-editing': filterConditionBoxState.isEditing}">
-      <!--
-      instead of dropdowns expanding and collapsing lists:
-      eg Source Address (arrow down) and on click it expands to a list of available addresses and when one is selected it gets set instead of "Source Address"
-      OWN COMPONENT?
-      Search Bar for Source Addresses, styled to look like an expandable list, dropdownish, live searching
-      -->
-      <div class="scrollable-selector" v-bind:class="{'scrollable-selector-open': filterConditionBoxState.editSelectorOpen === 'source'}">
-        <input id="source-input" class="scrollable-selector-input" type="text" placeholder="Source Address" v-model="filterConditionBoxState.editingCondition.sourceAddress" @focus="setOpenEditSelector('source')" />
-        <div class="scrollable-selector-options">
-          List of available addresses, scrollable
-        </div>
-      </div>
-      <div class="scrollable-selector" v-bind:class="{'scrollable-selector-open': filterConditionBoxState.editSelectorOpen === 'sourceMask'}">
-        <input id="source-mask-input" class="scrollable-selector-input" type="text" placeholder="Source Address Mask" v-model="filterConditionBoxState.editingCondition.sourceAddressMask" @focus="setOpenEditSelector('sourceMask')" />
-        <div class="scrollable-selector-options">
-          List of available addresses, scrollable
-        </div>
-      </div>
-      <input id="source-port-input" class="filter-condition-editing-input" type="text" placeholder="Source Port" v-model="filterConditionBoxState.editingCondition.sourcePort" @focus="setOpenEditSelector('')" />
-      <div class="scrollable-selector" v-bind:class="{'scrollable-selector-open': filterConditionBoxState.editSelectorOpen === 'destination'}">
-        <input id="destination-input" class="scrollable-selector-input" type="text" placeholder="Destination Address" v-model="filterConditionBoxState.editingCondition.destinationAddress" @focus="setOpenEditSelector('destination')" />
-        <div class="scrollable-selector-options">
-          List of available addresses, scrollable
-        </div>
-      </div>
-      <div class="scrollable-selector" v-bind:class="{'scrollable-selector-open': filterConditionBoxState.editSelectorOpen === 'destinationMask'}">
-        <input id="destination-mask-input" class="scrollable-selector-input" type="text" placeholder="Destination Address Mask" v-model="filterConditionBoxState.editingCondition.destinationAddressMask" @focus="setOpenEditSelector('destinationMask')" />
-        <div class="scrollable-selector-options">
-          List of available addresses, scrollable
-        </div>
-      </div>
-      <input id="destination-port-input" class="filter-condition-editing-input" type="text" placeholder="Destination Port" v-model="filterConditionBoxState.editingCondition.destinationPort" @focus="setOpenEditSelector('')" />
-      <input id="protocol-input" class="filter-condition-editing-input" type="text" placeholder="Protocol" v-model="filterConditionBoxState.editingCondition.protocol" @focus="setOpenEditSelector('')" />
+      <input id="source-input" class="scrollable-selector-input" type="text" placeholder="Source Address" v-model="filterConditionBoxState.editingCondition.sourceAddress" />
+      <input id="source-mask-input" class="scrollable-selector-input" type="text" placeholder="Source Address Mask" v-model="filterConditionBoxState.editingCondition.sourceAddressMask" />
+      <input id="source-port-input" class="filter-condition-editing-input" type="text" placeholder="Source Port" v-model="filterConditionBoxState.editingCondition.sourcePort" />
+      <input id="destination-input" class="scrollable-selector-input" type="text" placeholder="Destination Address" v-model="filterConditionBoxState.editingCondition.destinationAddress" />
+      <input id="destination-mask-input" class="scrollable-selector-input" type="text" placeholder="Destination Address Mask" v-model="filterConditionBoxState.editingCondition.destinationAddressMask" />
+      <input id="destination-port-input" class="filter-condition-editing-input" type="text" placeholder="Destination Port" v-model="filterConditionBoxState.editingCondition.destinationPort" />
+      <input id="protocol-input" class="filter-condition-editing-input" type="text" placeholder="Protocol" v-model="filterConditionBoxState.editingCondition.protocol" />
       <div class="scrollable-selector-include-exclude-traffic">
         <p>Exclude</p>
         <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.include" />
@@ -102,7 +76,6 @@ const filterConditionBoxState = ref({
   addressMasks: [] as Array<string>,
   ports: [] as Array<number>,
   protocols: [] as Array<string>,
-  editSelectorOpen: '',
   filterConditionSelected: -1,
   editingCondition: {} as filterCondition,
 })
@@ -138,8 +111,9 @@ function saveFilterCondition() {
     "protocol": "tcp",
     "include": false
   };
+  console.log(newFilterCondition)
   for (let key in defaultValues as {[key: string]: any}) {
-    if (!newFilterCondition.hasOwnProperty(key)) {
+    if (!newFilterCondition.hasOwnProperty(key) || newFilterCondition[key] === "" || newFilterCondition[key] === null) {
       newFilterCondition[key] = defaultValues[key];
     }
   }
@@ -154,10 +128,7 @@ function saveFilterCondition() {
   }
 }
 
-function setOpenEditSelector(selector: string) {
-  filterConditionBoxState.value.editSelectorOpen = selector;
-}
-
+// set which filter condition is highlighted by left click
 function setFilterConditionSelected(condition: number) {
   filterConditionBoxState.value.filterConditionSelected = condition;
 }
@@ -169,6 +140,7 @@ function deleteSelectedFilterCondition() {
   }
 }
 
+// open edit form for filter condition by double clicking it
 function doubleClickFilterCondition(index: number) {
   toggleIsEditing('edit');
   filterConditionBoxState.value.editingCondition = { ...filterConditionBoxState.value.filterConditions[index] };
@@ -178,7 +150,7 @@ const emit = defineEmits({
   'update-filter-conditions': (payload: { filterConditions: Array<filterCondition>, done: boolean }) => true,
 });
 
-
+// emit filter conditions to LayerManagement on receiving emitFilterConditions prop
 watch(() => props.emitFilterConditions, (newVal) => {
   if (newVal === true) {
     emit('update-filter-conditions', {
@@ -190,6 +162,7 @@ watch(() => props.emitFilterConditions, (newVal) => {
   }
 });
 
+// receive filter conditions from LayerManagement on edit of existing layer
 watch(() => props.editLayerFilterConditions, (newVal) => {
   filterConditionBoxState.value.filterConditions = newVal;
 });
@@ -345,35 +318,17 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
   opacity: 1;
 }
 
-.scrollable-selector {
-  display: flex;
-  flex-direction: column;
-  width: 95%;
-  padding: 0.25vh 0;
-  margin: 0.5vh 0;
-}
-
-.scrollable-selector-open > .scrollable-selector-options {
-  visibility: visible;
-  opacity: 1;
-  height: 10vh;
-}
-
 .scrollable-selector-input {
   border: none;
+  width: 95%;
   font-size: 2vh;
   border-bottom: 1px solid #e0e0e0;
+  padding: 0.25vh 0;
+  margin: 0.5vh 2.5%;
 }
 
 .scrollable-selector-input:focus {
   outline: none;
-}
-
-.scrollable-selector-options {
-  visibility: hidden;
-  opacity: 0;
-  height: 0;
-  transition: 0.2s ease-in-out;
 }
 
 .filter-condition-editing-input {
@@ -396,5 +351,9 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
   justify-content: space-between;
   width: 90%;
   font-size: 2vh;
+}
+
+#exclude-include-switch {
+  margin-left: 0;
 }
 </style>

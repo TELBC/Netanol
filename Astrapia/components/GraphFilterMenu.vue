@@ -32,6 +32,7 @@ async function getLayersOfLayout() {
   graphFilterMenuState.value.selectedLayout.layers = layoutData.layers;
 }
 
+// on layout change fetch layers of the layout
 watch(() => graphFilterMenuState.value.selectedLayout.name, async () => {
   await getLayersOfLayout();
 });
