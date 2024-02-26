@@ -78,6 +78,7 @@ const filterConditionBoxState = ref({
   protocols: [] as Array<string>,
   filterConditionSelected: -1,
   editingCondition: {} as filterCondition,
+  editingConditionIndex: -1,
 })
 
 function toggleIsEditing(to: string) {
@@ -111,7 +112,6 @@ function saveFilterCondition() {
     "protocol": "tcp",
     "include": false
   };
-  console.log(newFilterCondition)
   for (let key in defaultValues as {[key: string]: any}) {
     if (!newFilterCondition.hasOwnProperty(key) || newFilterCondition[key] === "" || newFilterCondition[key] === null) {
       newFilterCondition[key] = defaultValues[key];
@@ -120,11 +120,12 @@ function saveFilterCondition() {
   const isDuplicate = filterConditionBoxState.value.filterConditions.some(condition =>
     JSON.stringify(condition) === JSON.stringify(newFilterCondition)
   );
-  if (!isDuplicate) {
+  if (!isDuplicate && filterConditionBoxState.value.editingConditionIndex === -1) {
     filterConditionBoxState.value.filterConditions.push(newFilterCondition);
     clearEditingInputs('list');
-  } else {
-    // add error messages to the UI
+  } else if (!isDuplicate && filterConditionBoxState.value.editingConditionIndex > -1 && filterConditionBoxState.value.editingConditionIndex < filterConditionBoxState.value.filterConditions.length) {
+    Object.assign(filterConditionBoxState.value.filterConditions[filterConditionBoxState.value.editingConditionIndex], newFilterCondition);
+    clearEditingInputs('list');
   }
 }
 
@@ -144,6 +145,7 @@ function deleteSelectedFilterCondition() {
 function doubleClickFilterCondition(index: number) {
   toggleIsEditing('edit');
   filterConditionBoxState.value.editingCondition = { ...filterConditionBoxState.value.filterConditions[index] };
+  filterConditionBoxState.value.editingConditionIndex = index;
 }
 
 const emit = defineEmits({
