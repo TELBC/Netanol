@@ -106,7 +106,7 @@ public class FilterCondition
         // All statements need to match so we can not return true until the end
         
         // Does the source address match?
-        var maskedSource = Combine(edge.Source.GetAddressBytes(), SourceAddressMask);
+        var maskedSource = Combine(edge.Source.Address.GetAddressBytes(), SourceAddressMask);
         if (!maskedSource.SequenceEqual(SourceAddress))
             return false;
 
@@ -115,7 +115,7 @@ public class FilterCondition
             return false;
 
         // Does the destination address match?
-        var maskedDestination = Combine(edge.Target.GetAddressBytes(), DestinationAddressMask);
+        var maskedDestination = Combine(edge.Target.Address.GetAddressBytes(), DestinationAddressMask);
         if (!maskedDestination.SequenceEqual(DestinationAddress))
             return false;
 

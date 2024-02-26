@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using Fennec.Database;
 using Fennec.Database.Domain;
 using Fennec.Processing;
 using Fennec.Processing.Graph;
@@ -9,8 +8,8 @@ namespace Fennec.Tests.Filtering;
 public class FilterConditionTests
 {
     private readonly TraceEdge _trace = new (
-            IPAddress.Parse("192.168.1.100"), 
-            IPAddress.Parse("10.0.0.1"), 
+            new TraceNodeKey(IPAddress.Parse("192.168.1.100")),
+            new TraceNodeKey(IPAddress.Parse("10.0.0.1")),
             12345, 80,
             DataProtocol.Tcp, 1000, 10);
 

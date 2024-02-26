@@ -1,21 +1,11 @@
-﻿using System.Net;
-using Fennec.Database.Domain;
+﻿using Fennec.Database.Domain;
 
 namespace Fennec.Processing.Graph;
 
 public class TraceEdge
 {
-    public IPAddress Source { get; set; }
-    public ushort SourcePort { get; set; }
-    
-    public IPAddress Target { get; set; }
-    public ushort TargetPort { get; set; }
-    
-    public DataProtocol DataProtocol { get; set; }
-    public ulong PacketCount { get; set; }
-    public ulong ByteCount { get; set; }
-
-    public TraceEdge(IPAddress source, IPAddress target, ushort sourcePort, ushort targetPort, DataProtocol dataProtocol, ulong packetCount, ulong byteCount)
+    public TraceEdge(TraceNodeKey source, TraceNodeKey target, ushort sourcePort, ushort targetPort,
+        DataProtocol dataProtocol, ulong packetCount, ulong byteCount)
     {
         Source = source;
         Target = target;
@@ -25,6 +15,21 @@ public class TraceEdge
         PacketCount = packetCount;
         ByteCount = byteCount;
     }
+
+    public TraceNodeKey Source { get; set; }
+    public ushort SourcePort { get; set; }
+
+    public TraceNodeKey Target { get; set; }
+    public ushort TargetPort { get; set; }
+
+    public DataProtocol DataProtocol { get; set; }
+    public ulong PacketCount { get; set; }
+    public ulong ByteCount { get; set; }
+
+    /// <summary>
+    ///     Creates a new key for this edge.
+    /// </summary>
+    public TraceEdgeKey Key => new(Source, SourcePort, Target, TargetPort, DataProtocol);
 }
 
 public record TraceEdgeDto(

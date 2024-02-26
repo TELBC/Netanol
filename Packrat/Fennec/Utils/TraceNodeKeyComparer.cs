@@ -1,13 +1,18 @@
 ﻿using System.Net;
+using Fennec.Processing.Graph;
 
 namespace Fennec.Utils; 
 
-public class IpAddressComparer : IComparer<IPAddress>
+public class TraceNodeKeyComparer : IComparer<TraceNodeKey>
 {
-    public int Compare(IPAddress? x, IPAddress? y)
+    public int Compare(TraceNodeKey? x, TraceNodeKey? y)
     {
-        var bytesX = x!.GetAddressBytes();
-        var bytesY = y!.GetAddressBytes();
+        if (x == y) return 0;
+        if (x is null) return -1;
+        if (y is null) return 1;
+        
+        var bytesX = x.Address.GetAddressBytes();
+        var bytesY = y.Address.GetAddressBytes();
 
         var lengthComparison = bytesX.Length.CompareTo(bytesY.Length);
         if (lengthComparison != 0) return lengthComparison;

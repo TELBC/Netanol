@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Fennec.Controllers;
 using Fennec.Database;
 using Fennec.Database.Domain;
 using Fennec.Processing;
@@ -54,7 +55,7 @@ public class GraphRepositoryTests
         var graphRepository = new GraphRepository(traceRepository, null!);
 
         // Act
-        var result = await graphRepository.GenerateGraph(from, to, emptyLayout);
+        var result = await graphRepository.GenerateGraph(new GraphRequest(from, to), emptyLayout);
 
         // Assert
         Assert.NotNull(result);
@@ -102,7 +103,7 @@ public class GraphRepositoryTests
         var graphRepository = new GraphRepository(traceRepository, null!);
         
         // Act
-        var result = await graphRepository.GenerateGraph(from, to, emptyLayout);
+        var result = await graphRepository.GenerateGraph(new GraphRequest(from, to), emptyLayout);
         
         // Assert
         Assert.NotNull(result);
