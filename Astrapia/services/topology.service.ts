@@ -6,11 +6,12 @@ export interface GraphNode {
 }
 
 export interface GraphEdge {
+  id: string,
   source: string,
   target: string,
   packetCount: number,
   byteCount: number,
-  dataProtocol: Object
+  dataProtocol: string
 }
 
 export interface IGraphStatistics {
@@ -35,8 +36,8 @@ class TopologyService {
    */
   public async getTopology(layout: string, from: Date, to: Date): Promise<GraphResponse> {
     return await ApiService.post<GraphResponse>(`/api/graph/${layout}`, {
-        from: from.toISOString(),
-        to: to.toISOString()
+      from: from.toISOString(),
+      to: to.toISOString()
     }).then(x => x.data);
   }
 }

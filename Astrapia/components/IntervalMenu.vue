@@ -43,8 +43,7 @@ const handleInput = (event: Event) => {
 };
 
 const emit = defineEmits<{
-  change: [check: number],
-  valueChange: [rawValue: number];
+  change: [check: number];
 }>();
 
 const applyChanges = () => {
@@ -55,7 +54,6 @@ const applyChanges = () => {
     multiplier = 3600;
   }
   emit('change', inputValue.value * multiplier);
-  emit('valueChange', inputValue.value)
 };
 </script>
 

@@ -23,8 +23,8 @@ export default {
       metaData: null,
       zoom: null,
       simulationFrozen: false,
-      linkDistance: 100,
-      strengthForce: 500
+      linkDistance: 200,
+      strengthForce: 800
     };
   },
   watch: {
@@ -56,48 +56,58 @@ export default {
         .attr("width", window.innerWidth)
         .attr("height", window.innerHeight);
 
+      //this needs to be added otherwise the zoom is jittery
+      this.scene = this.chart.append("g");
+
       this.zoom = d3.zoom().on('zoom', (e) => {
-        const transform = e.transform;
-        this.chart.selectAll("line").attr('transform', transform);
-        this.chart.selectAll("circle").attr('transform', transform);
-        this.chart.selectAll("text").attr('transform', transform);
+        this.scene.attr("transform", e.transform);
       });
 
       this.chart.call(this.zoom);
 
-      this.link = this.chart.append("g")
+      this.link = this.scene.append("g")
         .attr("stroke", "#a4a4a4")
         .attr("stroke-width", 0.5)
-        .selectAll("line");
+        .selectAll("path");
 
-      this.linkHitArea = this.chart.append("g")
+      this.linkHitArea = this.scene.append("g")
         .attr("stroke", "transparent")
         .attr("stroke-width", 5)
         .attr("opacity", 0)
-        .selectAll("line");
+        .selectAll("path");
 
-      this.node = this.chart.append("g")
+      this.node = this.scene.append("g")
         .attr("stroke", "#fff")
         .attr("stroke-width", 1)
         .selectAll("circle");
 
-      this.label = this.chart.append("g")
+      this.label = this.scene.append("g")
         .attr("font-family", "Arial")
         .style("fill", "#414141")
         .selectAll("text");
+
+      //link arrow
+      this.scene.append("defs").selectAll("marker")
+        .data(["TCP"])
+        .enter().append("marker")
+        .attr('markerUnits', 'userSpaceOnUse')
+        .attr("id", function (d) {
+          return d;
+        })
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 26)
+        .attr("refY", 0)
+        .attr("markerWidth", 5)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto-start-reverse")
+        .append("path")
+        .attr("d", "M0,-5L10,0L0,5")
+        .attr("fill", "#494949");
     },
     ticked() {
-      this.link
-        .attr("x1", d => d.source.x)
-        .attr("y1", d => d.source.y)
-        .attr("x2", d => d.target.x)
-        .attr("y2", d => d.target.y);
+      this.link.attr("d", this.linkArc);
 
-      this.linkHitArea
-        .attr("x1", d => d.source.x)
-        .attr("y1", d => d.source.y)
-        .attr("x2", d => d.target.x)
-        .attr("y2", d => d.target.y);
+      this.linkHitArea.attr("d", this.linkArc);
 
       this.node
         .attr("cx", d => d.x)
@@ -106,6 +116,17 @@ export default {
       this.label
         .attr("x", d => d.x)
         .attr("y", d => d.y);
+    },
+    linkArc(d) {
+      // distance between source & target node
+      const r = Math.hypot(d.target.x - d.source.x, d.target.y - d.source.y);
+
+      // this is what makes the curve not pointy
+      const reducedR = r * 2;
+      return `
+        M${d.source.x},${d.source.y}
+        A${reducedR},${reducedR} 0 0,1 ${d.target.x},${d.target.y}
+      `;
     },
     updateChart({nodes, edges}) {
       const old = new Map(this.node.data().map(d => [d.id, d]));
@@ -122,13 +143,15 @@ export default {
 
       this.link = this.link
         .data(edges, d => [d.source, d.target])
-        .join(enter => enter.insert("line", "circle")
+        .join(enter => enter.insert("path", "circle")
+          .attr("fill", "none")
           .attr("stroke-width", d => packetCountScale(d.packetCount))
-          .attr("stroke", d => colorScale(d.byteCount)));
+          .attr("stroke", d => colorScale(d.byteCount))
+          .attr("marker-end", "url(#TCP)"));
 
       this.linkHitArea = this.linkHitArea
         .data(edges, d => [d.source, d.target])
-        .join(enter => enter.insert("line", "circle"))
+        .join(enter => enter.insert("path", "circle"))
         .call(link => link.append("title")
           .text(d => `Bytes: ${d.byteCount} \nPackets: ${d.packetCount} \nProtocols: ${d.dataProtocol}`));
 
@@ -150,6 +173,130 @@ export default {
           .attr("font-size", "10px")
           .text(d => d.name)
         );
+
+      let selectedNode = null;
+
+      //node hovering
+      this.node.on("mouseover", (event, d) => {
+        if (!selectedNode) {
+          const connectedNodes = edges.filter(edge => edge.source === d || edge.target === d);
+          const allNodes = [d, ...connectedNodes.map(edge => edge.source), ...connectedNodes.map(edge => edge.target)];
+
+          this.node.filter(node => allNodes.includes(node))
+            .transition()
+            .duration(150)
+            .attr("fill", "#EB5050")
+            .attr("r", 9);
+
+          this.link.filter(link => connectedNodes.includes(link))
+            .transition()
+            .duration(150)
+            .attr("stroke", "#EB5050")
+            .attr("stroke-width", 2);
+
+          this.label.filter(label => allNodes.includes(label))
+            .transition()
+            .duration(150)
+            .attr("font-size", "12px")
+            .attr("font-weight", "bold");
+
+          //make the rest of the unconnected graph fade out
+          this.node.filter(node => !allNodes.includes(node))
+            .transition()
+            .duration(150)
+            .attr("opacity", 0.3);
+
+          this.link.filter(link => !connectedNodes.includes(link))
+            .transition()
+            .duration(150)
+            .attr("opacity", 0.3);
+
+          this.label.filter(label => !allNodes.includes(label))
+            .transition()
+            .duration(150)
+            .attr("opacity", 0.3);
+        }
+      })
+        .on("mouseout", () => {
+          if (!selectedNode) {
+            this.node.transition()
+              .duration(150)
+              .attr("fill", "#537B87")
+              .attr("r", 8)
+              .attr("opacity", 1);
+
+            this.link.transition()
+              .duration(150)
+              .attr("stroke", d => colorScale(d.byteCount))
+              .attr("stroke-width", d => packetCountScale(d.packetCount))
+              .attr("opacity", 1);
+
+            this.label.transition()
+              .duration(150)
+              .attr("font-size", "10px")
+              .attr("font-weight", "normal")
+              .attr("opacity", 1);
+            if (!selectedNode) {
+              this.toggleSimulation(false);
+            }
+          }
+        })
+        .on("click", (event, d) => {
+          if (selectedNode) {
+            this.node.transition()
+              .duration(150)
+              .attr("fill", "#537B87")
+              .attr("r", 8)
+              .attr("opacity", 1);
+            this.link.transition()
+              .duration(150)
+              .attr("stroke", d => colorScale(d.byteCount))
+              .attr("stroke-width", d => packetCountScale(d.packetCount))
+              .attr("opacity", 1);
+            this.label.transition()
+              .duration(150)
+              .attr("font-size", "10px")
+              .attr("font-weight", "normal")
+              .attr("opacity", 1);
+          }
+
+          selectedNode = selectedNode === d ? null : d;
+
+          if (selectedNode) {
+            const connectedNodes = edges.filter(edge => edge.source === d || edge.target === d);
+            const allNodes = [d, ...connectedNodes.map(edge => edge.source), ...connectedNodes.map(edge => edge.target)];
+            this.node.filter(node => allNodes.includes(node))
+              .transition()
+              .duration(150)
+              .attr("fill", "#EB5050")
+              .attr("r", 9);
+            this.link.filter(link => connectedNodes.includes(link))
+              .transition()
+              .duration(150)
+              .attr("stroke", "#EB5050")
+              .attr("stroke-width", 2);
+            this.label.filter(label => allNodes.includes(label))
+              .transition()
+              .duration(150)
+              .attr("font-size", "12px")
+              .attr("font-weight", "bold");
+            this.node.filter(node => !allNodes.includes(node))
+              .transition()
+              .duration(150)
+              .attr("opacity", 0.3);
+            this.link.filter(link => !connectedNodes.includes(link))
+              .transition()
+              .duration(150)
+              .attr("opacity", 0.3);
+            this.label.filter(label => !allNodes.includes(label))
+              .transition()
+              .duration(150)
+              .attr("opacity", 0.3);
+            this.toggleSimulation(true);
+          } else {
+            this.toggleSimulation(false);
+          }
+        });
 
       this.simulation.nodes(nodes);
       this.simulation.force("link").links(edges);
