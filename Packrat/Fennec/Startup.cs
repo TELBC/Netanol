@@ -54,11 +54,15 @@ public class Startup
             .AddOptions<SecurityOptions>()
             .Bind(Configuration.GetSection("Security"))
             .ValidateDataAnnotations();
-
+        
+        // Flow services
+        services.Configure<FlowImporterMetricsOptions>(Configuration.GetSection("FlowImport"));
+        services.AddSingleton<IFlowImporterMetric, FlowImporterMetric>();
+        services.AddHostedService<FlowImporterTimer>();
+        
         // Metric service
         services.AddSingleton<IMetricService, MetricService>();
-        services.AddSingleton<IFlowImporterMetric, FlowImporterMetric>();
-
+        
         // Database services
         services.AddSingleton<ITraceRepository, TraceRepository>();
         services.AddSingleton<ITimeService, TimeService>();
