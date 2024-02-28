@@ -1,31 +1,58 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using Fennec.Database;
 using Fennec.Options;
 using Microsoft.Extensions.Options;
-using SQLitePCL;
 
 namespace Fennec.Services;
 
 /// <summary>
-/// Service that resolves IP addresses to DNS entries.
+///     Service that resolves IP addresses to DNS entries.
 /// </summary>
-public class DnsResolverService
+public interface IDnsResolverService
+{
+    /// <summary>
+    ///     Resolves an IP address to a DNS entry, returns null if no entry is found.
+    /// </summary>
+    /// <param name="ipAddress">IP to get from _dnsCache or resolve</param>
+    /// <returns></returns>
+    Task<string?> GetDnsEntryFromCacheOrResolve(IPAddress ipAddress);
+    
+    /// <summary>
+    /// Remove entries older than the <see cref="DnsCacheOptions.InvalidationDuration"/> from the cache.
+    /// </summary>
+    public void CleanupDnsCache();
+}
+
+public class DnsResolverService : IDnsResolverService
 {
     private readonly ILogger _log;
-    private Dictionary<IPAddress, (string?, DateTime)> _dnsCache = new();
-    private readonly TimeSpan _invalidationDuration;
+    private readonly DnsCacheOptions _options;
+    private Dictionary<IPAddress, (string? DnsName, DateTime RegistrationTime)> _dnsCache = new();
 
     public DnsResolverService(ILogger log, IOptions<DnsCacheOptions> options)
     {
-        _log = log;
-        _invalidationDuration = options.Value.InvalidationDuration;
+        _log = log.ForContext<DnsResolverService>();
+        _options = options.Value;
     }
 
-    /// <summary>
-    /// Resolves an IP address to a DNS entry.
-    /// </summary>
-    /// <param name="ipAddress"></param>
+    public async Task<string?> GetDnsEntryFromCacheOrResolve(IPAddress ipAddress)
+    {
+        if (_dnsCache.TryGetValue(ipAddress, out var cacheEntry))
+        {
+            if (DateTime.Now - cacheEntry.RegistrationTime <= _options.InvalidationDuration)
+                return cacheEntry.DnsName;
+            
+            _log.Verbose("Evicting {IpAddress} from DNS cache | {CacheEntry}", ipAddress, cacheEntry);
+            _dnsCache.Remove(ipAddress);
+        }
+        
+        var hostname = await ResolveIpToDns(ipAddress);
+        _dnsCache.Add(ipAddress, (hostname, DateTime.Now));
+        _log.Verbose("Resolved {IpAddress} to {DnsName}", ipAddress, hostname);
+
+        return _dnsCache[ipAddress].DnsName;
+    }
+
     private async Task<string?> ResolveIpToDns(IPAddress ipAddress)
     {
         try
@@ -33,78 +60,49 @@ public class DnsResolverService
             var ipHostEntry = await Dns.GetHostEntryAsync(ipAddress);
             return ipHostEntry.HostName;
         }
-        catch (SocketException e)
-        {
-            _log.Verbose("Could not resolve {IpAddress} to DNS entry: {Message}", ipAddress, e.Message);
-        }
         catch (Exception e)
         {
-            _log.Error("Unexpected exception while resolving {IpAddress} to DNS entry: {Message}", ipAddress,
+            // Prevent the console from being too cluttered with DNS resolution errors
+            if (e is SocketException { Message: "No such host is known." })
+                return null;
+            
+            _log.Error(e, "Unexpected exception while DNS resolving {IpAddress} | {ExceptionName}: {ExceptionMessage}", ipAddress,
+                e.GetType(),
                 e.Message);
         }
 
         return null;
     }
 
-    /// <summary>
-    /// Resolves an IP address to a DNS entry, either from the cache or by calling <see cref="ResolveIpToDns"/>.
-    /// </summary>
-    /// <param name="ipAddress">IP to get from _dnsCache or resolve</param>
-    /// <returns></returns>
-    public async Task<string?> GetDnsEntryFromCacheOrResolve(IPAddress ipAddress)
-    {
-        if (!_dnsCache.TryGetValue(ipAddress, out var cachedDns)) // if IP not in cache
-        {
-            var hostname = await ResolveIpToDns(ipAddress);
-            if (hostname != null)
-            {
-                _dnsCache.Add(ipAddress, (hostname, DateTime.Now));
-            }
-            else // if IP not in cache and could not be resolved
-            {
-                _dnsCache.Add(ipAddress, (null, DateTime.Now));
-                _log.Verbose(
-                    "No DNS Entry for {IpAddress} was found continuing with empty value. Check every {DnsInvalidationDuration}",
-                    ipAddress, _invalidationDuration);
-            }
-
-            return hostname;
-        }
-
-        if (DateTime.Now - cachedDns.Item2 <= _invalidationDuration) // if IP in cache and not expired
-        {
-            return cachedDns.Item1;
-        }
-
-        return await ResolveIpToDns(ipAddress);
-    }
-
-    /// <summary>
-    /// Called by <see cref="DnsCacheCleanupService"/> to clean up the DNS cache.
-    /// </summary>
     public void CleanupDnsCache()
     {
-        var cutoff = DateTime.Now.Subtract(_invalidationDuration); // remove entries older than InvalidationDuration
+        var cutoff = DateTime.Now.Subtract(_options.InvalidationDuration);
+        
+        var countBefore = _dnsCache.Count;
         _dnsCache = _dnsCache
             .Where(kvp => kvp.Value.Item2 > cutoff)
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        var countAfter = _dnsCache.Count;
+        
+        _log.Information("Cleaned up DNS cache... Before {BeforeCount} entries, removed {Difference} entries, now at {AfterCount} entries", 
+            countBefore, countBefore - countAfter, countAfter);
     }
 }
 
 /// <summary>
-/// Background service that cleans up the DNS cache.
+///     Background service that cleans up the DNS cache.
 /// </summary>
 public class DnsCacheCleanupService : BackgroundService
 {
-    private readonly DnsResolverService _dnsResolverService;
-    private readonly ILogger _log;
     private readonly TimeSpan _cleanupInterval;
+    private readonly IDnsResolverService _dnsResolverService;
+    private readonly ILogger _log;
 
-    public DnsCacheCleanupService(DnsResolverService dnsResolverService, ILogger log,
+    public DnsCacheCleanupService(IDnsResolverService dnsResolverService, ILogger log,
         IOptions<DnsCacheOptions> options)
     {
         _dnsResolverService = dnsResolverService;
-        _log = log;
+        _log = log.ForContext<DnsCacheCleanupService>();
         _cleanupInterval = options.Value.CleanupInterval;
     }
 
@@ -112,8 +110,9 @@ public class DnsCacheCleanupService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _log.Information("Running DnsCacheCleanupService");
+            _log.Information("Cleaning up DNS cache");
             _dnsResolverService.CleanupDnsCache();
+            _log.Information("Next cleanup in {CleanupInterval}", _cleanupInterval);
             await Task.Delay(_cleanupInterval, stoppingToken);
         }
     }

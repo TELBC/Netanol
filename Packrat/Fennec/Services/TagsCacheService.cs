@@ -39,7 +39,7 @@ public class TagsCacheService : ITagsCacheService
     public async Task RequestLatestTagAndIps()
     {
         _ipTagsDict = await _tagsRequestService.GetLatestTagsAndIps();
-        _log.Information("Updated Vmware tags cache... Cache now has {CacheSize} IP entries", _ipTagsDict.Count);
+        _log.Information("Updated VMware tags cache... Cache now has {CacheSize} IP entries", _ipTagsDict.Count);
     }
 }
 
@@ -68,7 +68,7 @@ public class TagsCacheRefresherService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _log.Information("Updating Vmware tags cache");
+            _log.Information("Updating VMware tags cache");
             await _tagsCacheService.RequestLatestTagAndIps();
             await Task.Delay(_options.RefreshPeriod, stoppingToken);
         }

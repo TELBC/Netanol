@@ -65,13 +65,13 @@ public class GraphRepository : IGraphRepository
             
             Nodes = graph.Nodes.Select(n => new TraceNodeDto(
                 n.Value.Address.ToString(), 
-                n.Value.Name ?? n.Value.Address.ToString(), 
+                n.Value.Name, 
                 n.Value.Tags)).ToList(),
             
             Edges = graph.Edges.Select(e => new TraceEdgeDto(
-                $"{e.Value.DataProtocol}/{e.Value.Source}-{e.Value.Target}",
-                e.Value.Source.ToString(),
-                e.Value.Target.ToString(),
+                $"{e.Value.DataProtocol}/{e.Value.Source.Address}-{e.Value.Target.Address}",
+                e.Value.Source.Address.ToString(),
+                e.Value.Target.Address.ToString(),
                 e.Value.DataProtocol,
                 e.Value.PacketCount,
                 e.Value.ByteCount)).ToList()

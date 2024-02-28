@@ -5,7 +5,6 @@ using Fennec.Services;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace Fennec.Database;
 
@@ -14,6 +13,11 @@ namespace Fennec.Database;
 /// </summary>
 public interface ITraceRepository
 {
+    /// <summary>
+    ///     Write a list of <see cref="TraceImportInfo" /> to the database.
+    /// </summary>
+    /// <param name="traceImportInfos"></param>
+    /// <returns></returns>
     public Task ImportTraceImportInfo(IEnumerable<TraceImportInfo> traceImportInfos);
 
     /// <summary>
@@ -60,41 +64,41 @@ public class AggregateTrace
     }
 #pragma warning restore CS8618
 
-    [BsonElement("sourceIpBytes")] 
+    [BsonElement("sourceIpBytes")]
     public byte[] SourceIpBytes { get; set; }
 
-    [BsonElement("destinationIpBytes")] 
+    [BsonElement("destinationIpBytes")]
     public byte[] DestinationIpBytes { get; set; }
 
-    [BsonElement("sourcePort")] 
+    [BsonElement("sourcePort")]
     public ushort SourcePort { get; set; }
 
-    [BsonElement("destinationPort")] 
+    [BsonElement("destinationPort")]
     public ushort DestinationPort { get; set; }
-    
+
     [BsonElement("sourceDnsName")]
     public string? SourceDnsName { get; set; }
-    
+
     [BsonElement("destinationDnsName")]
     public string? DestinationDnsName { get; set; }
 
-    [BsonElement("dataProtocol")] 
+    [BsonElement("dataProtocol")]
     public DataProtocol DataProtocol { get; set; }
 
-    [BsonElement("packetCount")] 
+    [BsonElement("packetCount")]
     public ulong PacketCount { get; set; }
 
-    [BsonElement("byteCount")] 
+    [BsonElement("byteCount")]
     public ulong ByteCount { get; set; }
 }
 
 public class TraceRepository : ITraceRepository
 {
-    private readonly DnsResolverService _dnsService;
+    private readonly IDnsResolverService _dnsService;
     private readonly IDuplicateFlaggingService _flaggingService;
     private readonly IMongoCollection<SingleTrace> _traces;
 
-    public TraceRepository(IMongoDatabase database, DnsResolverService dnsService,
+    public TraceRepository(IMongoDatabase database, IDnsResolverService dnsService,
         IDuplicateFlaggingService flaggingService)
     {
         _dnsService = dnsService;
@@ -136,7 +140,7 @@ public class TraceRepository : ITraceRepository
         DateTimeOffset end)
     {
         var filter = BuildQueryConditions(conditions);
-        return await _traces 
+        return await _traces
             .Aggregate()
             .Match(t => t.Timestamp >= start && t.Timestamp <= end)
             .Match(filter)
@@ -150,7 +154,7 @@ public class TraceRepository : ITraceRepository
                             { "sourceIp", "$source.ipBytes" },
                             { "sourcePort", "$source.port" },
                             { "destinationIp", "$destination.ipBytes" },
-                            { "destinationPort", "$destination.port" },
+                            { "destinationPort", "$destination.port" }
                             // When the frontend is ready to display the dataProtocol, uncomment these lines
                             // { "dataProtocol", "$dataProtocol" }
                         }
@@ -193,7 +197,7 @@ public class TraceRepository : ITraceRepository
 
         if (conditions.PortsWhitelist == null) // || !conditions.PortsWhitelist.Any())
             return filters.Any() ? Builders<SingleTrace>.Filter.And(filters) : Builders<SingleTrace>.Filter.Empty;
-        
+
         var portFilters = new List<FilterDefinition<SingleTrace>>();
         foreach (var port in conditions.PortsWhitelist)
         {

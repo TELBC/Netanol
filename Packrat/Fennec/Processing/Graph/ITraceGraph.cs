@@ -170,12 +170,12 @@ public class TraceGraph : ITraceGraph
         // Create the new edges and remove the old ones
         foreach (var (key, value) in dict)
         {
-            var newEdge = valueSelector(key, value.Select(n => n.Item2));
-            AddEdge(newEdge);
-
             // Delete all old edges
             foreach (var oldEdge in value)
                 Edges.Remove(oldEdge.Item1);
+            
+            var newEdge = valueSelector(key, value.Select(n => n.Item2));
+            AddEdge(newEdge);
         }
 
         foreach (var node in new List<TraceNodeKey>(Nodes.Keys))

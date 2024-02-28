@@ -21,7 +21,7 @@ public static class LayerType
     {
         { Filter, (typeof(FilterLayer), typeof(FilterLayerDto)) },
         { Aggregation, (typeof(AggregationLayer), typeof(AggregationLayerDto)) },
-        { Naming, (typeof(NamingLayer), typeof(string)) },
+        { Naming, (typeof(NamingLayer), typeof(NamingLayerDto)) },
         { VmwareTagging, (typeof(VmwareTaggingLayer), typeof(VmwareTaggingLayerDto)) },
         { TagFilter, (typeof(TagFilterLayer), typeof(TagFilterLayerDto)) }
     };

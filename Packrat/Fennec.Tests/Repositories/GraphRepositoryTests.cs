@@ -6,7 +6,7 @@ using Fennec.Processing;
 using Fennec.Processing.Graph;
 using NSubstitute;
 
-namespace Fennec.Tests;
+namespace Fennec.Tests.Repositories;
 
 public class GraphRepositoryTests
 {
