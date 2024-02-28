@@ -221,6 +221,9 @@ export default {
       return !this.isEqual(this.previousData, newData);
     },
     isEqual(obj1, obj2) {
+      if (obj1 === null || obj2 === null) {
+        return obj1 === obj2;
+      }
       if (typeof obj1 !== 'object' || typeof obj2 !== 'object')
         return obj1 === obj2;
 
