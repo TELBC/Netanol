@@ -4,7 +4,7 @@
       <font-awesome-icon icon="fa-solid fa-chevron-left" class="collapse-expand-icon" v-bind:class="{ 'collapse-expand-layer-rotate': graphFilterMenuState.isExpanded }" />
     </div>
     <div class="graph-filter-menu-container" :class="{ 'expanded': graphFilterMenuState.isExpanded }">
-      <LayerManagement v-bind:layout="graphFilterMenuState.selectedLayout.name" v-bind:layers="graphFilterMenuState.selectedLayout.layers" />
+      <LayerManagement v-bind:layout="graphFilterMenuState.selectedLayout.name" v-bind:layers="graphFilterMenuState.selectedLayout.layers"/>
     </div>
   </div>
 </template>
@@ -20,8 +20,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
+  layersFetched: [],
   menuOpened: [boolean]
-}>()
+}>();
 
 const graphFilterMenuState = ref({
   isExpanded: false,
@@ -34,6 +35,7 @@ const graphFilterMenuState = ref({
 async function getLayersOfLayout() {
   const layoutData = await layoutService.getLayoutByName(graphFilterMenuState.value.selectedLayout.name);
   graphFilterMenuState.value.selectedLayout.layers = layoutData.layers;
+  emit('layersFetched');
 }
 
 // on layout change fetch layers of the layout

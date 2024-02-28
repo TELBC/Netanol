@@ -158,7 +158,6 @@ function setLayerEnabled(index: number, value: boolean) {
         implicitInclude: false
       }
     })
-    getLayersOfLayout!();
   }, 250);
 }
 
