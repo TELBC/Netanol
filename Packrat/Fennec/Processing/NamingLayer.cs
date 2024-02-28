@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using Fennec.Processing.Graph;
-using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Fennec.Processing;
@@ -12,14 +11,11 @@ public class NamingAssigner : IpAddressMatcher
         Name = name;
     }
 
-    protected NamingAssigner(string? name)
-    {
-        Name = name;
-    }
-
     [BsonElement("name")]
     public string? Name { get; set; }
 }
+
+public record NamingAssignerDto(byte[] Address, byte[] Mask, bool Include, string? Name);
 
 /*
  * Possible names are:
@@ -90,3 +86,5 @@ public class NamingLayer : ILayer
     private NamingAssigner? GetAssigner(IPAddress address)
         => Matchers.FirstOrDefault(matcher => matcher.Match(address.GetAddressBytes()));
 }
+
+public record NamingLayerDto(string Type, bool Enabled, string? Name, bool OverwriteWithDns, List<NamingAssigner> Matchers) : ILayerDto;

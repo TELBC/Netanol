@@ -74,8 +74,7 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid credentials");
         }
 
-        _log.Debug("Login attempt for {Username} succeeded -> Generating JWT token", request.Username);
-        var roles = await _userManager.GetRolesAsync(user);
+        _log.Debug("Login attempt for {Username} succeeded", request.Username);
 
         var claims = new List<Claim>
         {

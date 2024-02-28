@@ -2,9 +2,8 @@
 using Fennec.Database;
 using Fennec.Database.Domain;
 using Fennec.Parsers;
-using Fennec.Tests.Integration;
 
-namespace Fennec.Tests;
+namespace Fennec.Tests.Integration;
 
 public class TraceRepositoryTests : MongoDbFactory
 {

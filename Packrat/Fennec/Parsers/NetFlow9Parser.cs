@@ -95,7 +95,7 @@ public class NetFlow9Parser : IParser
         {
             var info = CreateTraceImportInfo(view[i], result);
             traceImportInfos.Add(info);
-            _log.Verbose("Read single trace | {@SingleTraceInfo}",
+            _log.Debug("Read single trace | {@SingleTraceInfo}",
                 new { Source = $"{info.SrcIp}:{info.SrcPort}", 
                     Destination = $"{info.DstIp}:{info.DstPort}", 
                     info.PacketCount, info.ByteCount });

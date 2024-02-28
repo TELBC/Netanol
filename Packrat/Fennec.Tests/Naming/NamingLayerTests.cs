@@ -18,7 +18,7 @@ public class NamingLayerTests
             SourceIpBytes = Ip1.GetAddressBytes(),
             SourceDnsName = "host1.local",
             DestinationIpBytes = Ip2.GetAddressBytes(),
-            DestinationDnsName = "host2.local",
+            DestinationDnsName = "host2.local"
         }
     };
 
@@ -80,19 +80,17 @@ public class NamingLayerTests
         {
             Matchers = new List<NamingAssigner>
             {
-                // new(new byte[]{ 1, 0, 0, 0}, new byte[]{255, 0, 0, 0}, true, ""),
-                new (new byte[]{ 2, 2,2,2}, new byte[] {255,255,255,255}, true, "Server2")
+                new(new byte[] { 2, 2, 2, 2 }, new byte[] { 255, 255, 255, 255 }, true, "Server2")
             },
             OverwriteWithDns = true
         };
-        
+
         // Act  
         layer.Execute(graph, null!);
-        
+
         // Assert
         Assert.Equal(2, graph.Nodes.Count);
         Assert.Contains(graph.Nodes, n => n.Value.Name.Equals("host1.local"));
         Assert.Contains(graph.Nodes, n => n.Value.Name.Equals("Server2"));
     }
-    
 }

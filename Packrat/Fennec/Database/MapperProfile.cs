@@ -107,5 +107,10 @@ public class MapperProfile : Profile
         CreateMap<TagFilterLayerDto, TagFilterLayer>();
         CreateMap<TagFilterCondition, TagFilterConditionDto>();
         CreateMap<TagFilterConditionDto, TagFilterCondition>();
+
+        CreateMap<NamingLayer, NamingLayerDto>();
+        CreateMap<NamingLayerDto, NamingLayer>();
+        CreateMap<NamingAssigner, NamingLayerDto>();
+        CreateMap<NamingLayerDto, NamingAssigner>();
     }
 }

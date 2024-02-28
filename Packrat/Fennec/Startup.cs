@@ -20,7 +20,6 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
 using OpenApiInfo = Microsoft.OpenApi.Models.OpenApiInfo;
-using Serilog.Sinks.Grafana.Loki;
 
 namespace Fennec;
 
@@ -71,20 +70,29 @@ public class Startup
         services.AddSingleton<IMongoDatabase>(s => s.GetRequiredService<IMongoClient>().GetDatabase("netanol"));
 
         // DnsResolverService
-        services.Configure<DnsCacheOptions>(Configuration.GetSection("DnsCache"));
-        services.AddSingleton<DnsResolverService>();
-        services.AddSingleton<DnsCacheCleanupService>();
+        var dnsCacheOptions = Configuration.GetSection("DnsCache").Get<DnsCacheOptions>()!;
+        if (dnsCacheOptions.Enabled)
+        {
+            Log.Information("Enabling the DnsCache... DNS resolution will be available and locally cached");
+            services.Configure<DnsCacheOptions>(Configuration.GetSection("DnsCache"));
+            services.AddSingleton<IDnsResolverService, DnsResolverService>();
+            services.AddHostedService<DnsCacheCleanupService>();
+        }
+        else
+        {
+            Log.Information("DnsCache is disabled... No DNS resolution will be available");
+        }
 
         // Parser services
         services.AddSingleton<NetFlow9Parser>();
-        services.AddSingleton<IpFixParser>(); 
+        services.AddSingleton<IpFixParser>();
 
         // Vmware API 
         var tagsRequest = Configuration.GetSection("TagsRequest").Get<TagsRequestOptions>()!;
         if (tagsRequest.Enabled)
         {
             Log.Information("Enabling the Vmware tagging services... Layers using Vmware tags will be available");
-            
+
             services.AddHttpClient("VmWareApiClient")
                 .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
                 {
@@ -92,20 +100,22 @@ public class Startup
                 })
                 .ConfigureHttpClient((_, client) =>
                 {
-                    if(tagsRequest.VmWareRequest.VmWareTargetAddress.IsNullOrEmpty())
-                        throw new NullReferenceException("No target machine address was provided for Vmware tagging... Either disable Vmware tagging or set the target machine address.");
-                    
-                    if(tagsRequest.VmWareRequest.VmWareCredentials.Username.IsNullOrEmpty() ||
-                       tagsRequest.VmWareRequest.VmWareCredentials.Password.IsNullOrEmpty())
-                        throw new NullReferenceException("Username and/or password is not configured for Vmware tagging... Either disable Vmware tagging or set the username and password.");
-                    
-                    
+                    if (tagsRequest.VmWareRequest.VmWareTargetAddress.IsNullOrEmpty())
+                        throw new NullReferenceException(
+                            "No target machine address was provided for Vmware tagging... Either disable Vmware tagging or set the target machine address.");
+
+                    if (tagsRequest.VmWareRequest.VmWareCredentials.Username.IsNullOrEmpty() ||
+                        tagsRequest.VmWareRequest.VmWareCredentials.Password.IsNullOrEmpty())
+                        throw new NullReferenceException(
+                            "Username and/or password is not configured for Vmware tagging... Either disable Vmware tagging or set the username and password.");
+
+
                     client.BaseAddress = new Uri($"https://{tagsRequest.VmWareRequest.VmWareTargetAddress}");
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
-                                Convert.ToBase64String(Encoding.ASCII.GetBytes(
-                                    $"{tagsRequest.VmWareRequest.VmWareCredentials.Username}:{tagsRequest.VmWareRequest.VmWareCredentials.Password}")));
+                        Convert.ToBase64String(Encoding.ASCII.GetBytes(
+                            $"{tagsRequest.VmWareRequest.VmWareCredentials.Username}:{tagsRequest.VmWareRequest.VmWareCredentials.Password}")));
                 });
-            
+
             services.Configure<TagsRequestOptions>(Configuration.GetSection("TagsRequest"));
             services.Configure<TagsCacheOptions>(Configuration.GetSection("TagsCache"));
             services.AddSingleton<ITagsRequestService, TagsRequestService>();
@@ -117,29 +127,27 @@ public class Startup
             if (environment.IsDevelopment())
             {
                 services.AddSingleton<ITagsCacheService, MockTagsCacheService>();
-                Log.Information("Vmware tagging is mocked... Mocking is enabled in development environment when Vmware tagging is otherwise disabled");
+                Log.Information(
+                    "Vmware tagging is mocked... Mocking is enabled in development environment when Vmware tagging is otherwise disabled");
             }
-            else 
+            else
+            {
                 Log.Information("Vmware tagging is disabled... Layers using Vmware tagging will be unavailable");
+            }
         }
-        
+
         // Protocol multiplexer
         var multiplexerOptions = Configuration.GetSection("Multiplexers").Get<List<MultiplexerOptions>>();
 
         if (multiplexerOptions != null)
-            services.AddHostedService<MultiplexerMonitorService>(s => 
+            services.AddHostedService<MultiplexerMonitorService>(s =>
                 ActivatorUtilities.CreateInstance<MultiplexerMonitorService>(s, multiplexerOptions));
         else
             Log.Error("Failed to read multiplexer configuration... To run no multiplexers define an empty list");
 
         // Web services
-        services.AddControllers(c =>
-        {
-            c.ModelBinderProviders.Insert(0, new LayerModelBinderProvider());
-        }).AddNewtonsoftJson(options =>
-        {
-            options.SerializerSettings.Converters.Add(new StringEnumConverter());
-        });
+        services.AddControllers(c => { c.ModelBinderProviders.Insert(0, new LayerModelBinderProvider()); })
+            .AddNewtonsoftJson(options => { options.SerializerSettings.Converters.Add(new StringEnumConverter()); });
         services.AddAutoMapper(typeof(Program).Assembly);
 
         if (StartupOptions.AllowCors)
@@ -156,7 +164,9 @@ public class Startup
             });
         }
         else
+        {
             Log.Information("CORS is disabled... No CORS header will be added");
+        }
 
         if (StartupOptions.EnableSwagger)
             services.AddSwaggerGen(c =>
@@ -234,9 +244,8 @@ public class Startup
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
                 .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
-                .WriteTo.GrafanaLoki(context.Configuration.GetConnectionString("Loki"))
                 .WriteTo
-                .Console(restrictedToMinimumLevel: LogEventLevel.Debug); // TODO: behave different in different environment
+                .Console(LogEventLevel.Verbose); // TODO: behave different in different environment
         });
     }
 
@@ -260,8 +269,11 @@ public class Startup
                     Log.Error("Failed to create initial admin user... Exiting");
                     Environment.Exit(1);
                 }
-            } else
+            }
+            else
+            {
                 Log.Information("Initial admin user already exists... Skipping creation");
+            }
         }
 
         app.UsePathBase("/api");
@@ -275,16 +287,19 @@ public class Startup
                 c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Fennec API V1");
                 c.RoutePrefix = "swagger";
             });
-        } else
+        }
+        else
+        {
             Log.Information("Swagger is disabled... No Swagger UI will be available");
+        }
 
-        if (StartupOptions.AllowCors) 
+        if (StartupOptions.AllowCors)
             app.UseCors();
 
         app.UseCookiePolicy();
         app.UseAuthentication();
         app.UseAuthorization();
-        
+
         if (SecurityOptions.Enabled)
         {
             Log.Information("Security is enabled... To access protected endpoints authorization is required");
