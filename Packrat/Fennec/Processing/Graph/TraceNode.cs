@@ -4,14 +4,16 @@ namespace Fennec.Processing.Graph;
 
 public class TraceNode
 {
-    public TraceNode(IPAddress address, string name)
+    public TraceNode(IPAddress address, string name, string? dnsName = null)
     {
         Address = address;
         Name = name;
+        DnsName = dnsName;
     }
 
     public IPAddress Address { get; set; }
     public List<string>? Tags { get; set; }
+    public string? DnsName { get; set; }
     public string Name { get; set; }
 
     /// <summary>

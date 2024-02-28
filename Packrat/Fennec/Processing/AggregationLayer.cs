@@ -34,7 +34,15 @@ public class AggregationLayer : ILayer
     [BsonElement("enabled")] 
     public bool Enabled { get; set; }
 
-    public string Description => "Not implemented";
+    public string Description
+    {
+        get
+        {
+            var impl = Matchers[0].Include ? "Include" : "Exclude";
+            var cond = Matchers.Count == 1 ? "Condition" : "Conditions";
+            return $"{Matchers.Count} {cond}, Implicit {impl}";
+        }
+    }
 
     public void Execute(ITraceGraph graph, IServiceProvider _)
     {
@@ -46,7 +54,7 @@ public class AggregationLayer : ILayer
                 return null;
 
             return new IPAddress(matcher.MaskedAddress);
-        }, (b, _) => new TraceNode(b, b.ToString()));
+        }, (b, _) => new TraceNode(b, b.ToString(), null));
     }
 
     private IpAddressMatcher? GetMatcherForAddress(IPAddress address)
