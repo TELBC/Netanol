@@ -28,15 +28,28 @@
   </div>
   <div class="create-form" v-bind:class="{ 'create-layer-open': layerListState.createLayerOpen }">
     <input class="create-inputs" type="text" placeholder="Layer Name" v-model="createLayerData.name" />
-    <input class="create-inputs" type="text" placeholder="Layer Type" v-model="createLayerData.type" />
+    <select class="create-dropdown-inputs" required v-model="createLayerData.type">
+      <option value="" disabled selected hidden>Select Layer Type</option>
+      <option value="filter">Filter</option>
+      <option value="aggregation">Grouping</option>
+      <option value="tag-filter">Tag Filter</option>
+      <option value="vmware-tagging">Tag VMware</option>
+      <option value="naming">Naming</option>
+      <option value="styling">Styling</option>
+    </select>
     <div class="enable-new-layer">
-      <p>Enable?</p>
+      <p>Enable on creation</p>
       <input type="checkbox" class="theme-checkbox" v-model="createLayerData.enabled" />
     </div>
-    <FilterConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
-    <div class="enable-new-layer">
-      <p>Implicit Include?</p>
-      <input type="checkbox" class="theme-checkbox" v-model="createLayerData.filterList.implicitInclude" />
+    <div class="filter-condition" v-if="createLayerData.type === 'filter'">
+      <FilterConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+      <div class="enable-new-layer" >
+        <p>Implicit Inclusion</p>
+        <input type="checkbox" class="theme-checkbox" v-model="createLayerData.filterList.implicitInclude" />
+      </div>
+    </div>
+    <div class="filter-condition" v-if="createLayerData.type === 'aggregation'">
+      <AggregationConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
     </div>
   </div>
   <div class="create-layer" @click="toggleCreateLayerOpen">
@@ -50,6 +63,7 @@ import {ref, watch, inject} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import FilterConditionBox from "~/components/FilterConditionBox.vue";
 import layerService from "~/services/layerService";
+import AggregationConditionBox from "~/components/AggregationConditionBox.vue";
 
 export interface FilterConditions {
   sourceAddress: string,
@@ -353,6 +367,27 @@ watch(() => props.layers!, (newLayers, oldLayers) => {
 
 .create-inputs:focus {
   outline: none;
+}
+
+.create-dropdown-inputs {
+  width: 91%;
+  border: 1px solid #424242;
+  background: white;
+  border-radius: 4px;
+  font-size: 2vh;
+  margin-bottom: 1.5vh;
+  padding: 2%;
+  outline: none;
+  color: #424242;
+}
+
+.create-dropdown-inputs:focus {
+  outline: none;
+}
+
+.filter-condition{
+  margin-left: 10%;
+  width: 100%;
 }
 
 .enable-new-layer {

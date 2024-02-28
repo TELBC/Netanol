@@ -15,15 +15,15 @@
         <div class="conditions-src-dest">
           <div class="src-dest-address-container">
             <p class="include-exclude-filter-src-dest">
-              Src:&nbsp;
+              Network:&nbsp;
             </p>
-            {{ condition.sourceAddress }}
+            {{ condition.NetworkAddress }}
           </div>
           <div class="src-dest-address-container">
             <p class="include-exclude-filter-src-dest">
-              Dest:&nbsp;
+              Mask:&nbsp;
             </p>
-            {{ condition.destinationAddress }}
+            {{ condition.SubnetMask }}
           </div>
         </div>
         <p class="include-exclude-filter-src-dest">
@@ -32,13 +32,8 @@
       </div>
     </div>
     <div class="filter-condition-editing" v-bind:class="{'editing-filter-condition-editing': filterConditionBoxState.isEditing}">
-      <input id="source-input" class="scrollable-selector-input" type="text" placeholder="Source Address" v-model="filterConditionBoxState.editingCondition.sourceAddress" />
-      <input id="source-mask-input" class="scrollable-selector-input" type="text" placeholder="Source Address Mask" v-model="filterConditionBoxState.editingCondition.sourceAddressMask" />
-      <input id="source-port-input" class="filter-condition-editing-input" type="text" placeholder="Source Port" v-model="filterConditionBoxState.editingCondition.sourcePort" />
-      <input id="destination-input" class="scrollable-selector-input" type="text" placeholder="Destination Address" v-model="filterConditionBoxState.editingCondition.destinationAddress" />
-      <input id="destination-mask-input" class="scrollable-selector-input" type="text" placeholder="Destination Address Mask" v-model="filterConditionBoxState.editingCondition.destinationAddressMask" />
-      <input id="destination-port-input" class="filter-condition-editing-input" type="text" placeholder="Destination Port" v-model="filterConditionBoxState.editingCondition.destinationPort" />
-      <input id="protocol-input" class="filter-condition-editing-input" type="text" placeholder="Protocol" v-model="filterConditionBoxState.editingCondition.protocol" />
+      <input id="source-input" class="scrollable-selector-input" type="text" placeholder="Network Address" v-model="filterConditionBoxState.editingCondition.NetworkAddress" />
+      <input id="source-mask-input" class="scrollable-selector-input" type="text" placeholder="Subnet Mask" v-model="filterConditionBoxState.editingCondition.SubnetMask" />
       <div class="scrollable-selector-include-exclude-traffic">
         <p>Exclude</p>
         <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.include" />
@@ -58,15 +53,9 @@ const props = defineProps<{
 }>();
 
 interface filterCondition {
-  "sourceAddress": string
-  "sourceAddressMask": string,
-  "sourcePort": number | null,
-  "destinationAddress": string,
-  "destinationAddressMask": string,
-  "destinationPort": number | null,
-  "protocol": string,
-  "include": boolean,
-  [key: string]: string | number | boolean | null
+  "NetworkAddress": string
+  "SubnetMask": string,
+  "include": boolean
 }
 
 const filterConditionBoxState = ref({
@@ -103,13 +92,8 @@ function clearEditingInputs(to: string) {
 function saveFilterCondition() {
   let newFilterCondition: filterCondition = { ...filterConditionBoxState.value.editingCondition };
   const defaultValues: filterCondition = {
-    "sourceAddress": "0.0.0.0",
-    "sourceAddressMask": "0.0.0.0",
-    "sourcePort": null,
-    "destinationAddress": "0.0.0.0",
-    "destinationAddressMask": "0.0.0.0",
-    "destinationPort": null,
-    "protocol": "tcp",
+    "NetworkAddress": "100.100.100.100",
+    "SubnetMask": "100.100.100.100",
     "include": false
   };
   for (let key in defaultValues as {[key: string]: any}) {
@@ -260,8 +244,8 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  font-size: 2vh;
-  font-weight: bolder;
+  font-size: 1.5vh;
+  font-weight: bold;
   cursor: pointer;
   height: 4.9vh;
   transition: 0.2s ease-in-out;
@@ -288,9 +272,9 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
 }
 
 .include-exclude-filter-src-dest {
-  font-size: 1.5vh;
+  font-size: 1.3vh;
   font-weight: normal;
-  margin-left: 0.5vw;
+  margin-left: 0.2vw;
 }
 
 .filter-condition-editing {
