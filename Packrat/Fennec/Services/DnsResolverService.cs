@@ -64,7 +64,7 @@ public class DnsResolverService
             {
                 _dnsCache.Add(ipAddress, (null, DateTime.Now));
                 _log.Verbose(
-                    "No DNS Entry for {IpAddress} was found continuing with empty value. Check every {DnsInvalidationDuration}.",
+                    "No DNS Entry for {IpAddress} was found continuing with empty value. Check every {DnsInvalidationDuration}",
                     ipAddress, _invalidationDuration);
             }
 

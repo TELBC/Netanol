@@ -272,14 +272,23 @@ public class TraceGraph : ITraceGraph
     /// <param name="traces"></param>
     public void FillFromTraces(List<AggregateTrace> traces)
     {
-        var nodes = traces
-            .SelectMany<AggregateTrace, byte[]>(trace => new[] { trace.SourceIpBytes, trace.DestinationIpBytes })
-            .GroupBy(t => t, new ByteArrayComparer())
-            .Select(t => t.First())
-            .Select(bytes => new TraceNode(new IPAddress(bytes), new IPAddress(bytes).ToString()));
+        var nodes = new Dictionary<IPAddress, TraceNode>();
 
+        foreach (var aggregateTrace in traces)
+        {
+            var srcIp = new IPAddress(aggregateTrace.SourceIpBytes);
+            var dstIp = new IPAddress(aggregateTrace.DestinationIpBytes);
+            
+            // TODO: fix the problem that arises when source dns names from the database are conflicting
+            if (!nodes.ContainsKey(srcIp))
+                nodes[srcIp] = new TraceNode(srcIp, srcIp.ToString(), aggregateTrace.SourceDnsName);
+            
+            if (!nodes.ContainsKey(dstIp))
+                nodes[dstIp] = new TraceNode(dstIp, dstIp.ToString(), aggregateTrace.DestinationDnsName);
+        }
+        
         foreach (var node in nodes)
-            AddNode(node);
+            AddNode(node.Value);
 
         var edges = traces
             .Select(trace =>

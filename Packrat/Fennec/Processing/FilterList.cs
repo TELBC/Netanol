@@ -46,12 +46,6 @@ public record FilterListDto(List<FilterConditionDto> Conditions, bool ImplicitIn
 /// </remarks>
 public class FilterCondition
 {
-    // public long MinPacketCount { get; set; }
-    // public long MaxPacketCount { get; set; }
-    //
-    // public long MinByteCount { get; set; }
-    // public long MaxByteCount { get; set; }
-
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public FilterCondition() { }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -69,6 +63,7 @@ public class FilterCondition
     }
 
     // TODO: should we make the source and destination matching optional with a null?
+    // TODO: just noticed big risk! the source address is never masked
     [BsonElement("sourceAddress")] 
     public byte[] SourceAddress { get; set; }
 

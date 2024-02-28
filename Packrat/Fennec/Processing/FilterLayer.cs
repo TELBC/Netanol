@@ -27,7 +27,7 @@ public class FilterLayer : ILayer
         {
             var impl = FilterList.ImplicitInclude ? "Include" : "Exclude";
             var cond = FilterList.Conditions.Count == 1 ? "Condition" : "Conditions";
-            return $"{FilterList.Conditions.Count} <b>{cond}</b>, Implicit <b>{impl}</b>";   
+            return $"{FilterList.Conditions.Count} {cond}, Implicit {impl}";   
         }
     }
 

@@ -12,8 +12,8 @@ public static class LayerType
 {
     public const string Filter = "filter";
     public const string Aggregation = "aggregation";
-    public const string Name = "name";
-    public const string Position = "position";
+    public const string Naming = "naming";
+    public const string Styling = "styling";
     public const string VmwareTagging = "vmware-tagging";
     public const string TagFilter = "tag-filter";
 
@@ -21,8 +21,7 @@ public static class LayerType
     {
         { Filter, (typeof(FilterLayer), typeof(FilterLayerDto)) },
         { Aggregation, (typeof(AggregationLayer), typeof(AggregationLayerDto)) },
-        { Name, (typeof(NameLayer), typeof(string)) },
-        { Position, (typeof(PositionLayer), typeof(string)) },
+        { Naming, (typeof(NamingLayer), typeof(string)) },
         { VmwareTagging, (typeof(VmwareTaggingLayer), typeof(VmwareTaggingLayerDto)) },
         { TagFilter, (typeof(TagFilterLayer), typeof(TagFilterLayerDto)) }
     };

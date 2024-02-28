@@ -19,7 +19,7 @@ public class VmwareTaggingLayer : ILayer
     public bool Enabled { get; set; }
     
     [BsonIgnore]
-    public string Description => "";
+    public string Description => "Add tags based on current VMware tags";
     
     public void Execute(ITraceGraph graph, IServiceProvider serviceProvider)
     {

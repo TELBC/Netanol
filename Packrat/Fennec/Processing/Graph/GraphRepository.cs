@@ -62,7 +62,12 @@ public class GraphRepository : IGraphRepository
             TotalTraceCount = graph.EdgeCount,
             TotalByteCount = traces.Sum(trace => (long)trace.ByteCount),
             TotalPacketCount = traces.Sum(trace => (long)trace.PacketCount),
-            Nodes = graph.Nodes.Select(n => new TraceNodeDto(n.Value.Address.ToString(), n.Value.Name, n.Value.Tags)).ToList(),
+            
+            Nodes = graph.Nodes.Select(n => new TraceNodeDto(
+                n.Value.Address.ToString(), 
+                n.Value.Name ?? n.Value.Address.ToString(), 
+                n.Value.Tags)).ToList(),
+            
             Edges = graph.Edges.Select(e => new TraceEdgeDto(
                 $"{e.Value.DataProtocol}/{e.Value.Source}-{e.Value.Target}",
                 e.Value.Source.ToString(),

@@ -71,6 +71,12 @@ public class AggregateTrace
 
     [BsonElement("destinationPort")] 
     public ushort DestinationPort { get; set; }
+    
+    [BsonElement("sourceDnsName")]
+    public string? SourceDnsName { get; set; }
+    
+    [BsonElement("destinationDnsName")]
+    public string? DestinationDnsName { get; set; }
 
     [BsonElement("dataProtocol")] 
     public DataProtocol DataProtocol { get; set; }
@@ -134,6 +140,7 @@ public class TraceRepository : ITraceRepository
             .Aggregate()
             .Match(t => t.Timestamp >= start && t.Timestamp <= end)
             .Match(filter)
+            .Sort(new BsonDocument("timestamp", 1))
             .Group(
                 new BsonDocument
                 {
@@ -149,7 +156,9 @@ public class TraceRepository : ITraceRepository
                         }
                     },
                     { "totalBytes", new BsonDocument("$sum", "$byteCount") },
-                    { "totalPackets", new BsonDocument("$sum", "$packetCount") }
+                    { "totalPackets", new BsonDocument("$sum", "$packetCount") },
+                    { "latestSourceDnsName", new BsonDocument("$last", "$source.dnsName") },
+                    { "latestDestinationDnsName", new BsonDocument("$last", "$destination.dnsName") }
                 }
             )
             .Project<AggregateTrace>(
@@ -161,6 +170,8 @@ public class TraceRepository : ITraceRepository
                     { "destinationIpBytes", "$_id.destinationIp" },
                     { "destinationPort", "$_id.destinationPort" },
                     // { "dataProtocol", "$_id.dataProtocol" },
+                    { "sourceDnsName", "$latestSourceDnsName" },
+                    { "destinationDnsName", "$latestDestinationDnsName" },
                     { "byteCount", "$totalBytes" },
                     { "packetCount", "$totalPackets" }
                 }
