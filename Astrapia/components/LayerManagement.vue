@@ -21,7 +21,7 @@
         </div>
         <div class="infos">
           <p>description: </p>
-          <div>{{ removeBoldTagsFromDescription(layer.description) }}</div>
+          <div>{{ layer.description }}</div>
         </div>
       </div>
     </div>
@@ -128,10 +128,6 @@ const rerenderer = ref({
 })
 
 const getLayersOfLayout = inject<() => void>('getLayersOfLayout');
-
-function removeBoldTagsFromDescription(description: string) {
-  return description.replace(/<b>|<\/b>/g, '');
-}
 
 async function getExistingLayer(index: number) {
   const layerToEdit = await layerService.getLayer(layerListState.value.selectedLayout.name, index);
