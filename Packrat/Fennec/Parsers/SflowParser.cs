@@ -53,7 +53,8 @@ public class SflowParser : IParser
                                     rawPacketHeader.Packet.Ethernet.VLanTaggedFrame.IpV4.Tcp.DestinationPort,
                                     1, // FlowSample provides us with a single packet (sample) does not represent the number of packets transmitted,
                                     (ulong)rawPacketHeader.Packet.Ethernet.VLanTaggedFrame.IpV4.TotalLength,
-                                    (TraceProtocol)rawPacketHeader.Packet.Ethernet.VLanTaggedFrame.IpV4.Protocol // fix casting
+                                    MapToDataProtocol((ushort)rawPacketHeader.Packet.Ethernet.VLanTaggedFrame.IpV4.Protocol), // fix casting
+                                    FlowProtocol.Sflow
                                 );
                                 traceImportInfos.Add(traceImportInfo);
                             }
@@ -70,7 +71,8 @@ public class SflowParser : IParser
                                     rawPacketHeader.Packet.Ethernet.IpV4.Tcp.DestinationPort,
                                     1, // FlowSample provides us with a single packet (sample) does not represent the number of packets transmitted,
                                     (ulong)rawPacketHeader.Packet.Ethernet.IpV4.TotalLength,
-                                    (TraceProtocol)rawPacketHeader.Packet.Ethernet.IpV4.Protocol // fix casting
+                                    MapToDataProtocol((ushort)rawPacketHeader.Packet.Ethernet.IpV4.Protocol), // fix casting
+                                    FlowProtocol.Sflow
                                 );
                                 traceImportInfos.Add(traceImportInfo);
                             }
@@ -87,7 +89,8 @@ public class SflowParser : IParser
                                     rawPacketHeader.Packet.Ethernet.IpV6.Tcp.DestinationPort,
                                     1, // FlowSample provides us with a single packet (sample) does not represent the number of packets transmitted,
                                     (ulong)rawPacketHeader.Packet.Ethernet.IpV6.TotalLength,
-                                    (TraceProtocol)rawPacketHeader.Packet.Ethernet.IpV6.NextHeader // fix casting
+                                    MapToDataProtocol((ushort)rawPacketHeader.Packet.Ethernet.IpV6.NextHeader), // fix casting
+                                    FlowProtocol.Sflow
                                 );
                                 traceImportInfos.Add(traceImportInfo);
                             }
@@ -106,5 +109,16 @@ public class SflowParser : IParser
         }
 
         return traceImportInfos;
+    }
+    
+    private DataProtocol MapToDataProtocol(ushort protocol)
+    {
+        return protocol switch
+        {
+            1 => DataProtocol.Icmp,
+            6 => DataProtocol.Tcp,
+            17 => DataProtocol.Udp,
+            _ => DataProtocol.Unknown
+        };
     }
 }

@@ -148,47 +148,27 @@ enum HeaderProtocol {
     Mpls = 13
 }
 
-'interface ISflowReader {
-'    Header ReadHeader(Stream datagramStream)
-'    IEnumerable<ISample> ReadSamples(Stream datagramStream, uint numSamples)
-'}
+Datagram o-- Header
+Datagram o-- ISample
+ISample <|.. FlowSample
+ISample <|.. CounterSample
 
-Datagram -- Header
-Datagram -- ISample
-ISample -- FlowSample
-ISample -- CounterSample
+IRecord <|.. FlowRecord
+IRecord <|.. CounterRecord
 
-IRecord -- Enterprise
-GenericInterfaceCounters -- Enterprise
-RawPacketHeader -- Enterprise
-CounterRecord -- Enterprise
-FlowRecord -- Enterprise
+FlowSample o-- OutputInterface
+FlowSample o-- FlowFormat
+FlowSample o-- FlowRecord
 
-FlowSample -- RawPacketHeader
-CounterSample -- GenericInterfaceCounters
+CounterSample o-- CounterFormat
+CounterSample o-- CounterRecord
 
-FlowSample -- OutputInterface
+GenericInterfaceCounters o-- IfDirection
+RawPacketHeader o-- HeaderProtocol
 
-ISample -- SampleType
-FlowSample -- SampleType
-CounterSample -- SampleType
+FlowRecord <|-- GenericInterfaceCounters
+FlowRecord <|-- RawPacketHeader
 
-GenericInterfaceCounters -- IfDirection
-
-RawPacketHeader -- FlowFormat
-FlowSample -- FlowFormat
-FlowRecord -- FlowFormat
-
-GenericInterfaceCounters -- CounterFormat
-CounterSample -- CounterFormat
-CounterRecord -- CounterFormat
-
-RawPacketHeader -- HeaderProtocol
-
-CounterSample -- CounterRecord
-FlowSample -- FlowRecord
-
-IRecord -- FlowRecord
-IRecord -- CounterRecord
+CounterRecord <|-- GenericInterfaceCounters
 
 @enduml

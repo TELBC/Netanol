@@ -5,6 +5,6 @@
     /// </summary>
     public enum Enterprise
     {
-        StandardSflow = 0
+        StandardSflow = 0 // InMon Corporation
     }
 }

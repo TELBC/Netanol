@@ -11,18 +11,18 @@ using PcapDotNet.Packets.Ethernet;
 namespace DotNetFlow.Sflow
 {
     /// <summary>
-    /// Reads sFlow datagrams
+    /// Reads incoming sFlow datagrams
     /// </summary>
     public class SflowReader : ISflowReader
     {
         /// <summary>
         /// Reads the header of the sFlow datagram
         /// </summary>
-        /// <param name="datagramStream"></param>
-        /// <returns></returns>
+        /// <param name="datagramStream">The incoming sFlow datagram.</param>
+        /// <returns>Header object representing the sFlow header.</returns>
         public Header ReadHeader(Stream datagramStream)
         {
-            using var reader = new BinaryReader(datagramStream, Encoding.UTF8, true); 
+            using var reader = new BinaryReader(datagramStream, Encoding.UTF8, true);
 
             var header = new Header
             {
@@ -41,9 +41,9 @@ namespace DotNetFlow.Sflow
         /// <summary>
         /// Reads multiple sFlow samples
         /// </summary>
-        /// <param name="datagramStream"></param>
-        /// <param name="numSamples"></param>
-        /// <returns></returns>
+        /// <param name="datagramStream">The incoming sFlow datagram.</param>
+        /// <param name="numSamples">Number of samples inside the <see cref="datagramStream"/> sFlow datagram.</param>
+        /// <returns>Collection of <see cref="ISample"/> objects.</returns>
         public IEnumerable<ISample> ReadSamples(Stream datagramStream, uint numSamples)
         {
             using var reader = new BinaryReader(datagramStream);
@@ -60,8 +60,8 @@ namespace DotNetFlow.Sflow
         /// <summary>
         /// Reads the sFlow sample
         /// </summary>
-        /// <param name="reader"></param>
-        /// <returns></returns>
+        /// <param name="reader">The binary reader to read the sample from.</param>
+        /// <returns><see cref="ISample"/> object.</returns>
         private ISample ReadSample(BinaryReader reader)
         {
             var enterprise = (Enterprise)reader.ReadUInt16().ToNetworkByteOrder();
@@ -104,9 +104,9 @@ namespace DotNetFlow.Sflow
         /// <summary>
         /// Gets the agent address based on the agent address type.
         /// </summary>
-        /// <param name="agentAddressType"></param>
-        /// <param name="reader"></param>
-        /// <returns></returns>
+        /// <param name="agentAddressType">The agent address type from the sFlow Header.</param>
+        /// <param name="reader">The binary reader to read the agent address from.</param>
+        /// <returns><see cref="IPAddress"/> object containing the agent address of the corresponding type.</returns>
         private IPAddress GetAgentAddress(uint agentAddressType, BinaryReader reader)
         {
             return agentAddressType switch
@@ -120,45 +120,22 @@ namespace DotNetFlow.Sflow
         /// <summary>
         /// Reads the counter sample.
         /// </summary>
-        /// <param name="reader"></param>
-        /// <param name="counterSample"></param>
+        /// <param name="reader">Reader to read the counter sample from.</param>
+        /// <param name="counterSample">The counter sample object to populate. Already containing the enterprise and sample type.</param>
         /// <returns></returns>
         private CounterSample ReadCounterSample(BinaryReader reader, CounterSample counterSample)
         {
             counterSample.SampleLength = reader.ReadUInt32().ToNetworkByteOrder();
             counterSample.SequenceNumber = reader.ReadUInt32().ToNetworkByteOrder();
-            counterSample.SourceIdType = reader.ReadUInt16().ToNetworkByteOrder();
-            counterSample.SourceIdIndex = reader.ReadUInt16().ToNetworkByteOrder();
+            counterSample.SourceIdType =
+                reader.ReadUInt16().ToNetworkByteOrder(); // will probably require to be an object
+            counterSample.SourceIdIndex =
+                reader.ReadUInt16().ToNetworkByteOrder(); // will probably require to be an object
             counterSample.CounterType = (CounterFormat)reader.ReadUInt32().ToNetworkByteOrder();
 
             if (counterSample.CounterType == CounterFormat.GenericInterfaceCounters)
             {
-                counterSample.CounterRecord = new GenericInterfaceCounters
-                {
-                    Enterprise = (Enterprise)reader.ReadUInt16().ToNetworkByteOrder(),
-                    Format = (CounterFormat)reader.ReadUInt16().ToNetworkByteOrder(),
-                    FlowDataLength = reader.ReadUInt32().ToNetworkByteOrder(),
-                    IfIndex = reader.ReadUInt32().ToNetworkByteOrder(),
-                    IfType = reader.ReadUInt32().ToNetworkByteOrder(),
-                    IfSpeed = reader.ReadUInt32().ToNetworkByteOrder(),
-                    IfDirection = (IfDirection)reader.ReadUInt32().ToNetworkByteOrder(),
-                    IfAdminStatus = reader.ReadUInt16().ToNetworkByteOrder(),
-                    IfOperStatus = reader.ReadUInt16().ToNetworkByteOrder(),
-                    InputOctets = reader.ReadUInt64().ToNetworkByteOrder(),
-                    InputPackets = reader.ReadUInt32().ToNetworkByteOrder(),
-                    InputMulticastPackets = reader.ReadUInt32().ToNetworkByteOrder(),
-                    InputBroadcastPackets = reader.ReadUInt32().ToNetworkByteOrder(),
-                    InputDiscardedPackets = reader.ReadUInt32().ToNetworkByteOrder(),
-                    InputErrors = reader.ReadUInt32().ToNetworkByteOrder(),
-                    InputUnknownProtocolPackets = reader.ReadUInt32().ToNetworkByteOrder(),
-                    OutputOctets = reader.ReadUInt64().ToNetworkByteOrder(),
-                    OutputPackets = reader.ReadUInt32().ToNetworkByteOrder(),
-                    OutputMulticastPackets = reader.ReadUInt32().ToNetworkByteOrder(),
-                    OutputBroadcastPackets = reader.ReadUInt32().ToNetworkByteOrder(),
-                    OutputDiscardedPackets = reader.ReadUInt32().ToNetworkByteOrder(),
-                    OutputErrors = reader.ReadUInt32().ToNetworkByteOrder(),
-                    PromiscuousMode = reader.ReadUInt32().ToNetworkByteOrder()
-                };
+                counterSample.CounterRecord = ReadGenericInterfaceCounters(reader);
             }
 
             return counterSample;
@@ -167,8 +144,8 @@ namespace DotNetFlow.Sflow
         /// <summary>
         /// Reads the flow sample.
         /// </summary>
-        /// <param name="reader"></param>
-        /// <param name="flowSample"></param>
+        /// <param name="reader">Reader to read the flow sample from.</param>
+        /// <param name="flowSample">The flow sample object to populate. Already containing the enterprise and sample type.</param>
         /// <returns></returns>
         private FlowSample ReadFlowSample(BinaryReader reader, FlowSample flowSample)
         {
@@ -186,7 +163,6 @@ namespace DotNetFlow.Sflow
             if (flowSample.FlowFormat == FlowFormat.RawPacketHeader)
             {
                 ReadRawPacketHeader(reader, flowSample);
-
                 return flowSample;
             }
 
@@ -196,8 +172,8 @@ namespace DotNetFlow.Sflow
         /// <summary>
         /// Reads the raw packet header.
         /// </summary>
-        /// <param name="reader"></param>
-        /// <param name="flowSample"></param>
+        /// <param name="reader"> Reader to read the raw packet header from.</param>
+        /// <param name="flowSample"> The flow sample object to populate.</param>
         private void ReadRawPacketHeader(BinaryReader reader, FlowSample flowSample)
         {
             flowSample.FlowRecord = new RawPacketHeader
@@ -225,10 +201,10 @@ namespace DotNetFlow.Sflow
                 }
             }
         }
-        
+
         /// <summary>
         /// Parses the input interface
-        /// <see cref="InterfaceFormat"/> values 1 & 2 only apply to output interfaces!
+        /// <see cref="InterfaceFormat"/> Only values 1 & 2 apply to output interfaces!
         /// </summary>
         /// <param name="reader"></param>
         /// <returns><see cref="InterfaceInfo"/> object containing the format (type) of the interface and the interface value</returns>
@@ -244,13 +220,13 @@ namespace DotNetFlow.Sflow
                     "Invalid format for input interface. Format  1 and  2 are only valid for output interfaces.");
             }
 
-            return new InterfaceInfo()
+            return new InterfaceInfo
             {
                 InterfaceFormat = format,
                 InterfaceValue = value
             };
         }
-        
+
         /// <summary>
         /// Parses the output interface
         /// <see cref="InterfaceFormat"/> values 1 & 2 only apply to output interfaces!
@@ -263,10 +239,45 @@ namespace DotNetFlow.Sflow
             var format = (InterfaceFormat)(interfaceValue >> 30); // Extract the  2 most significant bits
             var value = interfaceValue & 0x3FFFFFFF; // Mask out the format bits
 
-            return new InterfaceInfo()
+            return new InterfaceInfo
             {
                 InterfaceFormat = format,
                 InterfaceValue = value
+            };
+        }
+
+        /// <summary>
+        /// Reads the generic interface counters
+        /// </summary>
+        /// <param name="reader">Reader to read the generic interface counters from.</param>
+        /// <returns></returns>
+        private GenericInterfaceCounters ReadGenericInterfaceCounters(BinaryReader reader)
+        {
+            return new GenericInterfaceCounters
+            {
+                Enterprise = (Enterprise)reader.ReadUInt16().ToNetworkByteOrder(),
+                Format = (CounterFormat)reader.ReadUInt16().ToNetworkByteOrder(),
+                FlowDataLength = reader.ReadUInt32().ToNetworkByteOrder(),
+                IfIndex = reader.ReadUInt32().ToNetworkByteOrder(),
+                IfType = reader.ReadUInt32().ToNetworkByteOrder(),
+                IfSpeed = reader.ReadUInt32().ToNetworkByteOrder(),
+                IfDirection = (IfDirection)reader.ReadUInt32().ToNetworkByteOrder(),
+                IfAdminStatus = reader.ReadUInt16().ToNetworkByteOrder(),
+                IfOperStatus = reader.ReadUInt16().ToNetworkByteOrder(),
+                InputOctets = reader.ReadUInt64().ToNetworkByteOrder(),
+                InputPackets = reader.ReadUInt32().ToNetworkByteOrder(),
+                InputMulticastPackets = reader.ReadUInt32().ToNetworkByteOrder(),
+                InputBroadcastPackets = reader.ReadUInt32().ToNetworkByteOrder(),
+                InputDiscardedPackets = reader.ReadUInt32().ToNetworkByteOrder(),
+                InputErrors = reader.ReadUInt32().ToNetworkByteOrder(),
+                InputUnknownProtocolPackets = reader.ReadUInt32().ToNetworkByteOrder(),
+                OutputOctets = reader.ReadUInt64().ToNetworkByteOrder(),
+                OutputPackets = reader.ReadUInt32().ToNetworkByteOrder(),
+                OutputMulticastPackets = reader.ReadUInt32().ToNetworkByteOrder(),
+                OutputBroadcastPackets = reader.ReadUInt32().ToNetworkByteOrder(),
+                OutputDiscardedPackets = reader.ReadUInt32().ToNetworkByteOrder(),
+                OutputErrors = reader.ReadUInt32().ToNetworkByteOrder(),
+                PromiscuousMode = reader.ReadUInt32().ToNetworkByteOrder()
             };
         }
     }

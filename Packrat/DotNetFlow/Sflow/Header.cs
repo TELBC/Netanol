@@ -2,6 +2,9 @@
 
 namespace DotNetFlow.Sflow
 {
+    /// <summary>
+    /// Represents the sFlow header.
+    /// </summary>
     public class Header
     {
         public uint Version; // sFlow version

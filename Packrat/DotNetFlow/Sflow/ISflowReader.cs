@@ -6,13 +6,10 @@ using PcapDotNet.Packets;
 
 namespace DotNetFlow.Sflow
 {
-    public enum InterfaceFormat
-    {
-        SingleInterface =  0,
-        PacketDiscarded =  1,
-        MultipleDestinationInterfaces =  2
-    }
-
+    /// <summary>
+    /// Represents the direction of the interface.
+    /// More detail can be found in the sFlow v5 specification.
+    /// </summary>
     public enum IfDirection
     {
         Unknown = 0,

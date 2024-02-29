@@ -153,6 +153,7 @@ public class MultiplexerService
                 FlowProtocol.Netflow5 => ActivatorUtilities.CreateInstance<NetFlow5Parser>(serviceProvider),
                 FlowProtocol.Netflow9 => ActivatorUtilities.CreateInstance<NetFlow9Parser>(serviceProvider),
                 FlowProtocol.Ipfix => ActivatorUtilities.CreateInstance<IpFixParser>(serviceProvider),
+                FlowProtocol.Sflow => ActivatorUtilities.CreateInstance<SflowParser>(serviceProvider),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
