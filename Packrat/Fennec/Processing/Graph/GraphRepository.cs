@@ -45,14 +45,16 @@ public class GraphRepository : IGraphRepository
         var traces = await _traceRepository.AggregateTraces(layout.QueryConditions, request.From, request.To);
         var graph = new TraceGraph
         {
-            RemoveDisconnectedNodes = request.RemoveDisconnectedNodes
+            RemoveDisconnectedNodes = true
         };
         graph.FillFromTraces(traces);
 
+        // TODO: handle ports differently since they don't place nicely across layers
+        CollapseGraph(graph);
+        
         foreach (var layer in layout.Layers.Where(l => l.Enabled))
             layer.Execute(graph, _serviceProvider);
 
-        CollapseGraph(graph);
         
         var details = new GraphDetails
         {
@@ -66,6 +68,8 @@ public class GraphRepository : IGraphRepository
             Nodes = graph.Nodes.Select(n => new TraceNodeDto(
                 n.Value.Address.ToString(), 
                 n.Value.Name, 
+                n.Value.DnsName,
+                n.Value.HexColor,
                 n.Value.Tags)).ToList(),
             
             Edges = graph.Edges.Select(e => new TraceEdgeDto(
@@ -74,7 +78,9 @@ public class GraphRepository : IGraphRepository
                 e.Value.Target.Address.ToString(),
                 e.Value.DataProtocol,
                 e.Value.PacketCount,
-                e.Value.ByteCount)).ToList()
+                e.Value.ByteCount,
+                e.Value.Width,
+                e.Value.HexColor)).ToList()
         };
 
         return details;

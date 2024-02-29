@@ -110,10 +110,10 @@ public class DnsCacheCleanupService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+            _log.Information("Next DNS cache cleanup in {CleanupInterval}", _cleanupInterval);
+            await Task.Delay(_cleanupInterval, stoppingToken);
             _log.Information("Cleaning up DNS cache");
             _dnsResolverService.CleanupDnsCache();
-            _log.Information("Next cleanup in {CleanupInterval}", _cleanupInterval);
-            await Task.Delay(_cleanupInterval, stoppingToken);
         }
     }
 }

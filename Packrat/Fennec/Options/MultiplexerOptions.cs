@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Fennec.Parsers;
+﻿using Fennec.Parsers;
 
 namespace Fennec.Options;
 

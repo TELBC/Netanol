@@ -4,18 +4,26 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Fennec.Processing;
 
-public class NamingAssigner : IpAddressMatcher
+public class NamingAssigner
 {
-    public NamingAssigner(byte[] address, byte[] mask, bool include, string? name) : base(address, mask, include)
+    public NamingAssigner(IpAddressMatcher matcher, string? name)
     {
+        Matcher = matcher;
         Name = name;
     }
+
+    public NamingAssigner()
+    {
+    }
+
+    [BsonElement("matcher")]
+    public IpAddressMatcher Matcher { get; set; }
 
     [BsonElement("name")]
     public string? Name { get; set; }
 }
 
-public record NamingAssignerDto(byte[] Address, byte[] Mask, bool Include, string? Name);
+public record NamingAssignerDto(IpAddressMatcherDto Matcher, string? Name);
 
 /*
  * Possible names are:
@@ -54,14 +62,13 @@ public class NamingLayer : ILayer
     }
 
     /// <summary>
-    /// Naming logic for the nodes in the graph.
-    ///
-    /// 1. Get the assigner for the address <br/>
-    /// 2. If the assigner is defined and <see cref="NamingAssigner.Include"/> is false, skip the node <br/>
-    /// 3. If the node has a DNS name and <see cref="OverwriteWithDns"/> is true, overwrite the name with the DNS name <br/>
-    /// 4. If the assigner is undefined or <see cref="NamingAssigner.Name"/> is null, skip the node <br/>
-    /// 5. Assign <see cref="NamingAssigner.Name"/> to the node 
-    /// 
+    ///     Naming logic for the nodes in the graph.
+    ///     1. Get the assigner for the address <br />
+    ///     2. If the assigner is defined and <see cref="NamingAssigner.Include" /> is false, skip the node <br />
+    ///     3. If the node has a DNS name and <see cref="OverwriteWithDns" /> is true, overwrite the name with the DNS name
+    ///     <br />
+    ///     4. If the assigner is undefined or <see cref="NamingAssigner.Name" /> is null, skip the node <br />
+    ///     5. Assign <see cref="NamingAssigner.Name" /> to the node
     /// </summary>
     /// <param name="graph"></param>
     /// <param name="_"></param>
@@ -69,8 +76,16 @@ public class NamingLayer : ILayer
     {
         foreach (var node in graph.Nodes.Select(graphNode => graphNode.Value))
         {
+            // Yuk!
             var assigner = GetAssigner(node.Address);
-            if (assigner is { Include: false })
+            if (assigner is null)
+            {
+                if (node.DnsName is not null && OverwriteWithDns)
+                    node.Name = node.DnsName;
+                continue;
+            }
+
+            if (assigner.Matcher is { Include: false })
                 continue;
 
             if (node.DnsName is not null && OverwriteWithDns)
@@ -84,7 +99,14 @@ public class NamingLayer : ILayer
     }
 
     private NamingAssigner? GetAssigner(IPAddress address)
-        => Matchers.FirstOrDefault(matcher => matcher.Match(address.GetAddressBytes()));
+    {
+        return Matchers.FirstOrDefault(matcher => matcher.Matcher.Match(address.GetAddressBytes()));
+    }
 }
 
-public record NamingLayerDto(string Type, bool Enabled, string? Name, bool OverwriteWithDns, List<NamingAssigner> Matchers) : ILayerDto;
+public record NamingLayerDto(
+    string Type,
+    bool Enabled,
+    string? Name,
+    bool OverwriteWithDns,
+    List<NamingAssignerDto> Matchers) : ILayerDto;

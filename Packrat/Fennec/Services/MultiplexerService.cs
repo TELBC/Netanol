@@ -3,9 +3,7 @@ using Fennec.Database;
 using Fennec.Metrics;
 using Fennec.Options;
 using Fennec.Parsers;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Serilog;
 using Serilog.Context;
 
 namespace Fennec.Services;

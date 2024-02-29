@@ -3,7 +3,7 @@ using Fennec.Database;
 using Fennec.Processing;
 using Fennec.Processing.Graph;
 
-namespace Fennec.Tests.Naming;
+namespace Fennec.Tests.LayerTests;
 
 public class NamingLayerTests
 {
@@ -33,7 +33,7 @@ public class NamingLayerTests
         {
             Matchers = new List<NamingAssigner>
             {
-                new(new byte[] { 1, 1, 1, 1 }, new byte[] { 255, 255, 255, 255 }, true, "Main DNS Server")
+                new(new IpAddressMatcher(new byte[] { 1, 1, 1, 1 }, new byte[] { 255, 255, 255, 255 }, true), "Main DNS Server")
             }
         };
 
@@ -56,8 +56,8 @@ public class NamingLayerTests
         {
             Matchers = new List<NamingAssigner>
             {
-                new(new byte[] { 1, 1, 1, 0 }, new byte[] { 255, 255, 255, 0 }, false, ""),
-                new(new byte[] { 1, 1, 1, 1 }, new byte[] { 255, 255, 255, 255 }, true, "Main DNS Server")
+                new(new IpAddressMatcher(new byte[] { 1, 1, 1, 0 }, new byte[] { 255, 255, 255, 0 }, false), ""),
+                new(new IpAddressMatcher(new byte[] { 1, 1, 1, 1 }, new byte[] { 255, 255, 255, 255 }, true), "Main DNS Server")
             }
         };
 
@@ -80,7 +80,7 @@ public class NamingLayerTests
         {
             Matchers = new List<NamingAssigner>
             {
-                new(new byte[] { 2, 2, 2, 2 }, new byte[] { 255, 255, 255, 255 }, true, "Server2")
+                new(new IpAddressMatcher(new byte[] { 2, 2, 2, 2 }, new byte[] { 255, 255, 255, 255 }, true), "Server2")
             },
             OverwriteWithDns = true
         };
