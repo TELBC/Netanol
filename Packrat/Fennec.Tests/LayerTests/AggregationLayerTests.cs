@@ -3,7 +3,7 @@ using Fennec.Database.Domain;
 using Fennec.Processing;
 using Fennec.Processing.Graph;
 
-namespace Fennec.Tests.Aggregation;
+namespace Fennec.Tests.LayerTests;
 
 public class AggregationLayerTests
 {

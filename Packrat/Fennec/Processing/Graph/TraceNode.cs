@@ -15,6 +15,7 @@ public class TraceNode
     public List<string>? Tags { get; set; }
     public string? DnsName { get; set; }
     public string Name { get; set; }
+    public string? HexColor { get; set; }
 
     /// <summary>
     ///     Create a new key for this node.
@@ -22,4 +23,4 @@ public class TraceNode
     public TraceNodeKey Key => new(Address);
 }
 
-public record TraceNodeDto(string Id, string Name, List<string>? Tags);
+public record TraceNodeDto(string Id, string Name, string? DnsName, string? HexColor, List<string>? Tags);

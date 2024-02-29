@@ -46,8 +46,8 @@ public class QueryConditions
 
 public record QueryConditionsDto(
     bool? AllowDuplicates, 
-    [JsonConverter(typeof(StringEnumConverter))] FlowProtocol[]? FlowProtocolsWhitelist, 
-    [JsonConverter(typeof(StringEnumConverter))] DataProtocol[]? DataProtocolsWhitelist, 
+    FlowProtocol[]? FlowProtocolsWhitelist, 
+    DataProtocol[]? DataProtocolsWhitelist, 
     int[]? PortsWhitelist);
 
 /// <summary>

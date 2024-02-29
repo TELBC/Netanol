@@ -25,6 +25,9 @@ public class TraceEdge
     public DataProtocol DataProtocol { get; set; }
     public ulong PacketCount { get; set; }
     public ulong ByteCount { get; set; }
+    
+    public float? Width { get; set; }
+    public string? HexColor { get; set; }
 
     /// <summary>
     ///     Creates a new key for this edge.
@@ -38,4 +41,6 @@ public record TraceEdgeDto(
     string Target,
     DataProtocol DataProtocol,
     ulong PacketCount,
-    ulong ByteCount);
+    ulong ByteCount,
+    float? Width,
+    string? HexColor);

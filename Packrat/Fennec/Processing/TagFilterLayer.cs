@@ -3,8 +3,6 @@ using Fennec.Processing.Graph;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace Fennec.Processing;
 
@@ -110,4 +108,4 @@ public class TagFilterCondition
     }
 }
 
-public record TagFilterConditionDto([JsonConverter(typeof(StringEnumConverter))] TagFilterConditionType Type, List<string> Regexes, bool Include);
+public record TagFilterConditionDto(TagFilterConditionType Type, List<string> Regexes, bool Include);

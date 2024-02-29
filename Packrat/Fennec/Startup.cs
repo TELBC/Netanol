@@ -2,6 +2,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using Fennec.Database;
+using Fennec.Database.Domain;
 using Fennec.Metrics;
 using Fennec.Options;
 using Fennec.Parsers;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Serilog;
 using Serilog.Events;
@@ -45,6 +47,12 @@ public class Startup
     public void ConfigureServices(IServiceCollection services, IWebHostEnvironment environment)
     {
         BsonSerializer.RegisterSerializer(typeof(ILayer), new MongoLayerSerializer());
+        BsonSerializer.RegisterSerializer(typeof(Dictionary<DataProtocol, ColorRange>), new ProtocolColorsDictionarySerializer());
+        JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+        {
+            Converters = { new StringEnumConverter() }
+        };
+        
         services.AddAutoMapper(typeof(MapperProfile));
 
         // Options

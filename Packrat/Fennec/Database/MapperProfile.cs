@@ -112,5 +112,14 @@ public class MapperProfile : Profile
         CreateMap<NamingLayerDto, NamingLayer>();
         CreateMap<NamingAssigner, NamingLayerDto>();
         CreateMap<NamingLayerDto, NamingAssigner>();
+
+        CreateMap<EdgeStyler, EdgeStylerDto>();
+        CreateMap<EdgeStylerDto, EdgeStyler>();
+        CreateMap<NodeColorAssignment, NodeColorAssignmentDto>();
+        CreateMap<NodeColorAssignmentDto, NodeColorAssignment>();
+        CreateMap<NodeStyler, NodeStylerDto>();
+        CreateMap<NodeStylerDto, NodeStyler>();
+        CreateMap<StylingLayer, StylingLayerDto>();
+        CreateMap<StylingLayerDto, StylingLayer>();
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Fennec.Database;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
