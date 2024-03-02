@@ -4,9 +4,7 @@
       <h3 class="title">{{ title }}</h3>
       <span class="description-box">
         <label class="description">{{description}}</label>
-        <Tooltip :title="inputValue">
-          <label class="value">{{inputValue}}</label>
-        </Tooltip>
+        <label class="value" :title="inputValue">{{inputValue}}</label>
         <label class="unit">{{selectedUnit}}</label>
       </span>
       <div class="input-container">

@@ -1,12 +1,8 @@
 <template>
   <div class="slide-menu" :class="{ 'slide-up': isOpen }">
     <div class="slider-container">
-      <Tooltip title="Change link distance">
-        <input type="range" min="50" max="800" v-model="distance" @input="updateDistance" class="slider">
-      </Tooltip>
-      <Tooltip title="Change Simulation force">
-        <input type="range" min="200" max="3000" v-model="force" @input="updateSim" class="slider">
-      </Tooltip>
+      <input type="range" min="50" max="800" v-model="distance" @input="updateDistance" class="slider" title="Change link distance">
+      <input type="range" min="200" max="3000" v-model="force" @input="updateSim" class="slider" title="Change Simulation force">
     </div>
   </div>
 </template>

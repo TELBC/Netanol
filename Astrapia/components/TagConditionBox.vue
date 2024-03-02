@@ -23,7 +23,7 @@
             <p class="include-exclude-filter-src-dest">
               Regex:&nbsp;
             </p>
-            <div class="regex-list" v-bind:title="condition.regexes.join(', ')">
+            <div class="regex-list" :title="condition.regexes.join(', ')">
               {{ condition.regexes.join(', ').length > 10 ? condition.regexes.join(', ').slice(0, 10) + '...' : condition.regexes.join(', ') }}
             </div>
           </div>
