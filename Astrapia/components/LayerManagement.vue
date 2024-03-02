@@ -49,13 +49,13 @@
       </div>
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'aggregation'">
-      <AggregationConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+      <AggregationConditionBox :edit-layer-aggregation-matchers="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit"  />
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'tag-filter'">
-      <TagConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+      <TagConditionBox :edit-layer-tag-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'naming'">
-      <NamingConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+      <NamingConditionBox :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
       <div class="enable-new-layer" >
         <p>Overwrite with DNS</p>
         <input type="checkbox" class="theme-checkbox" v-model="createLayerData.filterList.overwriteWithDns" />
@@ -74,12 +74,12 @@
 <script setup lang="ts">
 import {ref, watch, inject} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import FilterConditionBox from "~/components/FilterConditionBox.vue";
 import layerService from "~/services/layerService";
-import AggregationConditionBox from "~/components/AggregationConditionBox.vue";
-import TagConditionBox from "~/components/TagConditionBox.vue";
-import NamingConditionBox from "~/components/NamingConditionBox.vue";
-import StyleConditionBox from "~/components/StyleConditionBox.vue";
+import FilterConditionBox from "~/components/conditions/FilterConditionBox.vue";
+import AggregationConditionBox from "~/components/conditions/AggregationConditionBox.vue";
+import TagConditionBox from "~/components/conditions/TagConditionBox.vue";
+import NamingConditionBox from "~/components/conditions/NamingConditionBox.vue";
+import StyleConditionBox from "~/components/conditions/StyleConditionBox.vue";
 
 export interface FilterConditions {
   sourceAddress: string,
@@ -122,7 +122,7 @@ const createLayerData = ref({
   filterList: {
     conditions: [] as Array<FilterConditions>,
     implicitInclude: true,
-    overwriteWithDns: false
+    overwriteWithDns: false//Naming
   }
 })
 

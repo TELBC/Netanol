@@ -1,3 +1,4 @@
+<!--TODO: STILL NEEDS TO BE IMPLEMENTED-->
 <template>
   <div class="filter-condition-box-container">
     <div class="filter-condition-box-menu">
@@ -15,42 +16,29 @@
         <div class="conditions-src-dest">
           <div class="src-dest-address-container">
             <p class="include-exclude-filter-src-dest">
-              Type:&nbsp;
+              Name:&nbsp;
             </p>
-            {{ condition.type }}
+            {{ condition.name }}
           </div>
           <div class="src-dest-address-container">
             <p class="include-exclude-filter-src-dest">
-              Regex:&nbsp;
+              IP:&nbsp;
             </p>
-            <div class="regex-list" :title="condition.regexes.join(', ')">
-              {{ condition.regexes.join(', ').length > 10 ? condition.regexes.join(', ').slice(0, 10) + '...' : condition.regexes.join(', ') }}
-            </div>
+            {{ condition.matcher.address }}
           </div>
         </div>
         <p class="include-exclude-filter-src-dest">
-          {{ condition.include ? 'Include' : 'Exclude' }}
+          {{ condition.matcher.include ? 'Include' : 'Exclude' }}
         </p>
       </div>
     </div>
     <div class="filter-condition-editing" v-bind:class="{'editing-filter-condition-editing': filterConditionBoxState.isEditing}">
-      <select class="create-dropdown-inputs" v-model="filterConditionBoxState.editingCondition.type">
-        <option value="MatchesNone">Matches None</option>
-        <option value="MatchesAny">Matches Any</option>
-        <option value="MatchesAll" selected>Matches All</option>
-        <option value="MatchesExactly">Matches Exactly</option>
-      </select>
-      <input class="first-scrollable-selector-input" type="text" placeholder="Regex" v-model="filterConditionBoxState.editingCondition.regexes[0]" />
-      <div class="filter-condition-editing-inputs">
-        <div v-for="(regex, index) in filterConditionBoxState.editingCondition.regexes.slice(1)" :key="index">
-          <input class="scrollable-selector-input" type="text" placeholder="Regex" v-model="filterConditionBoxState.editingCondition.regexes[index + 1]" />
-          <font-awesome-icon icon="fa-solid fa-minus" class="delete-input-icon" @click="deleteInputField(index + 1)"/>
-        </div>
-      </div>
-      <font-awesome-icon icon="fa-solid fa-plus" class="add-input-icon" @click="addInputField"/>
+      <input id="source-input" class="scrollable-selector-input" type="text" placeholder="Name" v-model="filterConditionBoxState.editingCondition.name" />
+      <input id="source-mask-input" class="scrollable-selector-input" type="text" placeholder="Address" v-model="filterConditionBoxState.editingCondition.matcher.address" />
+      <input id="source-port-input" class="scrollable-selector-input" type="text" placeholder="Address Mask" v-model="filterConditionBoxState.editingCondition.matcher.mask" />
       <div class="scrollable-selector-include-exclude-traffic">
         <p>Exclude</p>
-        <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.include" />
+        <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.matcher.include" />
         <p>Include</p>
       </div>
     </div>
@@ -63,25 +51,28 @@ import {ref, defineProps, watch} from "vue";
 
 const props = defineProps<{
   emitFilterConditions: Boolean,
-  editLayerFilterConditions: Array<filterCondition>,
+  editLayerFilterConditions: Array<Matcher>,
 }>();
 
-interface filterCondition {
-  "type":string,
-  "regexes": Array<string>,
-  "include": boolean,
-  [key: string]: string | number | boolean | null | string[]
+interface Matcher {
+  "name": string,
+  "matcher": {
+    "address": string
+    "mask": string,
+    "include": boolean
+  },
+  [key: string]: string | number | boolean | null | {}
 }
 
 const filterConditionBoxState = ref({
   isEditing: false,
-  filterConditions: [] as Array<filterCondition>,
+  filterConditions: [] as Array<Matcher>,
+  ipAddresses: [] as Array<string>,
+  addressMasks: [] as Array<string>,
+  ports: [] as Array<number>,
+  protocols: [] as Array<string>,
   filterConditionSelected: -1,
-  editingCondition: {
-    type: "MatchesAll",
-    regexes: [],
-    include: true,
-  } as filterCondition,
+  editingCondition: { name: "", matcher: { address: "", mask: "", include: false } },
   editingConditionIndex: -1,
 })
 
@@ -90,34 +81,27 @@ function toggleIsEditing(to: string) {
   filterConditionBoxState.value.filterConditionSelected = -1;
 }
 
-function addInputField() {
-  const regexes = filterConditionBoxState.value.editingCondition.regexes;
-  if (regexes.length === 0 || regexes[regexes.length - 1].trim() !== "") {
-    filterConditionBoxState.value.editingCondition.regexes.push("");
-  }
-}
-
-function deleteInputField(index: number) {
-  if (index > -1) {
-    filterConditionBoxState.value.editingCondition.regexes.splice(index, 1);
-  }
-}
-
 function clearEditingInputs(to: string) {
   toggleIsEditing(to);
   Object.assign(filterConditionBoxState.value.editingCondition, {
-    "type":"MatchesAll",
-    "regexes": [],
-    "include": true,
+    "name": "",
+    "matcher": {
+      "address": "",
+      "mask": "",
+      "include": false
+    }
   });
 }
 
 function saveFilterCondition() {
-  let newFilterCondition: filterCondition = { ...filterConditionBoxState.value.editingCondition };
-  const defaultValues: filterCondition = {
-    "type":"MatchesAll",
-    "regexes": [],
-    "include": false,
+  let newFilterCondition: Matcher = { ...filterConditionBoxState.value.editingCondition };
+  const defaultValues: Matcher = {
+    "name": "",
+    "matcher": {
+      "address": "",
+      "mask": "",
+      "include": false
+    }
   };
   for (let key in defaultValues as {[key: string]: any}) {
     if (!newFilterCondition.hasOwnProperty(key) || newFilterCondition[key] === "" || newFilterCondition[key] === null) {
@@ -156,7 +140,7 @@ function doubleClickFilterCondition(index: number) {
 }
 
 const emit = defineEmits({
-  'update-filter-conditions': (payload: { filterConditions: Array<filterCondition>, done: boolean }) => true,
+  'update-filter-conditions': (payload: { filterConditions: Array<Matcher>, done: boolean }) => true,
 });
 
 // emit filter conditions to LayerManagement on receiving emitFilterConditions prop
@@ -209,13 +193,6 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
 
 .list-icons-container-editing {
   width: 0;
-}
-
-.regex-list {
-  max-width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .edit-icons-container {
@@ -274,8 +251,8 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  font-size: 1.5vh;
-  font-weight: bold;
+  font-size: 2vh;
+  font-weight: bolder;
   cursor: pointer;
   height: 4.9vh;
   transition: 0.2s ease-in-out;
@@ -335,45 +312,6 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
   opacity: 1;
 }
 
-.filter-condition-editing-input {
-  border: 1px solid #424242;
-  border-radius: 4px;
-  font-size: 2vh;
-  width: 76%;
-  padding: 2%;
-  margin: 0.5vh 0 0.5vh 6px;
-}
-
-.filter-condition-editing-input:focus {
-  outline: none;
-}
-
-.first-filter-condition-editing-input{
-  border: 1px solid #424242;
-  border-radius: 4px;
-  font-size: 2vh;
-  width: 90%;
-  padding: 2%;
-  margin: 0.5vh 0;
-}
-
-.first-filter-condition-editing-input:focus {
-  outline: none;
-}
-
-.first-scrollable-selector-input {
-  border: none;
-  width: 95%;
-  font-size: 2vh;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 0.25vh 0;
-  margin: 0.5vh 2.5%;
-}
-
-.first-scrollable-selector-input:focus {
-  outline: none;
-}
-
 .scrollable-selector-input {
   border: none;
   width: 95%;
@@ -384,26 +322,6 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
 }
 
 .scrollable-selector-input:focus {
-  outline: none;
-}
-
-.delete-input-icon{
-  margin-left: 0.5vw;
-  margin-right: 5px;
-}
-
-.create-dropdown-inputs {
-  border: 1px solid #424242;
-  border-radius: 4px;
-  font-size: 2vh;
-  width: 94.5%;
-  padding: 2%;
-  margin: 0.5vh 0;
-  background: white;
-  color: #424242;
-}
-
-.create-dropdown-inputs:focus {
   outline: none;
 }
 
