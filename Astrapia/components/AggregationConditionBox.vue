@@ -55,7 +55,8 @@ const props = defineProps<{
 interface filterCondition {
   "NetworkAddress": string
   "SubnetMask": string,
-  "include": boolean
+  "include": boolean,
+  [key: string]: string | number | boolean | null
 }
 
 const filterConditionBoxState = ref({

@@ -54,6 +54,16 @@
     <div class="filter-condition" v-if="createLayerData.type === 'tag-filter'">
       <TagConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
     </div>
+    <div class="filter-condition" v-if="createLayerData.type === 'naming'">
+      <NamingConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+      <div class="enable-new-layer" >
+        <p>Overwrite with DNS</p>
+        <input type="checkbox" class="theme-checkbox" v-model="createLayerData.filterList.overwriteWithDns" />
+      </div>
+    </div>
+    <div class="filter-condition" v-if="createLayerData.type === 'styling'">
+      <StyleConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+    </div>
   </div>
   <div class="create-layer" @click="toggleCreateLayerOpen">
     <font-awesome-icon icon="fa-solid fa-plus" v-if="layerListState.isEditExistingLayer === -1" class="fa-plus" :class="{ 'rotate-icon': layerListState.createLayerOpen }" />
@@ -68,6 +78,8 @@ import FilterConditionBox from "~/components/FilterConditionBox.vue";
 import layerService from "~/services/layerService";
 import AggregationConditionBox from "~/components/AggregationConditionBox.vue";
 import TagConditionBox from "~/components/TagConditionBox.vue";
+import NamingConditionBox from "~/components/NamingConditionBox.vue";
+import StyleConditionBox from "~/components/StyleConditionBox.vue";
 
 export interface FilterConditions {
   sourceAddress: string,
@@ -109,7 +121,8 @@ const createLayerData = ref({
   enabled: false,
   filterList: {
     conditions: [] as Array<FilterConditions>,
-    implicitInclude: true
+    implicitInclude: true,
+    overwriteWithDns: false
   }
 })
 

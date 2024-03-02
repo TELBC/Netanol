@@ -38,7 +38,7 @@
       <input id="destination-input" class="scrollable-selector-input" type="text" placeholder="Destination Address" v-model="filterConditionBoxState.editingCondition.destinationAddress" />
       <input id="destination-mask-input" class="scrollable-selector-input" type="text" placeholder="Destination Address Mask" v-model="filterConditionBoxState.editingCondition.destinationAddressMask" />
       <input id="destination-port-input" class="filter-condition-editing-input" type="text" placeholder="Destination Port" v-model="filterConditionBoxState.editingCondition.destinationPort" />
-      <input id="protocol-input" class="filter-condition-editing-input" type="text" placeholder="Protocol" v-model="filterConditionBoxState.editingCondition.protocol" />
+      <input id="protocol-input" class="scrollable-selector-input" type="text" placeholder="Protocol" v-model="filterConditionBoxState.editingCondition.protocol" />
       <div class="scrollable-selector-include-exclude-traffic">
         <p>Exclude</p>
         <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.include" />
