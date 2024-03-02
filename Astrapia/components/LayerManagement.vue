@@ -37,7 +37,7 @@
       <option value="naming">Naming</option>
       <option value="styling">Styling</option>
     </select>
-    <div class="enable-new-layer">
+    <div class="enable-new-layer" v-if="createLayerData.type !==''">
       <p>Enable on creation</p>
       <input type="checkbox" class="theme-checkbox" v-model="createLayerData.enabled" />
     </div>
@@ -50,6 +50,9 @@
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'aggregation'">
       <AggregationConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+    </div>
+    <div class="filter-condition" v-if="createLayerData.type === 'tag-filter'">
+      <TagConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
     </div>
   </div>
   <div class="create-layer" @click="toggleCreateLayerOpen">
@@ -64,6 +67,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import FilterConditionBox from "~/components/FilterConditionBox.vue";
 import layerService from "~/services/layerService";
 import AggregationConditionBox from "~/components/AggregationConditionBox.vue";
+import TagConditionBox from "~/components/TagConditionBox.vue";
 
 export interface FilterConditions {
   sourceAddress: string,
