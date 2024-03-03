@@ -42,7 +42,7 @@
       <input type="checkbox" class="theme-checkbox" v-model="createLayerData.enabled" />
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'filter'">
-      <FilterConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+      <FilterConditionBox :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
       <div class="enable-new-layer" >
         <p>Implicit Inclusion</p>
         <input type="checkbox" class="theme-checkbox" v-model="createLayerData.filterList.implicitInclude" />
@@ -55,7 +55,7 @@
       <TagConditionBox :edit-layer-tag-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'naming'">
-      <NamingConditionBox :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+      <NamingConditionBox :edit-layer-naming-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
       <div class="enable-new-layer" >
         <p>Overwrite with DNS</p>
         <input type="checkbox" class="theme-checkbox" v-model="createLayerData.filterList.overwriteWithDns" />
@@ -121,8 +121,7 @@ const createLayerData = ref({
   enabled: false,
   filterList: {
     conditions: [] as Array<FilterConditions>,
-    implicitInclude: true,
-    overwriteWithDns: false//Naming
+    implicitInclude: true
   }
 })
 
@@ -190,7 +189,8 @@ function setLayerEnabled(index: number, value: boolean) {
 
 // handle emitted filter conditions from FilterConditionBox
 function handleFilterConditionsEmit(newConditions: Array<FilterConditions>, doneEmitting: boolean) {
-  createLayerData.value.filterList.conditions = newConditions;
+  createLayerData.value.filterList.conditions = newConditions.conditions;
+  console.log(newConditions)
   layerListState.value.doneEmittingFilterConditions = doneEmitting;
 }
 

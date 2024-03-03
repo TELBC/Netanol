@@ -61,10 +61,6 @@ interface aggregationMatcher {
 const aggregationMatcherBoxState = ref({
   isEditing: false,
   aggregationMatchers: [] as Array<aggregationMatcher>,
-  ipAddresses: [] as Array<string>,
-  addressMasks: [] as Array<string>,
-  ports: [] as Array<number>,
-  protocols: [] as Array<string>,
   aggregationMatcherSelected: -1,
   editingMatcher: {} as aggregationMatcher,
   editingMatcherIndex: -1,

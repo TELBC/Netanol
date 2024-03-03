@@ -53,7 +53,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {ref, defineProps, watch} from "vue";
 
 const props = defineProps<{
-  editLayerFilterConditions: Array<filterCondition>,
+  editLayerFilterConditions: {},
 }>();
 
 interface filterCondition {
@@ -71,10 +71,6 @@ interface filterCondition {
 const filterConditionBoxState = ref({
   isEditing: false,
   filterConditions: [] as Array<filterCondition>,
-  ipAddresses: [] as Array<string>,
-  addressMasks: [] as Array<string>,
-  ports: [] as Array<number>,
-  protocols: [] as Array<string>,
   filterConditionSelected: -1,
   editingCondition: {} as filterCondition,
   editingConditionIndex: -1,
@@ -164,7 +160,8 @@ const emit = defineEmits({
 
 // receive filter conditions from LayerManagement on edit of existing layer
 watch(() => props.editLayerFilterConditions, (newVal) => {
-  filterConditionBoxState.value.filterConditions = newVal;
+  console.log(newVal)
+  filterConditionBoxState.value.filterConditions.conditions = newVal;
 });
 </script>
 

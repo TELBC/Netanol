@@ -65,10 +65,6 @@ interface Matcher {
 const namingConditionBoxState = ref({
   isEditing: false,
   namingConditions: [] as Array<Matcher>,
-  ipAddresses: [] as Array<string>,
-  addressMasks: [] as Array<string>,
-  ports: [] as Array<number>,
-  protocols: [] as Array<string>,
   namingConditionSelected: -1,
   editingCondition: { name: "", matcher: { address: "", mask: "", include: false } },
   editingConditionIndex: -1,
