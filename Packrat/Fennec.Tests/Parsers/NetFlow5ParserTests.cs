@@ -22,10 +22,12 @@ public class NetFlow5ParserTests
         var dataUdpReceiveResult = new UdpReceiveResult(netflowData, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 0));
 
         // Act
-        var data = parser.Parse(dataUdpReceiveResult);
+        var data = parser.Parse(dataUdpReceiveResult).ToList();
 
         // Assert
         Assert.NotNull(data);
         Assert.Single(data);
+
+        Assert.Equal(IPAddress.Parse("10.0.0.2"), data.First().SrcIp);
     }
 }

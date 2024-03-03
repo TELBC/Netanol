@@ -28,10 +28,14 @@ public class IpFixParserTests
 
         // Act
         var templates = parser.Parse(templatesUdpReceiveResult);
-        var data = parser.Parse(dataUdpReceiveResult);
+        var data = parser.Parse(dataUdpReceiveResult).ToList();
 
         // Assert
+        Assert.NotNull(templates);
         Assert.NotNull(data);
-        Assert.Equal(14, data.Count());
+
+        Assert.Empty(templates);
+        Assert.Equal(14, data.Count);
+        Assert.Equal((ulong)40, data.First().ByteCount);
     }
 }
