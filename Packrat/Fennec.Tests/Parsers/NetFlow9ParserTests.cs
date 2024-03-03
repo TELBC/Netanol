@@ -28,10 +28,14 @@ public class NetFlow9ParserTests
 
         // Act
         var templates = parser.Parse(templatesUdpReceiveResult);
-        var data = parser.Parse(dataUdpReceiveResult);
+        var data = parser.Parse(dataUdpReceiveResult).ToList();
 
         // Assert
+        Assert.NotNull(templates);
         Assert.NotNull(data);
+
+        Assert.Empty(templates);
         Assert.Single(data);
+        Assert.Equal((ulong)3, data.First().PacketCount);
     }
 }
