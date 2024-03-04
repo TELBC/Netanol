@@ -7,7 +7,7 @@
 <script setup lang="ts">
 import {onMounted, ref} from 'vue';
 import {axisBottom, axisLeft, extent, isoParse, line, pointer, scaleLinear, scaleTime, select,} from 'd3';
-import networkAnalysisService from '~/services/networkAnalysisService';
+import networkAnalysisService from '~/services/metricService';
 
 
 let svgRef = ref(null);
