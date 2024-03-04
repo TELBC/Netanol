@@ -110,8 +110,8 @@ public class MapperProfile : Profile
 
         CreateMap<NamingLayer, NamingLayerDto>();
         CreateMap<NamingLayerDto, NamingLayer>();
-        CreateMap<NamingAssigner, NamingLayerDto>();
-        CreateMap<NamingLayerDto, NamingAssigner>();
+        CreateMap<NamingAssigner, NamingAssignerDto>();
+        CreateMap<NamingAssignerDto, NamingAssigner>();
 
         CreateMap<EdgeStyler, EdgeStylerDto>();
         CreateMap<EdgeStylerDto, EdgeStyler>();
