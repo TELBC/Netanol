@@ -37,6 +37,8 @@ const props = defineProps<{
   padding: 1vh 0.5vw;
   box-shadow: 4px 4px 8px 0 #e0e0e0;
   user-select: none;
+  margin-right: 2.5vw;
+  margin-bottom: 4vh;
 }
 
 .flow-metric-card-key {
@@ -51,7 +53,7 @@ const props = defineProps<{
 
 .data-key {
   font-weight: bold;
-  color: #294D61;
+  color: #4D4D4D;
 }
 
 .data-value {
