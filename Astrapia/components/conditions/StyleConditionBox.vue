@@ -1,176 +1,152 @@
-<!--TODO: STILL NEEDS TO BE IMPLEMENTED-->
 <template>
-  <div class="filter-condition-box-container">
-    <div class="filter-condition-box-menu">
-      <div class="list-icons-container" v-bind:class="{'list-icons-container-editing': filterConditionBoxState.isEditing}">
-        <font-awesome-icon icon="fa-solid fa-plus" class="conditions-list-icons" v-bind:class="{'conditions-list-editing': filterConditionBoxState.isEditing}" @click="toggleIsEditing('edit')" />
-        <font-awesome-icon icon="fa-solid fa-minus" class="conditions-list-icons" v-bind:class="{'conditions-list-editing': filterConditionBoxState.isEditing}" @click="deleteSelectedFilterCondition" />
+  <div>
+    <div class="filter-condition-box-container">
+      <div class="filter-condition-box-menu">Edge Styling</div>
+      <div class="scrollable-selector-title">
+        <label class="dropdown-title">Set Width</label>
+        <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.edgeStyler.setWidth" />
       </div>
-      <div class="edit-icons-container" v-bind:class="{'editing-icons-container-editing': filterConditionBoxState.isEditing}">
-        <font-awesome-icon icon="fa-solid fa-arrow-left" class="editing-condition-icons" v-bind:class="{'editing-condition': filterConditionBoxState.isEditing}" @click="clearEditingInputs('list')" />
-        <font-awesome-icon icon="fa-solid fa-floppy-disk" class="editing-condition-icons" v-bind:class="{'editing-condition': filterConditionBoxState.isEditing}" @click="saveFilterCondition" />
+      <div v-if="filterConditionBoxState.editingCondition.edgeStyler.setWidth">
+        <label class="dropdown-label">Width Type</label>
+        <select class="create-dropdown-inputs" v-model="filterConditionBoxState.editingCondition.edgeStyler.widthScoringMode">
+          <option value="Calculated" selected>Calculated</option>
+          <option value="ByteCount">ByteCount</option>
+          <option value="PacketCount">PacketCount</option>
+        </select>
+        <label class="dropdown-label">Min Edge Width:</label>
+        <input id="source-input" class="scrollable-selector-input" type="number" step=".1" placeholder="Edge Min Width" v-model="filterConditionBoxState.editingCondition.edgeStyler.edgeMinWidth" />
+        <label class="dropdown-label">Max Edge Width:</label>
+        <input id="source-input" class="scrollable-selector-input" type="number" step=".1" placeholder="Edge Min Width" v-model="filterConditionBoxState.editingCondition.edgeStyler.edgeMaxWidth" />
       </div>
-    </div>
-    <div class="filter-condition-list" v-bind:class="{'editing-filter-condition-list': filterConditionBoxState.isEditing}">
-      <div class="conditions" v-for="(condition, index) in filterConditionBoxState.filterConditions" :key="index" @click="setFilterConditionSelected(index)" v-bind:class="{'selected-filter-condition': filterConditionBoxState.filterConditionSelected == index}" @dblclick="doubleClickFilterCondition(index)">
-        <div class="conditions-src-dest">
-          <div class="src-dest-address-container">
-            <p class="include-exclude-filter-src-dest">
-              Name:&nbsp;
-            </p>
-            {{ condition.name }}
-          </div>
-          <div class="src-dest-address-container">
-            <p class="include-exclude-filter-src-dest">
-              IP:&nbsp;
-            </p>
-            {{ condition.matcher.address }}
-          </div>
+      <div class="section-seperator"/>
+      <div class="scrollable-selector-title">
+        <label class="dropdown-title">Set Color</label>
+        <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.edgeStyler.setColor" />
+      </div>
+      <div v-if="filterConditionBoxState.editingCondition.edgeStyler.setColor">
+        <label class="dropdown-label">Color Type</label>
+        <select class="create-dropdown-inputs" v-model="filterConditionBoxState.editingCondition.edgeStyler.colorScoringMode">
+          <option value="Calculated">Calculated</option>
+          <option value="ByteCount" selected>ByteCount</option>
+          <option value="PacketCount">PacketCount</option>
+        </select>
+        <div class="scrollable-selector-include-exclude-traffic">
+          <label class="dropdown-label">Interpolate Colors</label>
+          <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.edgeStyler.interpolateColors" />
         </div>
-        <p class="include-exclude-filter-src-dest">
-          {{ condition.matcher.include ? 'Include' : 'Exclude' }}
-        </p>
+        <div class="scrollable-selector-include-exclude-traffic">
+          <label class="dropdown-label">Use Protocol Colors</label>
+          <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.edgeStyler.useProtocolColors" />
+        </div>
       </div>
     </div>
-    <div class="filter-condition-editing" v-bind:class="{'editing-filter-condition-editing': filterConditionBoxState.isEditing}">
-      <input id="source-input" class="scrollable-selector-input" type="text" placeholder="Name" v-model="filterConditionBoxState.editingCondition.name" />
-      <input id="source-mask-input" class="scrollable-selector-input" type="text" placeholder="Address" v-model="filterConditionBoxState.editingCondition.matcher.address" />
-      <input id="source-port-input" class="scrollable-selector-input" type="text" placeholder="Address Mask" v-model="filterConditionBoxState.editingCondition.matcher.mask" />
-      <div class="scrollable-selector-include-exclude-traffic">
-        <p>Exclude</p>
-        <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.matcher.include" />
-        <p>Include</p>
+    <div class="filter-condition-box-container">
+      <div class="filter-condition-box-menu">Node Styling</div>
+      <div class="scrollable-selector-title">
+        <label class="dropdown-title">Set Color</label>
+        <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.nodeStyler.setColor" />
+      </div>
+      <div v-if="filterConditionBoxState.editingCondition.nodeStyler.setColor">
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {ref, defineProps, watch} from "vue";
+import {ref, watch} from "vue";
 
 const props = defineProps<{
-  emitFilterConditions: Boolean,
-  editLayerFilterConditions: Array<Matcher>,
+  editLayerFilterConditions: Matcher,
 }>();
 
 interface Matcher {
-  "name": string,
-  "matcher": {
-    "address": string
-    "mask": string,
-    "include": boolean
-  },
+  edgeStyler: {
+    setWidth: boolean,
+    widthScoringMode: string,
+    edgeMinWidth: number,
+    edgeMaxWidth: number,
+    setColor: boolean,
+    colorScoringMode: string,
+    interpolateColors: boolean,
+    useProtocolColors: boolean
+  }
+  nodeStyler: {
+    setColor: boolean,
+    assignments: [
+      {
+        matcher: {
+          address: string,
+          mask: string,
+          include: boolean
+        },
+        hexColor: string
+      }
+    ]
+  }
   [key: string]: string | number | boolean | null | {}
 }
 
 const filterConditionBoxState = ref({
   isEditing: false,
-  filterConditions: [] as Array<Matcher>,
-  ipAddresses: [] as Array<string>,
-  addressMasks: [] as Array<string>,
-  ports: [] as Array<number>,
-  protocols: [] as Array<string>,
   filterConditionSelected: -1,
-  editingCondition: { name: "", matcher: { address: "", mask: "", include: false } },
+  editingCondition: {
+    edgeStyler: {
+      setWidth: false,
+      widthScoringMode: "Calculated",
+      edgeMinWidth: 0.5,
+      edgeMaxWidth: 2.0,
+      setColor: false,
+      colorScoringMode: "ByteCount",
+      interpolateColors: true,
+      useProtocolColors: true,
+    },
+    nodeStyler: {
+      setColor: false,
+      assignments: [
+        {
+          matcher: {
+            address: "0.0.0.0",
+            mask: "0.0.0.0",
+            include: false
+          },
+          hexColor: "#00FF00"
+        }
+      ]
+    }
+  },
   editingConditionIndex: -1,
 })
 
-function toggleIsEditing(to: string) {
-  filterConditionBoxState.value.isEditing = to === 'edit';
-  filterConditionBoxState.value.filterConditionSelected = -1;
-}
-
-function clearEditingInputs(to: string) {
-  toggleIsEditing(to);
-  Object.assign(filterConditionBoxState.value.editingCondition, {
-    "name": "",
-    "matcher": {
-      "address": "",
-      "mask": "",
-      "include": false
-    }
-  });
-}
-
-function saveFilterCondition() {
-  let newFilterCondition: Matcher = { ...filterConditionBoxState.value.editingCondition };
-  const defaultValues: Matcher = {
-    "name": "",
-    "matcher": {
-      "address": "",
-      "mask": "",
-      "include": false
-    }
-  };
-  for (let key in defaultValues as {[key: string]: any}) {
-    if (!newFilterCondition.hasOwnProperty(key) || newFilterCondition[key] === "" || newFilterCondition[key] === null) {
-      newFilterCondition[key] = defaultValues[key];
-    }
-  }
-  const isDuplicate = filterConditionBoxState.value.filterConditions.some(condition =>
-    JSON.stringify(condition) === JSON.stringify(newFilterCondition)
-  );
-  if (!isDuplicate && filterConditionBoxState.value.editingConditionIndex === -1) {
-    filterConditionBoxState.value.filterConditions.push(newFilterCondition);
-    clearEditingInputs('list');
-  } else if (!isDuplicate && filterConditionBoxState.value.editingConditionIndex > -1 && filterConditionBoxState.value.editingConditionIndex < filterConditionBoxState.value.filterConditions.length) {
-    Object.assign(filterConditionBoxState.value.filterConditions[filterConditionBoxState.value.editingConditionIndex], newFilterCondition);
-    clearEditingInputs('list');
-  }
-}
-
-// set which filter condition is highlighted by left click
-function setFilterConditionSelected(condition: number) {
-  filterConditionBoxState.value.filterConditionSelected = condition;
-}
-
-function deleteSelectedFilterCondition() {
-  if (filterConditionBoxState.value.filterConditionSelected != -1) {
-    filterConditionBoxState.value.filterConditions.splice(filterConditionBoxState.value.filterConditionSelected, 1);
-    filterConditionBoxState.value.filterConditionSelected = -1;
-  }
-}
-
-// open edit form for filter condition by double clicking it
-function doubleClickFilterCondition(index: number) {
-  toggleIsEditing('edit');
-  filterConditionBoxState.value.editingCondition = { ...filterConditionBoxState.value.filterConditions[index] };
-  filterConditionBoxState.value.editingConditionIndex = index;
-}
-
 const emit = defineEmits({
-  'update-filter-conditions': (payload: { filterConditions: Array<Matcher>, done: boolean }) => true,
+  'update-styling-conditions': (payload: Matcher) => true,
 });
 
-// emit filter conditions to LayerManagement on receiving emitFilterConditions prop
-watch(() => props.emitFilterConditions, (newVal) => {
-  if (newVal === true) {
-    emit('update-filter-conditions', {
-      filterConditions: filterConditionBoxState.value.filterConditions,
-      done: true
-    });
-  } else {
-    filterConditionBoxState.value.filterConditions = [];
-  }
-});
 
 // receive filter conditions from LayerManagement on edit of existing layer
 watch(() => props.editLayerFilterConditions, (newVal) => {
-  filterConditionBoxState.value.filterConditions = newVal;
+  filterConditionBoxState.value.editingCondition = newVal;
 });
 </script>
 
 <style scoped>
+.list-icons-container {
+  display: flex;
+  align-items: center;
+  justify-items: flex-start;
+  width: 100%;
+  transition: 0.2s ease-in-out;
+}
+
 .filter-condition-box-container {
   display: flex;
   flex-direction: column;
   border: 1px solid #424242;
-  height: 45vh;
+  height: auto;
   width: 90%;
   border-radius: 4px;
   font-family: 'Open Sans', sans-serif;
   overflow: hidden;
+  margin-bottom: 15px;
 }
 
 .filter-condition-box-menu {
@@ -183,142 +159,13 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
   background-color: #e0e0e0;
 }
 
-.list-icons-container {
-  display: flex;
-  align-items: center;
-  justify-items: flex-start;
-  width: 100%;
-  transition: 0.2s ease-in-out;
-}
-
-.list-icons-container-editing {
-  width: 0;
-}
-
-.edit-icons-container {
-  display: flex;
-  align-items: center;
-  justify-items: flex-start;
-  width: 0;
-  transition: 0.2s ease-in-out;
-}
-
-.editing-icons-container-editing {
-  width: 100%;
-}
-
-.conditions-list-icons {
-  margin-right: 0.5vw;
-  cursor: pointer;
-  transition: 0.2s ease-in-out;
-}
-
-.conditions-list-editing {
-  visibility: hidden;
-  opacity: 0;
-}
-
-.editing-condition-icons {
-  margin-right: 0.5vw;
-  visibility: hidden;
-  opacity: 0;
-  cursor: pointer;
-  transition: 0.2s ease-in-out;
-}
-
-.editing-condition {
-  visibility: visible;
-  opacity: 1;
-}
-
-.filter-condition-list {
-  width: 100%;
-  height: 100%;
-  visibility: visible;
-  opacity: 1;
-  transition: 0.2s ease-in-out;
-  overflow-y: auto;
-  overflow-x: hidden;
-  word-break: break-word;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.conditions {
-  width: 90%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 2vh;
-  font-weight: bolder;
-  cursor: pointer;
-  height: 4.9vh;
-  transition: 0.2s ease-in-out;
-  padding: 2.5% 5% 2.5% 5%;
-}
-
-.selected-filter-condition {
-  background-color: #e0e0e0;
-}
-
-.conditions-src-dest {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.src-dest-address-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  margin-left: -0.5vw;
-  height: 45%;
-}
-
-.include-exclude-filter-src-dest {
-  font-size: 1.5vh;
-  font-weight: normal;
-  margin-left: 0.5vw;
-}
-
-.filter-condition-editing {
-  width: 0;
-  height: 0;
-  visibility: hidden;
-  opacity: 0;
-  transition: 0.2s ease-in-out;
-  overflow-y: auto;
-  overflow-x: hidden;
-  word-break: break-word;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.editing-filter-condition-list {
-  width: 0;
-  visibility: hidden;
-  opacity: 0;
-  height: 0;
-}
-
-.editing-filter-condition-editing {
-  width: 100%;
-  height: 100%;
-  visibility: visible;
-  opacity: 1;
-}
-
 .scrollable-selector-input {
   border: none;
-  width: 95%;
-  font-size: 2vh;
+  width: 90%;
+  font-size: 1.5vh;
   border-bottom: 1px solid #e0e0e0;
   padding: 0.25vh 0;
-  margin: 0.5vh 2.5%;
+  margin: 0.5vh 5%;
 }
 
 .scrollable-selector-input:focus {
@@ -330,11 +177,66 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  width: 90%;
+  width: 80%;
   font-size: 2vh;
+  margin-left: 1%;
+}
+
+.section-seperator{
+  border-top: 1px solid #b7b7b7;
+  width: 95%;
+  height: 1px;
+  margin-left: 2.5%;
+  margin-right: 2.5%;
+  margin-top: 2%;
+}
+
+.scrollable-selector-title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 80%;
+  font-size: 2vh;
+  margin-left: 6%;
+  margin-top: 3%;
+  margin-bottom: 2%;
 }
 
 #exclude-include-switch {
   margin-left: 0;
+}
+
+.create-dropdown-inputs {
+  font-family: "Open Sans", sans-serif;
+  width: 90%;
+  border: 1px solid #424242;
+  border-radius: 4px;
+  font-size: 1.5vh;
+  padding: 2%;
+  background: white;
+  color: black;
+  margin: 0.5vh 0 0.5vh 5%;
+}
+
+.create-dropdown-inputs:focus {
+  outline: none;
+}
+
+.dropdown-title{
+  font-family: "Open Sans", sans-serif;
+  width: 90%;
+  font-size: 1.8vh;
+  background: white;
+  color: #424242;
+}
+
+.dropdown-label{
+  font-family: "Open Sans", sans-serif;
+  width: 90%;
+  font-size: 1.4vh;
+  background: white;
+  color: #424242;
+  margin-left: 5%;
 }
 </style>

@@ -17,13 +17,13 @@
             <p class="include-exclude-aggregation-src-dest">
               Network:&nbsp;
             </p>
-            {{ matcher.NetworkAddress }}
+            {{ matcher.address }}
           </div>
           <div class="src-dest-address-container">
             <p class="include-exclude-aggregation-src-dest">
               Mask:&nbsp;
             </p>
-            {{ matcher.SubnetMask }}
+            {{ matcher.mask }}
           </div>
         </div>
         <p class="include-exclude-aggregation-src-dest">
@@ -32,8 +32,8 @@
       </div>
     </div>
     <div class="aggregation-matcher-editing" v-bind:class="{'editing-aggregation-matcher-editing': aggregationMatcherBoxState.isEditing}">
-      <input id="source-input" class="scrollable-selector-input" type="text" placeholder="Network Address" v-model="aggregationMatcherBoxState.editingMatcher.NetworkAddress" />
-      <input id="source-mask-input" class="scrollable-selector-input" type="text" placeholder="Subnet Mask" v-model="aggregationMatcherBoxState.editingMatcher.SubnetMask" />
+      <input id="source-input" class="scrollable-selector-input" type="text" placeholder="Network Address" v-model="aggregationMatcherBoxState.editingMatcher.address" />
+      <input id="source-mask-input" class="scrollable-selector-input" type="text" placeholder="Subnet Mask" v-model="aggregationMatcherBoxState.editingMatcher.mask" />
       <div class="scrollable-selector-include-exclude-traffic">
         <p>Exclude</p>
         <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="aggregationMatcherBoxState.editingMatcher.include" />
@@ -48,12 +48,12 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, defineProps, defineEmits, watch } from "vue";
 
 const props = defineProps<{
-  editLayerAggregationMatchers: Array<aggregationMatcher>,
+  editLayerAggregationMatchers: { },
 }>();
 
 interface aggregationMatcher {
-  "NetworkAddress": string
-  "SubnetMask": string,
+  "address": string
+  "mask": string,
   "include": boolean,
   [key: string]: string | number | boolean | null
 }
@@ -74,8 +74,8 @@ function toggleIsEditing(to: string) {
 function clearEditingInputs(to: string) {
   toggleIsEditing(to);
   Object.assign(aggregationMatcherBoxState.value.editingMatcher, {
-    "NetworkAddress": "",
-    "SubnetMask": "",
+    "address": "",
+    "mask": "",
     "include": false
   });
 }
@@ -83,8 +83,8 @@ function clearEditingInputs(to: string) {
 function saveAggregationMatcher() {
   let newAggregationMatcher: aggregationMatcher = { ...aggregationMatcherBoxState.value.editingMatcher };
   const defaultValues: aggregationMatcher = {
-    "NetworkAddress": "",
-    "SubnetMask": "",
+    "address": "",
+    "mask": "",
     "include": false
   };
   for (let key in defaultValues as {[key: string]: any}) {
@@ -102,11 +102,11 @@ function saveAggregationMatcher() {
   }
   clearEditingInputs('list');
   const matchers = aggregationMatcherBoxState.value.aggregationMatchers.map(matcher => ({
-    address: matcher.NetworkAddress,
-    mask: matcher.SubnetMask,
+    address: matcher.address,
+    mask: matcher.mask,
     include: matcher.include
   }));
-  emit('update-aggregation-matchers', { matchers });
+  emit('update-aggregation-matchers', matchers);
 }
 
 // set which aggregation matcher is highlighted by left click
@@ -129,7 +129,7 @@ function doubleClickAggregationMatcher(index: number) {
 }
 
 const emit = defineEmits({
-  'update-aggregation-matchers': (payload: { matchers: Array<{ address: string; mask: string; include: boolean; }> }) => true,
+  'update-aggregation-matchers': (payload: Array<{ address: string; mask: string; include: boolean; }>) => true,
 });
 
 // receive aggregation matchers from LayerManagement on edit of existing layer

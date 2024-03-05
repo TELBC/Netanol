@@ -104,7 +104,7 @@ function saveFilterCondition() {
     "destinationAddress": "0.0.0.0",
     "destinationAddressMask": "0.0.0.0",
     "destinationPort": null,
-    "protocol": "tcp",
+    "protocol": "Tcp",
     "include": false
   };
   for (let key in defaultValues as {[key: string]: any}) {
@@ -131,7 +131,7 @@ function saveFilterCondition() {
     protocol: condition.protocol,
     include: condition.include,
   }));
-  emit('update-filter-conditions', { conditions });
+  emit('update-filter-conditions', conditions);
 }
 
 // set which filter condition is highlighted by left click
@@ -154,14 +154,13 @@ function doubleClickFilterCondition(index: number) {
 }
 
 const emit = defineEmits({
-  'update-filter-conditions': (payload: { conditions: Array<filterCondition> }) => true,
+  'update-filter-conditions': (payload: Array<filterCondition>) => true,
 });
 
 
 // receive filter conditions from LayerManagement on edit of existing layer
 watch(() => props.editLayerFilterConditions, (newVal) => {
-  console.log(newVal)
-  filterConditionBoxState.value.filterConditions.conditions = newVal;
+  filterConditionBoxState.value.filterConditions = newVal;
 });
 </script>
 

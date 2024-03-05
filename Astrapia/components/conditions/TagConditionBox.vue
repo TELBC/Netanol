@@ -40,10 +40,10 @@
         <option value="MatchesAll" selected>Matches All</option>
         <option value="MatchesExactly">Matches Exactly</option>
       </select>
-      <input class="first-scrollable-selector-input" type="text" placeholder="Regex" v-model="tagConditionBoxState.editingCondition.regexes[0]" />
+      <input class="first-tag-condition-editing-input" type="text" placeholder="Regex" v-model="tagConditionBoxState.editingCondition.regexes[0]" />
       <div class="tag-condition-editing-inputs">
         <div v-for="(regex, index) in tagConditionBoxState.editingCondition.regexes.slice(1)" :key="index">
-          <input class="scrollable-selector-input" type="text" placeholder="Regex" v-model="tagConditionBoxState.editingCondition.regexes[index + 1]" />
+          <input class="tag-condition-editing-input" type="text" placeholder="Regex" v-model="tagConditionBoxState.editingCondition.regexes[index + 1]" />
           <font-awesome-icon icon="fa-solid fa-minus" class="delete-input-icon" @click="deleteInputField(index + 1)"/>
         </div>
       </div>
@@ -137,7 +137,7 @@ function saveTagCondition() {
     regexes: condition.regexes,
     include: condition.include
   }));
-  emit('update-tag-conditions', { conditions });
+  emit('update-tag-conditions',  conditions);
 }
 
 // set which tag condition is highlighted by left click
@@ -160,7 +160,7 @@ function doubleClickTagCondition(index: number) {
 }
 
 const emit = defineEmits({
-  'update-tag-conditions': (payload: { conditions: Array<tagCondition> }) => true,
+  'update-tag-conditions': (payload: Array<tagCondition>) => true,
 });
 
 // receive tag conditions from LayerManagement on edit of existing layer
@@ -350,32 +350,6 @@ watch(() => props.editLayerTagConditions, (newVal) => {
 }
 
 .first-tag-condition-editing-input:focus {
-  outline: none;
-}
-
-.first-scrollable-selector-input {
-  border: none;
-  width: 95%;
-  font-size: 2vh;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 0.25vh 0;
-  margin: 0.5vh 2.5%;
-}
-
-.first-scrollable-selector-input:focus {
-  outline: none;
-}
-
-.scrollable-selector-input {
-  border: none;
-  width: 95%;
-  font-size: 2vh;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 0.25vh 0;
-  margin: 0.5vh 2.5%;
-}
-
-.scrollable-selector-input:focus {
   outline: none;
 }
 

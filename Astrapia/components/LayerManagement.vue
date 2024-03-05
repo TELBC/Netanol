@@ -49,16 +49,20 @@
       </div>
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'aggregation'">
-      <AggregationConditionBox :edit-layer-aggregation-matchers="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit"  />
+      <AggregationConditionBox :edit-layer-aggregation-matchers="createLayerData.matchers" @update-aggregation-matchers="handleFilterConditionsEmit"  />
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'tag-filter'">
-      <TagConditionBox :edit-layer-tag-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+      <TagConditionBox :edit-layer-tag-conditions="createLayerData.conditions" @update-tag-conditions="handleFilterConditionsEmit" />
+      <div class="enable-new-layer" >
+        <p>Implicit Inclusion</p>
+        <input type="checkbox" class="theme-checkbox" v-model="createLayerData.implicitInclude" />
+      </div>
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'naming'">
-      <NamingConditionBox :edit-layer-naming-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+      <NamingConditionBox :edit-layer-naming-conditions="createLayerData.matchers" @update-naming-conditions="handleFilterConditionsEmit" />
       <div class="enable-new-layer" >
         <p>Overwrite with DNS</p>
-        <input type="checkbox" class="theme-checkbox" v-model="createLayerData.filterList.overwriteWithDns" />
+        <input type="checkbox" class="theme-checkbox" v-model="createLayerData.overwriteWithDns" />
       </div>
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'styling'">
@@ -96,6 +100,7 @@ export interface Layer {
   name: string,
   type: string,
   enabled: boolean,
+  overwriteWithDns: boolean,
   filterList: {
     conditions: FilterConditions[],
     implicitInclude: boolean
@@ -119,10 +124,14 @@ const createLayerData = ref({
   name: '',
   type: '',
   enabled: false,
+  overwriteWithDns: true,
   filterList: {
     conditions: [] as Array<FilterConditions>,
     implicitInclude: true
-  }
+  },
+  implicitInclude: true,
+  conditions: [],
+  matchers:[]
 })
 
 const layerListState = ref({
@@ -179,18 +188,30 @@ function setLayerEnabled(index: number, value: boolean) {
       name: '',
       type: '',
       enabled: false,
+      overwriteWithDns: true,
       filterList: {
         conditions: [] as Array<FilterConditions>,
-        implicitInclude: false
-      }
+        implicitInclude: true
+      },
+      implicitInclude: true,
+      conditions: [],
+      matchers:[]
     })
   }, 250);
 }
 
 // handle emitted filter conditions from FilterConditionBox
-function handleFilterConditionsEmit(newConditions: Array<FilterConditions>, doneEmitting: boolean) {
-  createLayerData.value.filterList.conditions = newConditions.conditions;
+function handleFilterConditionsEmit(newConditions: any, doneEmitting: boolean) {
   console.log(newConditions)
+  if(createLayerData.value.type === 'filter'){
+    createLayerData.value.filterList.conditions = newConditions;
+  }else if(createLayerData.value.type === 'aggregation'){
+    createLayerData.value.matchers = newConditions;
+  }else if(createLayerData.value.type === 'tag-filter'){
+    createLayerData.value.conditions = newConditions;
+  }else if(createLayerData.value.type === 'naming'){
+    createLayerData.value.matchers = newConditions;
+  }
   layerListState.value.doneEmittingFilterConditions = doneEmitting;
 }
 
@@ -227,10 +248,14 @@ function editExistingLayerAndReset() {
     name: '',
     type: '',
     enabled: false,
+    overwriteWithDns: true,
     filterList: {
       conditions: [] as Array<FilterConditions>,
-      implicitInclude: false
-    }
+      implicitInclude: true
+    },
+    implicitInclude: true,
+    conditions: [],
+    matchers:[]
   });
 }
 
@@ -241,10 +266,14 @@ function createNewLayerAndReset() {
     name: '',
     type: '',
     enabled: false,
+    overwriteWithDns: true,
     filterList: {
       conditions: [] as Array<FilterConditions>,
-      implicitInclude: false
-    }
+      implicitInclude: true
+    },
+    implicitInclude: true,
+    conditions: [],
+    matchers:[]
   });
 }
 
@@ -367,6 +396,7 @@ watch(() => props.layers!, (newLayers, oldLayers) => {
   flex-direction: column;
   align-items: center;
   height: 94.5%;
+  overflow-y: auto;
 }
 
 .create-inputs {
@@ -392,6 +422,7 @@ watch(() => props.layers!, (newLayers, oldLayers) => {
   padding: 2%;
   outline: none;
   color: #424242;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .create-dropdown-inputs:focus {
