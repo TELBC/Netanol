@@ -1,31 +1,35 @@
 <template>
-  <div class="flow-metric-card">
-    <p class="flow-metric-card-key">{{ props.keyProp }}:</p>
+  <div class="self-test-card">
+    <p class="self-test-card-key">{{ props.keyProp }}:</p>
     <div v-for="(value, key) in props.data" :key="key" class="data-line">
       <span class="data-key">{{ key }}: </span>
-      <span class="data-value">{{ value }}</span>
+      <span v-if="isObject(value)" class="nested-key-value" v-html="objectToString(value)"></span>
+      <span v-else class="data-value">{{ value }}</span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-interface GeneralFlowImporterData {
-  receivedPacketCount: number,
-  receivedByteCount: number,
-  transmittedPacketCount: number,
-  transmittedByteCount: number,
-  successfullyParsedPacket: number,
-  failedParsedPacket: number
-}
-
-const props = defineProps<{
-  data: GeneralFlowImporterData;
+const props = defineProps< {
+  data: any;
   keyProp: string;
 }>();
+
+const isObject = (item: any) => {
+  return (typeof item === "object" && !Array.isArray(item) && item !== null);
+}
+
+const objectToString = (obj: any) => {
+  let str = '';
+  for (const [key, value] of Object.entries(obj)) {
+    str += `<div><strong>${key}</strong>: ${value}</div>`;
+  }
+  return str;
+}
 </script>
 
 <style scoped>
-.flow-metric-card {
+.self-test-card {
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
@@ -37,11 +41,11 @@ const props = defineProps<{
   padding: 1.5vh 1vw;
   box-shadow: 4px 4px 8px 0 #e0e0e0;
   user-select: none;
-  margin-right: 1.5807942vw;
+  margin-right: 1vw;
   margin-bottom: 4vh;
 }
 
-.flow-metric-card-key {
+.self-test-card-key {
   font-weight: bold;
   margin: 0;
 }
@@ -57,5 +61,9 @@ const props = defineProps<{
 
 .data-value {
   font-weight: bold;
+}
+
+.nested-key-value {
+  text-indent: 2em;
 }
 </style>

@@ -13,16 +13,6 @@
         </div>
       </div>
     </NuxtLink>
-    <NuxtLink to="/network-analysis">
-      <div class="links">
-        <div class="icon-placement">
-          <font-awesome-icon class="faicon" icon="fa-solid fa-chart-line" />
-        </div>
-        <div class="text-wrap">
-          <p>Network Analysis</p>
-        </div>
-      </div>
-    </NuxtLink>
     <NuxtLink to="/topology">
       <div class="links">
         <div class="icon-placement">
