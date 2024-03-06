@@ -67,6 +67,9 @@ public class Startup
         services.AddSingleton<IFlowImporterMetric, FlowImporterMetric>();
         services.AddHostedService<FlowImporterTimer>();
         
+        // Application Status
+        services.AddSingleton<IApplicationStatus, ApplicationStatus>();
+        
         // Metric service
         services.AddSingleton<IMetricService, MetricService>();
         
