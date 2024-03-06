@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {ref, defineProps, watch} from "vue";
+import {ref, watch} from "vue";
 
 const props = defineProps<{
   editLayerFilterConditions: {},

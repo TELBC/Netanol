@@ -38,6 +38,55 @@
           <label class="dropdown-label">Use Protocol Colors</label>
           <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.edgeStyler.useProtocolColors" />
         </div>
+        <div v-if="filterConditionBoxState.editingCondition.edgeStyler.useProtocolColors">
+          <div class="protocol-colors-selection">
+            <div class="grid-container">
+              <div class="grid-item header">Protocol</div>
+              <div class="grid-item header">Start Color</div>
+              <div class="grid-item header">End Color</div>
+
+              <div class="grid-label">
+                <label class="dropdown-label">Unknown</label>
+              </div>
+              <div class="grid-item">
+                <input class="selector-color-input" type="color" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Unknown.startHex" title="Start Color"/>
+              </div>
+              <div class="grid-item">
+                <input class="selector-color-input" type="color" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Unknown.endHex" title="End Color"/>
+              </div>
+
+              <div class="grid-label">
+                <label class="dropdown-label">TCP</label>
+              </div>
+              <div class="grid-item">
+                <input class="selector-color-input" type="color" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Tcp.startHex" title="Start Color"/>
+              </div>
+              <div class="grid-item">
+                <input class="selector-color-input" type="color" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Tcp.endHex" title="End Color"/>
+              </div>
+
+              <div class="grid-label">
+                <label class="dropdown-label">UDP</label>
+              </div>
+              <div class="grid-item">
+                <input class="selector-color-input" type="color" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Udp.startHex" title="Start Color"/>
+              </div>
+              <div class="grid-item">
+                <input class="selector-color-input" type="color" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Udp.endHex" title="End Color"/>
+              </div>
+
+              <div class="grid-label">
+                <label class="dropdown-label">ICMP</label>
+              </div>
+              <div class="grid-item">
+                <input class="selector-color-input" type="color" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Icmp.startHex" title="Start Color"/>
+              </div>
+              <div class="grid-item">
+                <input class="selector-color-input" type="color" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Icmp.endHex" title="End Color"/>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="filter-condition-box-container">
@@ -45,8 +94,9 @@
       <div class="scrollable-selector-title">
         <label class="dropdown-title">Set Color</label>
         <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.nodeStyler.setColor" />
-      </div>
-      <div v-if="filterConditionBoxState.editingCondition.nodeStyler.setColor">
+        <div v-if="filterConditionBoxState.editingCondition.nodeStyler.setColor">
+
+        </div>
       </div>
     </div>
   </div>
@@ -68,7 +118,13 @@ interface Matcher {
     setColor: boolean,
     colorScoringMode: string,
     interpolateColors: boolean,
-    useProtocolColors: boolean
+    useProtocolColors: boolean,
+    protocolColors: {
+      [key:string]: {
+        startHex: string,
+        endHex: string
+      }
+    }
   }
   nodeStyler: {
     setColor: boolean,
@@ -83,11 +139,10 @@ interface Matcher {
       }
     ]
   }
-  [key: string]: string | number | boolean | null | {}
 }
 
 const filterConditionBoxState = ref({
-  isEditing: false,
+  isEditing: true,
   filterConditionSelected: -1,
   editingCondition: {
     edgeStyler: {
@@ -97,8 +152,26 @@ const filterConditionBoxState = ref({
       edgeMaxWidth: 2.0,
       setColor: false,
       colorScoringMode: "ByteCount",
-      interpolateColors: true,
+      interpolateColors: false,
       useProtocolColors: true,
+      protocolColors: {
+        Unknown:{
+          startHex: "#000000",
+          endHex: "#FFFFFF"
+        },
+        Tcp:{
+          startHex: "#000000",
+          endHex: "#FFFFFF"
+        },
+        Udp:{
+          startHex: "#000000",
+          endHex: "#FFFFFF"
+        },
+        Icmp:{
+          startHex: "#000000",
+          endHex: "#FFFFFF"
+        }
+      }
     },
     nodeStyler: {
       setColor: false,
@@ -113,7 +186,7 @@ const filterConditionBoxState = ref({
         }
       ]
     }
-  },
+  } as Matcher,
   editingConditionIndex: -1,
 })
 
@@ -129,12 +202,44 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
 </script>
 
 <style scoped>
-.list-icons-container {
-  display: flex;
-  align-items: center;
-  justify-items: flex-start;
-  width: 100%;
-  transition: 0.2s ease-in-out;
+.protocol-colors-selection{
+  margin: 2% 2.5% 5%;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  grid-gap: 10px;
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.4vh;
+  background: white;
+  color: #424242;
+  position: relative;
+}
+
+.grid-item {
+  text-align: center;
+}
+
+.grid-label {
+  text-align: left;
+}
+
+.header {
+  font-weight: bold;
+  text-align: left;
+  font-size: 1.3vh;
+  margin-left: 5%;
+}
+
+.selector-color-input{
+  width: 2vh;
+  height: 2vh;
+  padding: 0;
+  margin-left: 2%;
+  margin-right: 2%;
+  border: none;
+  vertical-align: middle;
 }
 
 .filter-condition-box-container {
@@ -209,7 +314,7 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
 
 .create-dropdown-inputs {
   font-family: "Open Sans", sans-serif;
-  width: 90%;
+  width: 55%;
   border: 1px solid #424242;
   border-radius: 4px;
   font-size: 1.5vh;
@@ -217,6 +322,7 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
   background: white;
   color: black;
   margin: 0.5vh 0 0.5vh 5%;
+  vertical-align: middle;
 }
 
 .create-dropdown-inputs:focus {
