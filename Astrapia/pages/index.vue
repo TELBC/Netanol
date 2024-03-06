@@ -13,7 +13,7 @@
     <div class="divider"></div>
     <FlowMetricCardsContainer />
     <div class="divider"></div>
-    <FlowImportGraph />
+    <FlowImporterGraphContainer />
   </div>
 </template>
 
@@ -21,7 +21,7 @@
 import { useHead } from '#imports'
 import FlowMetricCardsContainer from "~/components/FlowMetricCardsContainer.vue";
 import SelfTestContainer from "~/components/SelfTestContainer.vue";
-import FlowImportGraph from "~/components/FlowImportGraph.vue";
+import FlowImporterGraphContainer from "~/components/FlowImporterGraphContainer.vue";
 
 useHead({
   bodyAttrs: {

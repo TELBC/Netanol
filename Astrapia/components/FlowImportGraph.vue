@@ -5,21 +5,36 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import {axisBottom, axisLeft, extent, isoParse, line, pointer, scaleLinear, scaleTime, select,} from 'd3';
 import networkAnalysisService from '~/services/metricService';
 
+const props = defineProps({
+  from: {
+    type: String
+  },
+  to: {
+    type: String
+  }
+});
 
 let svgRef = ref(null);
+const flowImportGraphData = ref<FlowImport[]>([]);
+
+watch ([props.from, props.to], async ([newFrom, newTo]) => {
+  flowImportGraphData.value = await networkAnalysisService.getFlowImport(newFrom!, newTo!) as FlowImport[];
+});
 
 onMounted(async() => {
-  const flowImportGraphData = await networkAnalysisService.getFlowImport() as FlowImport[];
+  const flowImportGraphData = await networkAnalysisService.getFlowImport(props.from!, props.to!) as FlowImport[];
+  // TODO: make sure this is working when fixed
+  console.log(flowImportGraphData)
 
   const width = 1600;
   const height = 600;
   const marginTop = 20;
   const marginRight = 170;
-  const marginBottom = 20;
+  const marginBottom = 150;
   const marginLeft = 20;
 
   let tooltip = select('#flowImportContainer')

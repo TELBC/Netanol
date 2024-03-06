@@ -19,8 +19,12 @@ export interface GeneralFlowImporterDataDictionary {
 }
 
 class MetricService {
-  public async getFlowImport() {
-    return await ApiService.get<FlowImport[]>('/api/metrics/flowImporter')
+  public async getFlowImport(from?: string, to?: string) {
+    let url = '/api/metrics/flowsSeries';
+    if(from && to) {
+      url += `?from=${from}&to=${to}`;
+    }
+    return await ApiService.get<FlowImport[]>(url)
       .then(x => x.data);
   }
 
