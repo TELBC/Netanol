@@ -6,7 +6,8 @@
       <!-- TODO: more highlighting for nested key value pairs, nested keys not bold and values coloured -->
       <span class="data-key">{{ key }}: </span>
       <span v-if="isObject(value)" class="nested-key-value" v-html="objectToString(value)"></span>
-      <span v-else class="data-value">{{ value }}</span>
+      <span v-else class="data-value">{{ value }}&nbsp;</span>
+      <span v-if="typeof value === 'boolean'" :class="value ? 'true-value' : 'false-value'"></span>
     </div>
   </div>
 </template>
@@ -24,10 +25,15 @@ const isObject = (item: any) => {
 const objectToString = (obj: any) => {
   let str = '';
   for (const [key, value] of Object.entries(obj)) {
-    str += `<div><strong>${key}</strong>: ${value}</div>`;
+    if (typeof value === 'boolean') {
+      str += `<div><span class="keys">${key}</span>: <span class="values">${value}</span> <span class="${value ? 'true-value' : 'false-value'}"></span></div>`;
+    } else {
+      str += `<div><span class="keys">${key}</span>: <span class="values">${value}</span></div>`;
+    }
   }
   return str;
 }
+
 </script>
 
 <style scoped>
@@ -43,7 +49,7 @@ const objectToString = (obj: any) => {
   padding: 1.5vh 1vw;
   box-shadow: 4px 4px 8px 0 #e0e0e0;
   user-select: none;
-  margin-right: 1vw;
+  margin-right: 0.62vw;
   margin-bottom: 4vh;
 }
 
@@ -60,14 +66,42 @@ const objectToString = (obj: any) => {
 
 .data-key {
   font-weight: bold;
-  color: #4D4D4D;
 }
 
 .data-value {
   font-weight: bold;
+  color: #005a8a;
 }
 
 .nested-key-value {
   text-indent: 2em;
+}
+
+.self-test-card:deep(.keys) {
+  color: #4D4D4D;
+  font-weight: bold;
+}
+
+.self-test-card:deep(.values) {
+  color: #005a8a;
+  font-weight: bold;
+}
+
+.self-test-card:deep(.true-value)  {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #33cc33;
+  margin-right: 5px;
+}
+
+.self-test-card:deep(.false-value) {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: red;
+  margin-right: 5px;
 }
 </style>

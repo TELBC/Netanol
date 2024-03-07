@@ -34,6 +34,5 @@ onUnmounted(() => {
   margin: 4vh 0 4vh 2.5vw;
   width: 92.5vw;
   height: auto;
-  justify-content: space-between;
 }
 </style>
