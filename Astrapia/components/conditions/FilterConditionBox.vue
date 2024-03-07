@@ -53,7 +53,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {ref, watch} from "vue";
 
 const props = defineProps<{
-  editLayerFilterConditions: {},
+  editLayerFilterConditions: [],
 }>();
 
 interface filterCondition {

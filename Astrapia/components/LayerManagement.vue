@@ -66,7 +66,7 @@
       </div>
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'styling'">
-      <StyleConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+      <StyleConditionBox :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-styling-conditions="handleFilterConditionsEmit" />
     </div>
   </div>
   <div class="create-layer" @click="toggleCreateLayerOpen">
@@ -131,7 +131,9 @@ const createLayerData = ref({
   },
   implicitInclude: true,
   conditions: [],
-  matchers:[]
+  matchers:[],
+  edgeStyler:{},
+  nodeStyler:{}
 })
 
 const layerListState = ref({
@@ -195,14 +197,15 @@ function setLayerEnabled(index: number, value: boolean) {
       },
       implicitInclude: true,
       conditions: [],
-      matchers:[]
+      matchers:[],
+      edgeStyler:{},
+      nodeStyler:{}
     })
   }, 250);
 }
 
 // handle emitted filter conditions from FilterConditionBox
 function handleFilterConditionsEmit(newConditions: any, doneEmitting: boolean) {
-  console.log(newConditions)
   if(createLayerData.value.type === 'filter'){
     createLayerData.value.filterList.conditions = newConditions;
   }else if(createLayerData.value.type === 'aggregation'){
@@ -211,6 +214,10 @@ function handleFilterConditionsEmit(newConditions: any, doneEmitting: boolean) {
     createLayerData.value.conditions = newConditions;
   }else if(createLayerData.value.type === 'naming'){
     createLayerData.value.matchers = newConditions;
+  }else if(createLayerData.value.type === 'styling'){
+    delete (createLayerData.value as { matchers?: any }).matchers;
+    createLayerData.value.edgeStyler = newConditions.edgeStyler;
+    createLayerData.value.nodeStyler = newConditions.nodeStyler;
   }
   layerListState.value.doneEmittingFilterConditions = doneEmitting;
 }
@@ -232,6 +239,21 @@ function toggleCreateLayerOpen() {
       layerListState.value.emitFilterConditions = true;
     }
   }
+  Object.assign(createLayerData.value, {
+    name: '',
+    type: '',
+    enabled: false,
+    overwriteWithDns: true,
+    filterList: {
+      conditions: [] as Array<FilterConditions>,
+      implicitInclude: true
+    },
+    implicitInclude: true,
+    conditions: [],
+    matchers:[],
+    edgeStyler:{},
+    nodeStyler:{}
+  })
 }
 
 function toggleEditExistingLayer(index: number) {
@@ -255,7 +277,9 @@ function editExistingLayerAndReset() {
     },
     implicitInclude: true,
     conditions: [],
-    matchers:[]
+    matchers:[],
+    edgeStyler:{},
+    nodeStyler:{}
   });
 }
 
@@ -273,7 +297,9 @@ function createNewLayerAndReset() {
     },
     implicitInclude: true,
     conditions: [],
-    matchers:[]
+    matchers:[],
+    edgeStyler:{},
+    nodeStyler:{}
   });
 }
 
