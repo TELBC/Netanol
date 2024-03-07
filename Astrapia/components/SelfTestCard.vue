@@ -2,8 +2,6 @@
   <div class="self-test-card">
     <p class="self-test-card-key">{{ props.keyProp.toUpperCase() }}</p>
     <div v-for="(value, key) in props.data" :key="key" class="data-line">
-      <!-- TODO: red or green dot next to boolean values to indicate value -->
-      <!-- TODO: more highlighting for nested key value pairs, nested keys not bold and values coloured -->
       <span class="data-key">{{ key }}: </span>
       <span v-if="isObject(value)" class="nested-key-value" v-html="objectToString(value)"></span>
       <span v-else class="data-value">{{ value }}&nbsp;</span>
