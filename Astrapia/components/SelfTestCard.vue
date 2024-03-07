@@ -4,7 +4,7 @@
     <div v-for="(value, key) in props.data" :key="key" class="data-line">
       <span class="data-key">{{ key }}: </span>
       <span v-if="isObject(value)" class="nested-key-value" v-html="objectToString(value)"></span>
-      <span v-else class="data-value">{{ value }}&nbsp;</span>
+      <span v-else class="data-value">{{ formatNumber(value) }}&nbsp;</span>
       <span v-if="typeof value === 'boolean'" :class="value ? 'true-value' : 'false-value'"></span>
     </div>
   </div>
@@ -23,15 +23,25 @@ const isObject = (item: any) => {
 const objectToString = (obj: any) => {
   let str = '';
   for (const [key, value] of Object.entries(obj)) {
+    let formattedValue = value;
+    if (key !== 'Port' && !isNaN(Number(value))) {
+      formattedValue = Number(value).toLocaleString();
+    }
     if (typeof value === 'boolean') {
-      str += `<div><span class="keys">${key}</span>: <span class="values">${value}</span> <span class="${value ? 'true-value' : 'false-value'}"></span></div>`;
+      str += `<div><span class="keys">${key}</span>: <span class="values">${formattedValue}</span> <span class="${value ? 'true-value' : 'false-value'}"></span></div>`;
     } else {
-      str += `<div><span class="keys">${key}</span>: <span class="values">${value}</span></div>`;
+      str += `<div><span class="keys">${key}</span>: <span class="values">${formattedValue}</span></div>`;
     }
   }
   return str;
 }
 
+const formatNumber = (value: any, key: string) => {
+  if (key !== 'Port' && !isNaN(Number(value))) {
+    return Number(value).toLocaleString();
+  }
+  return value;
+}
 </script>
 
 <style scoped>
@@ -47,7 +57,7 @@ const objectToString = (obj: any) => {
   padding: 1.5vh 1vw;
   box-shadow: 4px 4px 8px 0 #e0e0e0;
   user-select: none;
-  margin-right: 0.62vw;
+  margin-right: 0.55vw;
   margin-bottom: 4vh;
 }
 

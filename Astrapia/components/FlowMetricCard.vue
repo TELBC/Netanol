@@ -3,7 +3,7 @@
     <p class="flow-metric-card-key">{{ props.keyProp }}:</p>
     <div v-for="(value, key) in props.data" :key="key" class="data-line">
       <span class="data-key">{{ key }}: </span>
-      <span class="data-value">{{ value }}</span>
+      <span class="data-value">{{ formatNumber(value) }}</span>
     </div>
   </div>
 </template>
@@ -22,6 +22,14 @@ const props = defineProps<{
   data: GeneralFlowImporterData;
   keyProp: string;
 }>();
+
+const formatNumber = (value: any) => {
+  let numValue = Number(value);
+  if (!isNaN(numValue)) {
+    return numValue.toLocaleString();
+  }
+  return value;
+}
 </script>
 
 <style scoped>
