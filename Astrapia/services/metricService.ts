@@ -18,6 +18,56 @@ export interface GeneralFlowImporterDataDictionary {
   [key: string]: GeneralFlowImporterData;
 }
 
+export interface SelfTestData {
+  database: {
+    reachable: boolean;
+    latency: string;
+    totalSingleTraceCount: number;
+    totalDatabaseSize: string;
+  };
+  counting: {
+    totalEntriesSinceUptime: number;
+    totalCounts: {
+      "Netflow5": number;
+      "Netflow9": number;
+      "IPFIX": number;
+      "sFlow": number;
+    };
+  };
+  "multiplexers": {
+    [port: string]: {
+      enabled: boolean;
+      name: string;
+      port: string;
+      acceptedProtocols: string;
+    };
+  };
+  config: {
+    "VMWare Tagging": {
+      enabled: boolean;
+      targetServer: string;
+      cachedTagsCount: number;
+      refreshPeriod: string;
+      timeUntilNextRefresh: string;
+    };
+    "DNS Server": {
+      enabled: boolean;
+      cachedEntriesCount: number;
+      refreshPeriod: string;
+      timeUntilNextRefresh: string;
+    };
+    "Duplicate Flagging": {
+      claimLifetime: string;
+      refreshPeriod: string;
+    };
+  };
+  statistics: {
+    startTime: string;
+    upTime: string;
+  };
+
+}
+
 class MetricService {
   public async getFlowImport(from?: string, to?: string) {
     let url = '/api/metrics/flowsSeries';
@@ -30,6 +80,11 @@ class MetricService {
 
   public async getGeneralFlowImporterData() {
     return await ApiService.get<GeneralFlowImporterDataDictionary>('/api/metrics/flowAggregated')
+      .then(x => x.data);
+  }
+
+  public async getApplicationStatusData() {
+    return await ApiService.get<SelfTestData>('/api/metrics/ApplicationStatus')
       .then(x => x.data);
   }
 }
