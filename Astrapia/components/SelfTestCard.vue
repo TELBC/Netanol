@@ -1,7 +1,6 @@
 <template>
   <div class="self-test-card">
-    <!-- TODO: mehr titel feeling (no colon and more space below and stuff) -->
-    <p class="self-test-card-key">{{ props.keyProp }}:</p>
+    <p class="self-test-card-key">{{ props.keyProp.toUpperCase() }}</p>
     <div v-for="(value, key) in props.data" :key="key" class="data-line">
       <!-- TODO: red or green dot next to boolean values to indicate value -->
       <!-- TODO: more highlighting for nested key value pairs, nested keys not bold and values coloured -->
@@ -50,7 +49,9 @@ const objectToString = (obj: any) => {
 
 .self-test-card-key {
   font-weight: bold;
-  margin: 0;
+  margin: 0 0 1vh 0;
+  font-size: 2vh;
+  color: #294D61;
 }
 
 .data-line {
