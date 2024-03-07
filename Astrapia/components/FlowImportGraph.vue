@@ -19,16 +19,12 @@ const props = defineProps({
 });
 
 let svgRef = ref(null);
-const flowImportGraphData = ref<FlowImport[]>([]);
+const from = ref(props.from);
+const to = ref(props.to);
 
-watch ([props.from, props.to], async ([newFrom, newTo]) => {
-  flowImportGraphData.value = await networkAnalysisService.getFlowImport(newFrom!, newTo!) as FlowImport[];
-});
-
-onMounted(async() => {
+async function renderGraph() {
+  select(svgRef.value).selectAll("*").remove();
   const flowImportGraphData = await networkAnalysisService.getFlowImport(props.from!, props.to!) as FlowImport[];
-  // TODO: make sure this is working when fixed
-  console.log(flowImportGraphData)
 
   const width = 1600;
   const height = 600;
@@ -149,7 +145,16 @@ onMounted(async() => {
     .attr('y', marginTop)
     .classed('chart-title', true)
     .text('Flow Import');
+}
+
+watch (() => [props.from, props.to], async ([newFrom, newTo]) => {
+  await renderGraph();
 });
+
+onMounted(async() => {
+  await renderGraph();
+});
+
 export interface FlowImport {
   dateTime: string;
   endpoints: { [key: string]: number };

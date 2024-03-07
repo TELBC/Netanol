@@ -1,5 +1,5 @@
 <template>
-  <FlowImportGraphTimeframeSelector :from-value="from" :to-value="to" />
+  <FlowImportGraphTimeframeSelector :from-value="from" :to-value="to" @change="updateTimeframe" />
   <FlowImportGraph :from="from" :to="to" />
 </template>
 
@@ -10,6 +10,11 @@ import FlowImportGraphTimeframeSelector from "~/components/FlowImportGraphTimefr
 
 const from = ref(new Date(new Date().getTime() - 5 * 60 * 1000).toISOString().slice(0,16));
 const to = ref(new Date().toISOString().slice(0,16));
+
+const updateTimeframe = (newFrom: string, newTo: string) => {
+  from.value = newFrom;
+  to.value = newTo;
+};
 </script>
 
 <style scoped>
