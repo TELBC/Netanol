@@ -418,6 +418,7 @@ watch(() => props.layers!, (newLayers, oldLayers) => {
   align-items: center;
   height: 94.5%;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .create-inputs {
