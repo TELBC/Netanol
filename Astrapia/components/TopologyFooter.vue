@@ -55,6 +55,8 @@ import FullscreenButton from "~/components/FullscreenButton.vue";
 import SlideMenu from "~/components/SlideMenu.vue";
 import IntervalMenu from "~/components/IntervalMenu.vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import IntervalToggle from "~/components/IntervalToggle.vue";
+import ArrowComponent from "~/components/ArrowComponent.vue";
 
 const props = defineProps<{
   elementId: String,
