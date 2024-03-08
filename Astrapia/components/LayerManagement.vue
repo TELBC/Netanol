@@ -66,7 +66,7 @@
       </div>
     </div>
     <div class="filter-condition" v-if="createLayerData.type === 'styling'">
-      <StyleConditionBox :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-styling-conditions="handleFilterConditionsEmit" />
+      <StyleConditionBox :edit-layer-edge-conditions="createLayerData.edgeStyler" :edit-layer-node-conditions="createLayerData.nodeStyler" @update-styling-conditions="handleFilterConditionsEmit" />
     </div>
   </div>
   <div class="create-layer" @click="toggleCreateLayerOpen">
@@ -144,7 +144,6 @@ const layerListState = ref({
   },
   layerOpen: -1,
   createLayerOpen: false,
-  emitFilterConditions: false,
   isEditExistingLayer: -1,
   doneEmittingFilterConditions: false,
 });
@@ -235,9 +234,6 @@ function toggleCreateLayerOpen() {
   }
   else {
     layerListState.value.createLayerOpen = true;
-    if (layerListState.value.isEditExistingLayer > -1) {
-      layerListState.value.emitFilterConditions = true;
-    }
   }
   Object.assign(createLayerData.value, {
     name: '',
@@ -265,7 +261,6 @@ function toggleEditExistingLayer(index: number) {
 function editExistingLayerAndReset() {
   editExistingLayer(layerListState.value.isEditExistingLayer);
   layerListState.value.isEditExistingLayer = -1;
-  layerListState.value.emitFilterConditions = false;
   Object.assign(createLayerData.value, {
     name: '',
     type: '',

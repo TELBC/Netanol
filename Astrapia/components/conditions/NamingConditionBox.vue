@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {ref, watch} from "vue";
+import {ref, onMounted} from "vue";
 
 const props = defineProps<{
   editLayerNamingConditions: Array<Matcher>,
@@ -148,8 +148,8 @@ const emit = defineEmits({
 });
 
 // receive naming conditions from LayerManagement on edit of existing layer
-watch(() => props.editLayerNamingConditions, (newVal) => {
-  namingConditionBoxState.value.namingConditions = newVal;
+onMounted(() => {
+  namingConditionBoxState.value.namingConditions = props.editLayerNamingConditions;
 });
 </script>
 

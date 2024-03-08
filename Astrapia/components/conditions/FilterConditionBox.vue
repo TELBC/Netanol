@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {ref, watch} from "vue";
+import {onMounted, ref} from "vue";
 
 const props = defineProps<{
   editLayerFilterConditions: [],
@@ -159,8 +159,8 @@ const emit = defineEmits({
 
 
 // receive filter conditions from LayerManagement on edit of existing layer
-watch(() => props.editLayerFilterConditions, (newVal) => {
-  filterConditionBoxState.value.filterConditions = newVal;
+onMounted(() => {
+  filterConditionBoxState.value.filterConditions = props.editLayerFilterConditions;
 });
 </script>
 

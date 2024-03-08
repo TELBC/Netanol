@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {ref, watch} from "vue";
+import {onMounted, ref} from "vue";
 
 const props = defineProps<{
   editLayerTagConditions: Array<tagCondition>,
@@ -164,8 +164,8 @@ const emit = defineEmits({
 });
 
 // receive tag conditions from LayerManagement on edit of existing layer
-watch(() => props.editLayerTagConditions, (newVal) => {
-  tagConditionBoxState.value.tagConditions = newVal;
+onMounted(() => {
+  tagConditionBoxState.value.tagConditions = props.editLayerTagConditions;
 });
 </script>
 

@@ -74,16 +74,16 @@
               <div class="grid-item">
                 <input class="selector-color-input" type="color" @change="changeStyling" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Udp.endHex" title="End Color"/>
               </div>
-
-              <div class="grid-label">
-                <label class="dropdown-label">ICMP</label>
-              </div>
-              <div class="grid-item">
-                <input class="selector-color-input" type="color" @change="changeStyling" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Icmp.startHex" title="Start Color"/>
-              </div>
-              <div class="grid-item">
-                <input class="selector-color-input" type="color" @change="changeStyling" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Icmp.endHex" title="End Color"/>
-              </div>
+<!--TODO: ICMP needs to be enabled by Michal-->
+<!--              <div class="grid-label">-->
+<!--                <label class="dropdown-label">ICMP</label>-->
+<!--              </div>-->
+<!--              <div class="grid-item">-->
+<!--                <input class="selector-color-input" type="color" @change="changeStyling" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Icmp.startHex" title="Start Color"/>-->
+<!--              </div>-->
+<!--              <div class="grid-item">-->
+<!--                <input class="selector-color-input" type="color" @change="changeStyling" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Icmp.endHex" title="End Color"/>-->
+<!--              </div>-->
             </div>
           </div>
         </div>
@@ -146,11 +146,12 @@
 </template>
 
 <script setup lang="ts">
-import {ref, watch} from "vue";
+import {ref, onMounted} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const props = defineProps<{
-  editLayerFilterConditions: Matcher,
+  editLayerNodeConditions: any,
+  editLayerEdgeConditions: any,
 }>();
 
 interface Matcher {
@@ -218,10 +219,10 @@ const filterConditionBoxState = ref({
           startHex: "#000000",
           endHex: "#FFFFFF"
         },
-        Icmp:{
-          startHex: "#000000",
-          endHex: "#FFFFFF"
-        }
+        // Icmp:{
+        //   startHex: "#000000",
+        //   endHex: "#FFFFFF"
+        // }
       }
     },
     nodeStyler: {
@@ -284,39 +285,6 @@ function doubleClickNamingCondition(index: number) {
 
 function clearEditingInputs(to: string) {
   toggleIsEditing(to);
-  Object.assign(filterConditionBoxState.value.editingCondition, {
-    edgeStyler: {
-      setWidth: false,
-      widthScoringMode: "Calculated",
-      edgeMinWidth: 0.5,
-      edgeMaxWidth: 2.0,
-      setColor: false,
-      colorScoringMode: "ByteCount",
-      interpolateColors: false,
-      useProtocolColors: true,
-      protocolColors: {
-        Unknown:{
-          startHex: "#000000",
-          endHex: "#FFFFFF"
-        },
-        Tcp:{
-          startHex: "#000000",
-          endHex: "#FFFFFF"
-        },
-        Udp:{
-          startHex: "#000000",
-          endHex: "#FFFFFF"
-        },
-        Icmp:{
-          startHex: "#000000",
-          endHex: "#FFFFFF"
-        }
-      }
-    },
-    nodeStyler: {
-      setColor: true,
-      assignments: []
-    }});
   filterConditionBoxState.value.address = "";
   filterConditionBoxState.value.mask = "";
   filterConditionBoxState.value.include = false;
@@ -327,10 +295,14 @@ const emit = defineEmits({
   'update-styling-conditions': (payload: Matcher) => true,
 });
 
-
-// receive filter conditions from LayerManagement on edit of existing layer
-watch(() => props.editLayerFilterConditions, (newVal) => {
-  filterConditionBoxState.value.editingCondition = newVal;
+onMounted(() => {
+  if (Object.keys(props.editLayerEdgeConditions).length !== 0) {
+    filterConditionBoxState.value.editingCondition.edgeStyler = props.editLayerEdgeConditions;
+  }
+  if (Object.keys(props.editLayerNodeConditions).length !== 0) {
+    filterConditionBoxState.value.editingCondition.nodeStyler = props.editLayerNodeConditions;
+    filterConditionBoxState.value.nodeMatcher = props.editLayerNodeConditions.assignments;
+  }
 });
 </script>
 

@@ -45,10 +45,10 @@
 
 <script setup lang="ts">
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, watch } from "vue";
+import {onMounted, ref} from "vue";
 
 const props = defineProps<{
-  editLayerAggregationMatchers: { },
+  editLayerAggregationMatchers: [],
 }>();
 
 interface aggregationMatcher {
@@ -133,8 +133,8 @@ const emit = defineEmits({
 });
 
 // receive aggregation matchers from LayerManagement on edit of existing layer
-watch(() => props.editLayerAggregationMatchers, (newVal) => {
-  aggregationMatcherBoxState.value.aggregationMatchers = newVal;
+onMounted(() => {
+  aggregationMatcherBoxState.value.aggregationMatchers = props.editLayerAggregationMatchers;
 });
 </script>
 
