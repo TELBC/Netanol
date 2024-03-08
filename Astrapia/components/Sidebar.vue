@@ -33,11 +33,30 @@
         </div>
       </div>
     </NuxtLink>
+    <NuxtLink id="logout-icon" @click="logout">
+      <div class="links">
+        <div class="icon-placement">
+          <font-awesome-icon class="faicon" icon="fa-solid fa-right-from-bracket" />
+        </div>
+        <div class="text-wrap">
+          <p>Logout</p>
+        </div>
+      </div>
+    </NuxtLink>
   </div>
 </template>
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import authService from "~/services/authService";
+
+const logout = async () => {
+  const confirmLogout = window.confirm("Are you sure you want to logout?");
+  if (confirmLogout) {
+    await authService.logOut();
+    window.location.reload();
+  }
+};
 </script>
 
 <style scoped>
@@ -77,6 +96,13 @@ a {
   justify-content: center;
   align-items: center;
   width: 3.5vw;
+}
+
+#logout-icon {
+  padding-top: 1.5vh;
+  margin-top: auto;
+  margin-bottom: 1.5vh;
+  cursor: pointer;
 }
 
 .faicon {
