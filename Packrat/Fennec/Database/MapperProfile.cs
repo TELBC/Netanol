@@ -59,7 +59,6 @@ public class MapperProfile : Profile
         CreateMap<FilterList, FilterListDto>();
         CreateMap<FilterListDto, FilterList>();
 
-        CreateMap<FilterLayer, ILayerDto>();
         CreateMap<FilterLayer, FilterLayerDto>();
         CreateMap<FilterLayerDto, FilterLayer>();
 

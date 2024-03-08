@@ -63,7 +63,7 @@ interface filterCondition {
   "destinationAddress": string,
   "destinationAddressMask": string,
   "destinationPort": number | null,
-  "protocol": string,
+  "protocol": string | null,
   "include": boolean,
   [key: string]: string | number | boolean | null
 }
@@ -90,7 +90,7 @@ function clearEditingInputs(to: string) {
     "destinationAddress": "",
     "destinationAddressMask": "",
     "destinationPort": null,
-    "protocol": "",
+    "protocol": null,
     "include": true
   });
 }
@@ -104,7 +104,7 @@ function saveFilterCondition() {
     "destinationAddress": "0.0.0.0",
     "destinationAddressMask": "0.0.0.0",
     "destinationPort": null,
-    "protocol": "Tcp",
+    "protocol": null,
     "include": false
   };
   for (let key in defaultValues as {[key: string]: any}) {
