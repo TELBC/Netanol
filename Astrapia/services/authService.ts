@@ -5,6 +5,11 @@ class AuthService {
         const response = await RestService.get('/api/auth/status');
         return response.status == 204;
     }
+
+  public async logOut(): Promise<boolean> {
+    const response = await RestService.get('/api/auth/logout');
+    return response.status == 204;
+  }
 }
 
 export default new AuthService();
