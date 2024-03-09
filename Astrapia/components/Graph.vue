@@ -88,7 +88,7 @@ export default {
 
       //link arrow
       this.scene.append("defs").selectAll("marker")
-        .data(["TCP"])
+        .data(["Marker"])
         .enter().append("marker")
         .attr('markerUnits', 'userSpaceOnUse')
         .attr("id", function (d) {
@@ -145,24 +145,24 @@ export default {
         .data(edges, d => [d.source, d.target])
         .join(enter => enter.insert("path", "circle")
           .attr("fill", "none")
-          .attr("stroke-width", d => packetCountScale(d.packetCount))
-          .attr("stroke", d => colorScale(d.byteCount))
-          .attr("marker-end", "url(#TCP)"));
+          .attr("stroke-width", d => d.width ?? packetCountScale(d.packetCount))
+          .attr("stroke", d => d.hexColor ?? colorScale(d.byteCount))
+          .attr("marker-end", "url(#Marker)"));
 
       this.linkHitArea = this.linkHitArea
         .data(edges, d => [d.source, d.target])
         .join(enter => enter.insert("path", "circle"))
         .call(link => link.append("title")
-          .text(d => `Bytes: ${d.byteCount} \nPackets: ${d.packetCount} \nProtocols: ${d.dataProtocol}`));
+          .text(d => `Bytes: ${d.byteCount} \nPackets: ${d.packetCount} \nProtocol: ${d.dataProtocol}`));
 
       this.node = this.node
         .data(nodes, d => d.id)
         .join(enter => enter.append("circle")
           .attr("r", 8)
-          .attr("fill", "#537B87")
+          .attr("fill", d => d.hexColor ?? "#537B87")
           .call(this.drag(this.simulation))
           .call(node => node.append("title")
-            .text(d => d.name))
+            .text(d => `IP: ${d.name} ${d.tags ? `\nTags: ${d.tags}` : ''}`))
         );
 
       this.label = this.label
@@ -171,7 +171,7 @@ export default {
           .attr("text-anchor", "middle")
           .attr("dy", "1.8em")
           .attr("font-size", "10px")
-          .text(d => d.name)
+          .text(d => d.dnsName ?? d.name)
         );
 
       let selectedNode = null;

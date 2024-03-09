@@ -1,8 +1,11 @@
 import ApiService from "~/services/restService";
 
 export interface GraphNode {
-  id: string
-  name: string
+  id: string,
+  name: string,
+  dnsName: string | null,
+  hexColor: string | null,
+  tags: [] | null
 }
 
 export interface GraphEdge {
@@ -11,7 +14,9 @@ export interface GraphEdge {
   target: string,
   packetCount: number,
   byteCount: number,
-  dataProtocol: string
+  dataProtocol: string,
+  width: number | null,
+  hexColor: string | null
 }
 
 export interface IGraphStatistics {
