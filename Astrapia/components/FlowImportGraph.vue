@@ -26,12 +26,12 @@ async function renderGraph() {
   select(svgRef.value).selectAll("*").remove();
   const flowImportGraphData = await networkAnalysisService.getFlowImport(props.from!, props.to!) as FlowImport[];
 
-  const width = 1600;
-  const height = 600;
-  const marginTop = 20;
-  const marginRight = 170;
-  const marginBottom = 150;
-  const marginLeft = 20;
+  const width = window.innerWidth * 0.9;
+  const height = window.innerHeight * 0.6;
+  const marginTop = window.innerHeight * 0.02;
+  const marginRight = window.innerWidth * 0.2;
+  const marginBottom = window.innerHeight * 0.14;
+  const marginLeft = window.innerWidth * 0.03;
 
   let tooltip = select('#flowImportContainer')
     .append('div')
@@ -71,6 +71,22 @@ async function renderGraph() {
   svg.append('g')
     .attr('transform', `translate(${marginLeft},0)`)
     .call(axisLeft(y));
+
+  svg.append("text")
+    .attr("class", "x label")
+    .attr("text-anchor", "end")
+    .attr("x", width - marginRight)
+    .attr("y", height - marginBottom * 1.1)
+    .text("Time");
+
+  svg.append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "end")
+    .attr("y", 6)
+    .attr("dy", ".75em")
+    .attr("transform", "rotate(-90)")
+    .text("Number of Packets");
+
 
   svg.selectAll('xGrid')
     .data(x.ticks())
