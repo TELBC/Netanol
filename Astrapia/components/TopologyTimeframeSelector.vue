@@ -37,16 +37,24 @@ watch([from, to], ([newFrom, newTo]) => {
   flex-direction: row;
   justify-content: space-between;
   font-family: 'Open Sans', sans-serif;
-  height: 5vh;
+  height: 3vh;
   align-items: center;
 }
 
 .timeframe-selector-labels {
-  margin: 0 1vw 0 2vw;
+  font-family: 'Open Sans', sans-serif;
+  color: #797878;
+  margin: 0 0.3vw 0 1vw;
+  font-size: 0.8rem;
 }
 
 .timeframe-selector-input {
-  height: 2vh;
+  font-size: 0.8rem;
   font-family: 'Open Sans', sans-serif;
+}
+
+.timeframe-selector-input:focus {
+  outline: none !important;
+  border:2px solid #537B87;
 }
 </style>

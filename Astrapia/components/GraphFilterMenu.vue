@@ -1,6 +1,6 @@
 <template>
   <div class="graph-filter-menu">
-    <div class="collapse-expand-container" @click="graphFilterMenuState.isExpanded = !graphFilterMenuState.isExpanded">
+    <div class="collapse-expand-container" @click="toggleMenu">
       <font-awesome-icon icon="fa-solid fa-chevron-left" class="collapse-expand-icon" v-bind:class="{ 'collapse-expand-layer-rotate': graphFilterMenuState.isExpanded }" />
     </div>
     <div class="graph-filter-menu-container" :class="{ 'expanded': graphFilterMenuState.isExpanded }">
@@ -18,6 +18,10 @@ import LayerManagement from "~/components/LayerManagement.vue";
 const props = defineProps({
   layout: String
 });
+
+const emit = defineEmits<{
+  menuOpened: [boolean]
+}>()
 
 const graphFilterMenuState = ref({
   isExpanded: false,
@@ -40,6 +44,11 @@ watch(() => graphFilterMenuState.value.selectedLayout.name, async () => {
 watch(() => props.layout!, (newLayout, oldLayout) => {
   graphFilterMenuState.value.selectedLayout.name = newLayout;
 });
+
+const toggleMenu = () => {
+  graphFilterMenuState.value.isExpanded = !graphFilterMenuState.value.isExpanded;
+  emit('menuOpened', graphFilterMenuState.value.isExpanded)
+}
 
 provide('getLayersOfLayout', getLayersOfLayout);
 </script>
