@@ -16,11 +16,18 @@ public interface IDnsResolverService
     /// <param name="ipAddress">IP to get from _dnsCache or resolve</param>
     /// <returns></returns>
     Task<string?> GetDnsEntryFromCacheOrResolve(IPAddress ipAddress);
-    
+
     /// <summary>
     /// Remove entries older than the <see cref="DnsCacheOptions.InvalidationDuration"/> from the cache.
     /// </summary>
     public void CleanupDnsCache();
+
+    /// <summary>
+    ///     Returns the number of cached entries.
+    /// </summary>
+    public int CachedEntriesCount { get; }
+    
+    public DateTimeOffset LastCleanup { get; } 
 }
 
 public class DnsResolverService : IDnsResolverService
@@ -28,6 +35,9 @@ public class DnsResolverService : IDnsResolverService
     private readonly ILogger _log;
     private readonly DnsCacheOptions _options;
     private Dictionary<IPAddress, (string? DnsName, DateTime RegistrationTime)> _dnsCache = new();
+    public DateTimeOffset LastCleanup { get; private set; } = DateTimeOffset.Now;
+
+    public int CachedEntriesCount => _dnsCache.Count;
 
     public DnsResolverService(ILogger log, IOptions<DnsCacheOptions> options)
     {
@@ -86,6 +96,7 @@ public class DnsResolverService : IDnsResolverService
         
         _log.Information("Cleaned up DNS cache... Before {BeforeCount} entries, removed {Difference} entries, now at {AfterCount} entries", 
             countBefore, countBefore - countAfter, countAfter);
+        LastCleanup = DateTimeOffset.Now;
     }
 }
 
@@ -113,7 +124,7 @@ public class DnsCacheCleanupService : BackgroundService
             _log.Information("Next DNS cache cleanup in {CleanupInterval}", _cleanupInterval);
             await Task.Delay(_cleanupInterval, stoppingToken);
             _log.Information("Cleaning up DNS cache");
-            _dnsResolverService.CleanupDnsCache();
+            _dnsResolverService.CleanupDnsCache(); 
         }
     }
 }

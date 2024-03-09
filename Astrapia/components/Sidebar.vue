@@ -13,16 +13,6 @@
         </div>
       </div>
     </NuxtLink>
-    <NuxtLink to="/network-analysis">
-      <div class="links">
-        <div class="icon-placement">
-          <font-awesome-icon class="faicon" icon="fa-solid fa-chart-line" />
-        </div>
-        <div class="text-wrap">
-          <p>Network Analysis</p>
-        </div>
-      </div>
-    </NuxtLink>
     <NuxtLink to="/topology">
       <div class="links">
         <div class="icon-placement">
@@ -40,16 +30,6 @@
         </div>
         <div class="text-wrap">
           <p>About</p>
-        </div>
-      </div>
-    </NuxtLink>
-    <NuxtLink to="/settings" id="settings-icon">
-      <div class="links">
-        <div class="icon-placement">
-          <font-awesome-icon class="faicon" icon="fa-solid fa-gear" />
-        </div>
-        <div class="text-wrap">
-          <p>Settings</p>
         </div>
       </div>
     </NuxtLink>
@@ -97,13 +77,6 @@ a {
   justify-content: center;
   align-items: center;
   width: 3.5vw;
-}
-
-#settings-icon {
-  padding-top: 1.5vh;
-  margin-top: auto;
-  margin-bottom: 1.5vh;
-  cursor: pointer;
 }
 
 .faicon {

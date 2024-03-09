@@ -4,6 +4,7 @@ using Fennec.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace Fennec.Controllers;
 
@@ -18,12 +19,14 @@ public class MetricController : ControllerBase
     private readonly IMetricService _metricService;
     private readonly IFlowImporterMetric _metricFlowImporter;
     private readonly TimeSpan _flowMetricSavePeriod;
+    private readonly IApplicationStatus _applicationStatus;
 
-    public MetricController(IMetricService metricService, IFlowImporterMetric flowImporterMetric, IOptions<FlowImporterMetricsOptions> flowOptions)
+    public MetricController(IMetricService metricService, IFlowImporterMetric flowImporterMetric, IOptions<FlowImporterMetricsOptions> flowOptions, IApplicationStatus applicationStatus)
     {
         _metricService = metricService;
         _metricFlowImporter = flowImporterMetric;
         _flowMetricSavePeriod = flowOptions.Value.FlowSavePeriod;
+        _applicationStatus = applicationStatus;
     }
     
     /// <summary>
@@ -38,9 +41,9 @@ public class MetricController : ControllerBase
 
         var data = _metricService.GetMetrics<FlowSeriesData>("FlowSeriesData")
             .FlowImporterDataSeries;
-
-        data.Where(fid => fid != null && fid.DateTime != null && fid.DateTime >= from && fid.DateTime <= to).ToArray();
-        return Ok(data);
+        
+        return Ok(data.Where(fid => fid?.DateTime != null && fid.DateTime >= from && fid.DateTime <= to).ToArray()
+        );
     }
     
     /// <summary>
@@ -51,6 +54,13 @@ public class MetricController : ControllerBase
     {
         _metricFlowImporter.UpdateFlowGeneralMetric();
         var data = _metricService.GetMetrics<FlowGeneraData>("FlowGeneralData").EndPointsData;
+        return Ok(data);
+    }
+
+    [HttpGet("ApplicationStatus")]
+    public async Task<IActionResult> GetApplicationStatus()
+    {
+        var data = _applicationStatus.GetLatestStatus();
         return Ok(data);
     }
 }

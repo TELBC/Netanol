@@ -1,0 +1,69 @@
+<template>
+  <div class="flow-metric-card">
+    <p class="flow-metric-card-key">{{ props.keyProp }}:</p>
+    <div v-for="(value, key) in props.data" :key="key" class="data-line">
+      <span class="data-key">{{ key }}: </span>
+      <span class="data-value">{{ formatNumber(value) }}</span>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+interface GeneralFlowImporterData {
+  receivedPacketCount: number,
+  receivedByteCount: number,
+  transmittedPacketCount: number,
+  transmittedByteCount: number,
+  successfullyParsedPacket: number,
+  failedParsedPacket: number
+}
+
+const props = defineProps<{
+  data: GeneralFlowImporterData;
+  keyProp: string;
+}>();
+
+const formatNumber = (value: any) => {
+  let numValue = Number(value);
+  if (!isNaN(numValue)) {
+    return numValue.toLocaleString();
+  }
+  return value;
+}
+</script>
+
+<style scoped>
+.flow-metric-card {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  width: auto;
+  height: auto;
+  border: 1px solid #424242;
+  border-radius: 4px;
+  padding: 1.5vh 1vw;
+  box-shadow: 4px 4px 8px 0 #e0e0e0;
+  user-select: none;
+  margin-right: 1.5807942vw;
+  margin-bottom: 4vh;
+}
+
+.flow-metric-card-key {
+  font-weight: bold;
+  margin: 0;
+}
+
+.data-line {
+  text-indent: 1em;
+}
+
+.data-key {
+  font-weight: bold;
+  color: #4D4D4D;
+}
+
+.data-value {
+  font-weight: bold;
+}
+</style>

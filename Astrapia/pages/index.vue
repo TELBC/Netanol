@@ -9,17 +9,19 @@
           <img class="logo" src="/NETANOL_Logo.png" alt="Netanol Logo">
         </div>
     </div>
-    <div class="bottom-boxes">
-      <StatusBox placeholderText="placeholder Astrapia"/>
-      <StatusBox placeholderText="placeholder Fennec"/>
-      <StatusBox placeholderText="placeholder DB"/>
-    </div>
+    <SelfTestContainer />
+    <div class="divider"></div>
+    <FlowMetricCardsContainer />
+    <div class="divider"></div>
+    <FlowImporterGraphContainer />
   </div>
 </template>
 
 <script setup lang="ts">
-import StatusBox from "~/components/StatusBox.vue";
 import { useHead } from '#imports'
+import FlowMetricCardsContainer from "~/components/FlowMetricCardsContainer.vue";
+import SelfTestContainer from "~/components/SelfTestContainer.vue";
+import FlowImporterGraphContainer from "~/components/FlowImporterGraphContainer.vue";
 
 useHead({
   bodyAttrs: {
@@ -30,26 +32,20 @@ useHead({
 
 <style>
 .home {
-  background-color: #f5f5f5;
+  background-color: white;
   font-family: 'Open Sans', sans-serif;
+  overflow-x: hidden;
 }
 </style>
 
 <style scoped>
 .top-box {
-  background-color: white;
-  width: 97.2vw;
+  width: 96.5vw;
   height: 22vh;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.bottom-boxes {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  width: 97.2vw;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .logo-container {
@@ -71,5 +67,11 @@ useHead({
   color: #294d61;
   font-size: 8vh;
   user-select: none;
+}
+
+.divider {
+  width: 96.5vw;
+  height: 1px;
+  background-color: #e0e0e0;
 }
 </style>
