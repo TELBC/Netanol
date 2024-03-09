@@ -21,22 +21,52 @@
         </div>
         <div class="infos">
           <p>description: </p>
-          <div>{{ removeBoldTagsFromDescription(layer.description) }}</div>
+          <div>{{ layer.description }}</div>
         </div>
       </div>
     </div>
   </div>
   <div class="create-form" v-bind:class="{ 'create-layer-open': layerListState.createLayerOpen }">
     <input class="create-inputs" type="text" placeholder="Layer Name" v-model="createLayerData.name" />
-    <input class="create-inputs" type="text" placeholder="Layer Type" v-model="createLayerData.type" />
-    <div class="enable-new-layer">
-      <p>Enable?</p>
+    <select class="create-dropdown-inputs" required v-model="createLayerData.type">
+      <option value="" disabled selected hidden>Select Layer Type</option>
+      <option value="filter">Filter</option>
+      <option value="aggregation">Grouping</option>
+      <option value="tag-filter">Tag Filter</option>
+      <option value="vmware-tagging">Tag VMware</option>
+      <option value="naming">Naming</option>
+      <option value="styling">Styling</option>
+    </select>
+    <div class="enable-new-layer" v-if="createLayerData.type !==''">
+      <p>Enable on creation</p>
       <input type="checkbox" class="theme-checkbox" v-model="createLayerData.enabled" />
     </div>
-    <FilterConditionBox :emit-filter-conditions="layerListState.emitFilterConditions" :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
-    <div class="enable-new-layer">
-      <p>Implicit Include?</p>
-      <input type="checkbox" class="theme-checkbox" v-model="createLayerData.filterList.implicitInclude" />
+    <div class="filter-condition" v-if="createLayerData.type === 'filter'">
+      <FilterConditionBox :edit-layer-filter-conditions="createLayerData.filterList.conditions" @update-filter-conditions="handleFilterConditionsEmit" />
+      <div class="enable-new-layer" >
+        <p>Implicit Inclusion</p>
+        <input type="checkbox" class="theme-checkbox" v-model="createLayerData.filterList.implicitInclude" />
+      </div>
+    </div>
+    <div class="filter-condition" v-if="createLayerData.type === 'aggregation'">
+      <AggregationConditionBox :edit-layer-aggregation-matchers="createLayerData.matchers" @update-aggregation-matchers="handleFilterConditionsEmit"  />
+    </div>
+    <div class="filter-condition" v-if="createLayerData.type === 'tag-filter'">
+      <TagConditionBox :edit-layer-tag-conditions="createLayerData.conditions" @update-tag-conditions="handleFilterConditionsEmit" />
+      <div class="enable-new-layer" >
+        <p>Implicit Inclusion</p>
+        <input type="checkbox" class="theme-checkbox" v-model="createLayerData.implicitInclude" />
+      </div>
+    </div>
+    <div class="filter-condition" v-if="createLayerData.type === 'naming'">
+      <NamingConditionBox :edit-layer-naming-conditions="createLayerData.matchers" @update-naming-conditions="handleFilterConditionsEmit" />
+      <div class="enable-new-layer" >
+        <p>Overwrite with DNS</p>
+        <input type="checkbox" class="theme-checkbox" v-model="createLayerData.overwriteWithDns" />
+      </div>
+    </div>
+    <div class="filter-condition" v-if="createLayerData.type === 'styling'">
+      <StyleConditionBox :edit-layer-edge-conditions="createLayerData.edgeStyler" :edit-layer-node-conditions="createLayerData.nodeStyler" @update-styling-conditions="handleFilterConditionsEmit" />
     </div>
   </div>
   <div class="create-layer" @click="toggleCreateLayerOpen">
@@ -48,8 +78,12 @@
 <script setup lang="ts">
 import {ref, watch, inject} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import FilterConditionBox from "~/components/FilterConditionBox.vue";
 import layerService from "~/services/layerService";
+import FilterConditionBox from "~/components/conditions/FilterConditionBox.vue";
+import AggregationConditionBox from "~/components/conditions/AggregationConditionBox.vue";
+import TagConditionBox from "~/components/conditions/TagConditionBox.vue";
+import NamingConditionBox from "~/components/conditions/NamingConditionBox.vue";
+import StyleConditionBox from "~/components/conditions/StyleConditionBox.vue";
 
 export interface FilterConditions {
   sourceAddress: string,
@@ -66,6 +100,7 @@ export interface Layer {
   name: string,
   type: string,
   enabled: boolean,
+  overwriteWithDns: boolean,
   filterList: {
     conditions: FilterConditions[],
     implicitInclude: boolean
@@ -89,10 +124,16 @@ const createLayerData = ref({
   name: '',
   type: '',
   enabled: false,
+  overwriteWithDns: true,
   filterList: {
     conditions: [] as Array<FilterConditions>,
     implicitInclude: true
-  }
+  },
+  implicitInclude: true,
+  conditions: [],
+  matchers:[],
+  edgeStyler:{},
+  nodeStyler:{}
 })
 
 const layerListState = ref({
@@ -103,7 +144,6 @@ const layerListState = ref({
   },
   layerOpen: -1,
   createLayerOpen: false,
-  emitFilterConditions: false,
   isEditExistingLayer: -1,
   doneEmittingFilterConditions: false,
 });
@@ -114,10 +154,6 @@ const rerenderer = ref({
 })
 
 const getLayersOfLayout = inject<() => void>('getLayersOfLayout');
-
-function removeBoldTagsFromDescription(description: string) {
-  return description.replace(/<b>|<\/b>/g, '');
-}
 
 async function getExistingLayer(index: number) {
   const layerToEdit = await layerService.getLayer(layerListState.value.selectedLayout.name, index);
@@ -153,18 +189,35 @@ function setLayerEnabled(index: number, value: boolean) {
       name: '',
       type: '',
       enabled: false,
+      overwriteWithDns: true,
       filterList: {
         conditions: [] as Array<FilterConditions>,
-        implicitInclude: false
-      }
+        implicitInclude: true
+      },
+      implicitInclude: true,
+      conditions: [],
+      matchers:[],
+      edgeStyler:{},
+      nodeStyler:{}
     })
-    getLayersOfLayout!();
   }, 250);
 }
 
 // handle emitted filter conditions from FilterConditionBox
-function handleFilterConditionsEmit(newConditions: Array<FilterConditions>, doneEmitting: boolean) {
-  createLayerData.value.filterList.conditions = newConditions;
+function handleFilterConditionsEmit(newConditions: any, doneEmitting: boolean) {
+  if(createLayerData.value.type === 'filter'){
+    createLayerData.value.filterList.conditions = newConditions;
+  }else if(createLayerData.value.type === 'aggregation'){
+    createLayerData.value.matchers = newConditions;
+  }else if(createLayerData.value.type === 'tag-filter'){
+    createLayerData.value.conditions = newConditions;
+  }else if(createLayerData.value.type === 'naming'){
+    createLayerData.value.matchers = newConditions;
+  }else if(createLayerData.value.type === 'styling'){
+    delete (createLayerData.value as { matchers?: any }).matchers;
+    createLayerData.value.edgeStyler = newConditions.edgeStyler;
+    createLayerData.value.nodeStyler = newConditions.nodeStyler;
+  }
   layerListState.value.doneEmittingFilterConditions = doneEmitting;
 }
 
@@ -181,10 +234,22 @@ function toggleCreateLayerOpen() {
   }
   else {
     layerListState.value.createLayerOpen = true;
-    if (layerListState.value.isEditExistingLayer > -1) {
-      layerListState.value.emitFilterConditions = true;
-    }
   }
+  Object.assign(createLayerData.value, {
+    name: '',
+    type: '',
+    enabled: false,
+    overwriteWithDns: true,
+    filterList: {
+      conditions: [] as Array<FilterConditions>,
+      implicitInclude: true
+    },
+    implicitInclude: true,
+    conditions: [],
+    matchers:[],
+    edgeStyler:{},
+    nodeStyler:{}
+  })
 }
 
 function toggleEditExistingLayer(index: number) {
@@ -196,15 +261,20 @@ function toggleEditExistingLayer(index: number) {
 function editExistingLayerAndReset() {
   editExistingLayer(layerListState.value.isEditExistingLayer);
   layerListState.value.isEditExistingLayer = -1;
-  layerListState.value.emitFilterConditions = false;
   Object.assign(createLayerData.value, {
     name: '',
     type: '',
     enabled: false,
+    overwriteWithDns: true,
     filterList: {
       conditions: [] as Array<FilterConditions>,
-      implicitInclude: false
-    }
+      implicitInclude: true
+    },
+    implicitInclude: true,
+    conditions: [],
+    matchers:[],
+    edgeStyler:{},
+    nodeStyler:{}
   });
 }
 
@@ -215,10 +285,16 @@ function createNewLayerAndReset() {
     name: '',
     type: '',
     enabled: false,
+    overwriteWithDns: true,
     filterList: {
       conditions: [] as Array<FilterConditions>,
-      implicitInclude: false
-    }
+      implicitInclude: true
+    },
+    implicitInclude: true,
+    conditions: [],
+    matchers:[],
+    edgeStyler:{},
+    nodeStyler:{}
   });
 }
 
@@ -341,6 +417,8 @@ watch(() => props.layers!, (newLayers, oldLayers) => {
   flex-direction: column;
   align-items: center;
   height: 94.5%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .create-inputs {
@@ -354,6 +432,28 @@ watch(() => props.layers!, (newLayers, oldLayers) => {
 
 .create-inputs:focus {
   outline: none;
+}
+
+.create-dropdown-inputs {
+  width: 91%;
+  border: 1px solid #424242;
+  background: white;
+  border-radius: 4px;
+  font-size: 2vh;
+  margin-bottom: 1.5vh;
+  padding: 2%;
+  outline: none;
+  color: #424242;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.create-dropdown-inputs:focus {
+  outline: none;
+}
+
+.filter-condition{
+  margin-left: 10%;
+  width: 100%;
 }
 
 .enable-new-layer {

@@ -38,7 +38,7 @@
       <input id="destination-input" class="scrollable-selector-input" type="text" placeholder="Destination Address" v-model="filterConditionBoxState.editingCondition.destinationAddress" />
       <input id="destination-mask-input" class="scrollable-selector-input" type="text" placeholder="Destination Address Mask" v-model="filterConditionBoxState.editingCondition.destinationAddressMask" />
       <input id="destination-port-input" class="filter-condition-editing-input" type="text" placeholder="Destination Port" v-model="filterConditionBoxState.editingCondition.destinationPort" />
-      <input id="protocol-input" class="filter-condition-editing-input" type="text" placeholder="Protocol" v-model="filterConditionBoxState.editingCondition.protocol" />
+      <input id="protocol-input" class="scrollable-selector-input" type="text" placeholder="Protocol" v-model="filterConditionBoxState.editingCondition.protocol" />
       <div class="scrollable-selector-include-exclude-traffic">
         <p>Exclude</p>
         <input id="exclude-include-switch" class="include-exclude-traffic-switch" type="checkbox" v-model="filterConditionBoxState.editingCondition.include" />
@@ -50,11 +50,10 @@
 
 <script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {ref, defineProps, watch} from "vue";
+import {onMounted, ref} from "vue";
 
 const props = defineProps<{
-  emitFilterConditions: Boolean,
-  editLayerFilterConditions: Array<filterCondition>,
+  editLayerFilterConditions: [],
 }>();
 
 interface filterCondition {
@@ -64,7 +63,7 @@ interface filterCondition {
   "destinationAddress": string,
   "destinationAddressMask": string,
   "destinationPort": number | null,
-  "protocol": string,
+  "protocol": string | null,
   "include": boolean,
   [key: string]: string | number | boolean | null
 }
@@ -72,10 +71,6 @@ interface filterCondition {
 const filterConditionBoxState = ref({
   isEditing: false,
   filterConditions: [] as Array<filterCondition>,
-  ipAddresses: [] as Array<string>,
-  addressMasks: [] as Array<string>,
-  ports: [] as Array<number>,
-  protocols: [] as Array<string>,
   filterConditionSelected: -1,
   editingCondition: {} as filterCondition,
   editingConditionIndex: -1,
@@ -95,7 +90,7 @@ function clearEditingInputs(to: string) {
     "destinationAddress": "",
     "destinationAddressMask": "",
     "destinationPort": null,
-    "protocol": "",
+    "protocol": null,
     "include": true
   });
 }
@@ -109,7 +104,7 @@ function saveFilterCondition() {
     "destinationAddress": "0.0.0.0",
     "destinationAddressMask": "0.0.0.0",
     "destinationPort": null,
-    "protocol": "tcp",
+    "protocol": null,
     "include": false
   };
   for (let key in defaultValues as {[key: string]: any}) {
@@ -122,11 +117,21 @@ function saveFilterCondition() {
   );
   if (!isDuplicate && filterConditionBoxState.value.editingConditionIndex === -1) {
     filterConditionBoxState.value.filterConditions.push(newFilterCondition);
-    clearEditingInputs('list');
   } else if (!isDuplicate && filterConditionBoxState.value.editingConditionIndex > -1 && filterConditionBoxState.value.editingConditionIndex < filterConditionBoxState.value.filterConditions.length) {
     Object.assign(filterConditionBoxState.value.filterConditions[filterConditionBoxState.value.editingConditionIndex], newFilterCondition);
-    clearEditingInputs('list');
   }
+  clearEditingInputs('list');
+  const conditions = filterConditionBoxState.value.filterConditions.map(condition => ({
+    sourceAddress: condition.sourceAddress,
+    sourceAddressMask: condition.sourceAddressMask,
+    sourcePort: condition.sourcePort,
+    destinationAddress: condition.destinationAddress,
+    destinationAddressMask: condition.destinationAddressMask,
+    destinationPort: condition.destinationPort,
+    protocol: condition.protocol,
+    include: condition.include,
+  }));
+  emit('update-filter-conditions', conditions);
 }
 
 // set which filter condition is highlighted by left click
@@ -149,24 +154,13 @@ function doubleClickFilterCondition(index: number) {
 }
 
 const emit = defineEmits({
-  'update-filter-conditions': (payload: { filterConditions: Array<filterCondition>, done: boolean }) => true,
+  'update-filter-conditions': (payload: Array<filterCondition>) => true,
 });
 
-// emit filter conditions to LayerManagement on receiving emitFilterConditions prop
-watch(() => props.emitFilterConditions, (newVal) => {
-  if (newVal === true) {
-    emit('update-filter-conditions', {
-      filterConditions: filterConditionBoxState.value.filterConditions,
-      done: true
-    });
-  } else {
-    filterConditionBoxState.value.filterConditions = [];
-  }
-});
 
 // receive filter conditions from LayerManagement on edit of existing layer
-watch(() => props.editLayerFilterConditions, (newVal) => {
-  filterConditionBoxState.value.filterConditions = newVal;
+onMounted(() => {
+  filterConditionBoxState.value.filterConditions = props.editLayerFilterConditions;
 });
 </script>
 
@@ -179,6 +173,7 @@ watch(() => props.editLayerFilterConditions, (newVal) => {
   width: 90%;
   border-radius: 4px;
   font-family: 'Open Sans', sans-serif;
+  overflow: hidden;
 }
 
 .filter-condition-box-menu {

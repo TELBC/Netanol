@@ -1,7 +1,5 @@
 <template>
-  <Tooltip :title="isChecked ? 'Custom Interval' : 'Fixed Interval'">
-    <input type="checkbox" class="theme-checkbox" :checked="isChecked" @change="emitValue">
-  </Tooltip>
+  <input type="checkbox" class="theme-checkbox" :checked="isChecked" @change="emitValue" :title="isChecked ? 'Custom Interval' : 'Fixed Interval'">
 </template>
 
 <script setup lang="ts">

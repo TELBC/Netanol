@@ -2,7 +2,7 @@
   <div class="topology-menu">
     <Dropdown class="layout-dropdown" @changeLayout="handleLayoutChange" />
     <Graph :data="data" @intervalAmount="handleIntervalAmount"/>
-    <GraphFilterMenu v-bind:layout="layout" @menuOpened="handleMenuOpened" />
+    <GraphFilterMenu v-bind:layout="layout" @menuOpened="handleMenuOpened" @layersFetched="fetchAndUpdateGraph"/>
     <TopologyTimeframeSelector class="topology-timeframe"
                                :style="{ right: timeframeSelectorRight }"
                                @change="handleTimeframeSelection"

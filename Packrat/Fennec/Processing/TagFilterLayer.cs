@@ -32,7 +32,7 @@ public class TagFilterLayer : ILayer
         {
             var impl = ImplicitInclude ? "Include" : "Exclude";
             var cond = Conditions.Count == 1 ? "Condition" : "Conditions";
-            return $"{Conditions.Count} <b>{cond}</b>, Implicit <b>{impl}</b>";
+            return $"{Conditions.Count} {cond}, Implicit {impl}";
         }
     }
 

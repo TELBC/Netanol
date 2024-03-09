@@ -1,16 +1,12 @@
 <template>
   <div>
     <div class="footer">
-      <Tooltip title="Recenter Graph">
-      <button class="icon-button" @click="$emit('recenter')">
+      <button class="icon-button" @click="$emit('recenter')" title="Recenter Graph">
         <font-awesome-icon icon="fa-solid fa-arrows-to-circle" />
       </button>
-    </Tooltip>
-      <Tooltip title="Freeze Simulation">
-        <button class="icon-button" @click="toggleSimulation">
-          <font-awesome-icon :icon="simulationFrozen ? 'fa-solid fa-play' : 'fa-solid fa-pause'" />
-        </button>
-      </Tooltip>
+      <button class="icon-button" @click="toggleSimulation" title="Freeze Simulation">
+        <font-awesome-icon :icon="simulationFrozen ? 'fa-solid fa-play' : 'fa-solid fa-pause'" />
+      </button>
       <span class="separator"/>
       <div class="footer-info" v-if="metaData">
         <span class="metadata-item">
@@ -24,25 +20,17 @@
         </span>
         <span class="metadata-item">
           Bytes:
-          <Tooltip :title="byteHoverText">
-            <span class="metaData-number">{{ convertedByteCount }}</span>
-          </Tooltip>
+          <span class="metaData-number" :title="byteHoverText">{{ convertedByteCount }}</span>
         </span>
       </div>
       <span class="separator"/>
-      <Tooltip title="Fullscreen">
-        <div class="footer-info">
-          <FullscreenButton elementId="graph"/>
-        </div>
-      </Tooltip>
+      <div class="footer-info" title="Fullscreen">
+        <FullscreenButton elementId="graph"/>
+      </div>
       <span class="separator"/>
-      <Tooltip title="Simulation Controls">
-        <ArrowComponent :isOpen="isSlideMenuOpen" @click="toggleSlideMenu" />
-      </Tooltip>
+      <ArrowComponent :isOpen="isSlideMenuOpen" @click="toggleSlideMenu" title="Simulation Controls"/>
       <span class="separator"/>
-      <Tooltip title="Interval Control">
-        <IntervalToggle :is-checked="isIntervalToggle" @input="toggleIntervalMenu"/>
-      </Tooltip>
+      <IntervalToggle :is-checked="isIntervalToggle" @input="toggleIntervalMenu" title="Interval Control"/>
     </div>
     <SlideMenu :distance="distance" :force="force" :isOpen="isSlideMenuOpen" @updateDistance="updateLinkDistance" @updateSim="updateSim" />
     <IntervalMenu title="Interval Selection" description="Current Interval set to:" :isOpen="isIntervalMenuOpen" @change="handleIntervalChange"/>
