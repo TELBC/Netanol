@@ -180,10 +180,9 @@ function openCloseLayer(index: number) {
 }
 
 function setLayerEnabled(index: number, value: boolean) {
-  const layer = layerListState.value.selectedLayout.layers[index];
-  layer.enabled = value;
-  Object.assign(createLayerData.value, layer);
+  getExistingLayer(index);
   setTimeout(() => {
+    createLayerData.value.enabled = value;
     editExistingLayer(index);
     Object.assign(createLayerData.value, {
       name: '',

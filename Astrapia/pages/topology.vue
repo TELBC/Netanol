@@ -3,8 +3,7 @@
     <Dropdown class="layout-dropdown" @changeLayout="handleLayoutChange" />
     <Graph :data="data" @intervalAmount="handleIntervalAmount"/>
     <GraphFilterMenu v-bind:layout="layout" @menuOpened="handleMenuOpened" @layersFetched="fetchAndUpdateGraph"/>
-    <TopologyTimeframeSelector class="topology-timeframe"
-                               :style="{ right: timeframeSelectorRight }"
+    <TopologyTimeframeSelector v-if="data && layout" class="topology-timeframe"
                                @change="handleTimeframeSelection"
                                :from-value="timeframeSelectorFrom"
                                :to-value="timeframeSelectorTo"/>
@@ -25,7 +24,6 @@ const timeframeSelectorFrom = ref(new Date(new Date().getTime() - 2 * 60 * 1000)
 const timeframeSelectorTo = ref(new Date().toISOString().slice(0,16))
 const data = ref();
 const intervalAmount = ref<number>(0);
-const timeframeSelectorRight = ref('1vw'); // Initial position
 
 let fetchInterval: NodeJS.Timeout | null = null;
 let isMenuOpened = ref(false);
@@ -57,23 +55,30 @@ const handleLayoutChange = (selectedLayout: string) => {
 
 const handleMenuOpened = (opened: boolean) => {
   isMenuOpened.value = opened;
-  updateTimeframeSelectorPosition();
-}
-
-const updateTimeframeSelectorPosition = () => {
-  if (isMenuOpened.value) {
-    timeframeSelectorRight.value = '15vw';
-  } else {
-    timeframeSelectorRight.value = '1vw';
-  }
 }
 
 const fetchAndUpdateGraph: () => Promise<void> = async () => {
-  const dateRange: { from: Date; to: Date } = {
-    from: new Date(timeframeSelectorFrom.value + ':00.000Z'),
-    to: new Date(timeframeSelectorTo.value + ':00.000Z')
-  };
-  data.value = await topologyService.getTopology(layout.value, dateRange.from, dateRange.to);
+  try {
+    if (!layout.value) {
+      data.value = null;
+      return;
+    }
+
+    const dateRange: { from: Date; to: Date } = {
+      from: new Date(timeframeSelectorFrom.value + ':00.000Z'),
+      to: new Date(timeframeSelectorTo.value + ':00.000Z')
+    };
+    const graphData = await topologyService.getTopology(layout.value, dateRange.from, dateRange.to);
+
+    if (!graphData) {
+      data.value = null;
+    } else {
+      data.value = graphData;
+    }
+  } catch (error) {
+    console.error('Error fetching and updating graph:', error);
+    data.value = null;
+  }
 };
 
 const debouncedFetchGraphData = debounce(fetchAndUpdateGraph, 100);
@@ -109,9 +114,9 @@ onBeforeUnmount(() => {
 
 .topology-timeframe {
   position: absolute;
-  bottom: 0;
-  right: 1vw;
+  top: 0;
+  right: 0;
   z-index: 15;
-  transition: right 0.2s ease-in-out;
+  margin: 0.75vh 13vw 0 0;
 }
 </style>

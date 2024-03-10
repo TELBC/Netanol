@@ -52,8 +52,8 @@ const props = defineProps<{
 }>();
 
 const simulationFrozen = ref(false);
-const distance = ref(100);
-const force = ref(500);
+const distance = ref(200);
+const force = ref(800);
 const convertedByteCount = ref('');
 const byteHoverText = ref('');
 const isSlideMenuOpen = ref(false);
@@ -122,8 +122,8 @@ onMounted(() =>{
 })
 
 watch(() => props.metaData.totalByteCount, (newValue) => {
-    convertedByteCount.value = formatBytes(newValue);
-    byteHoverText.value = `${newValue} bytes`;
+  convertedByteCount.value = formatBytes(newValue);
+  byteHoverText.value = `${newValue} bytes`;
 });
 
 interface IGraphStatistics {

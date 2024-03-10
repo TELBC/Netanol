@@ -94,7 +94,11 @@ async function deleteLayout(layout: string) {
   await layoutService.deleteLayout(layout);
   await getLayouts();
   if (dropdownState.value.selectedOption === layout) {
-    dropdownState.value.selectedOption = dropdownState.value.options[0]['name'] ?? 'No layouts found';
+    if (dropdownState.value.options.length > 0) {
+      dropdownState.value.selectedOption = dropdownState.value.options[0]['name'] ?? 'No layouts found';
+    } else {
+      dropdownState.value.selectedOption = 'No layouts found';
+    }
   }
 }
 
@@ -139,7 +143,7 @@ watch([() => dropdownState.value.selectedOption], () => {
 
 onMounted(async() => {
   await getLayouts();
-  dropdownState.value.selectedOption = dropdownState.value.options[0]['name'] ?? 'No layouts found';
+  dropdownState.value.selectedOption = dropdownState.value.options.length > 0 ? dropdownState.value.options[0]['name'] : 'No layouts found';
 })
 </script>
 

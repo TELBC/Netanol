@@ -1,3 +1,4 @@
+SlideMenu.vue
 <template>
   <div class="slide-menu" :class="{ 'slide-up': isOpen }">
     <div class="slider-container">
@@ -10,8 +11,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-const distance = ref(100);
-const force = ref(500);
+const distance = ref(200);
+const force = ref(800);
 
 const props = defineProps<{
   isOpen: Boolean
@@ -37,7 +38,7 @@ const updateSim = (event: InputEvent) => {
 .slide-menu {
   position: fixed;
   bottom: -60px;
-  left: 580px;
+  left: 560px;
   transform: translateX(-50%);
   background-color: #e0e0e0;
   transition: transform 0.5s ease, bottom 0.5s ease;
