@@ -30,6 +30,10 @@ export default {
   watch: {
     data: {
       handler(newData) {
+        if (!newData) {
+          this.clearGraph();
+          return;
+        }
         if (newData && this.hasDataChanged(newData)) {
           this.metaData = newData.graphStatistics;
           this.previousData = newData;
@@ -43,6 +47,12 @@ export default {
     this.initChart();
   },
   methods: {
+    clearGraph() {
+      this.metaData = null;
+      this.previousData = {};
+      const emptyData = { nodes: [], edges: [] };
+      this.updateChart(emptyData);
+    },
     initChart() {
       this.simulation = d3.forceSimulation()
         .force("charge", d3.forceManyBody().strength((-1) * this.strengthForce))
