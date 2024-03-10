@@ -231,14 +231,14 @@ export default {
           if (!selectedNode) {
             this.node.transition()
               .duration(150)
-              .attr("fill", "#537B87")
+              .attr("fill", d => d.hexColor ?? "#537B87")
               .attr("r", 8)
               .attr("opacity", 1);
 
             this.link.transition()
               .duration(150)
-              .attr("stroke", d => colorScale(d.byteCount))
-              .attr("stroke-width", d => packetCountScale(d.packetCount))
+              .attr("stroke-width", d => d.width ?? packetCountScale(d.packetCount))
+              .attr("stroke", d => d.hexColor ?? colorScale(d.byteCount))
               .attr("opacity", 1);
 
             this.label.transition()

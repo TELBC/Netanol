@@ -47,8 +47,9 @@ watch(() => props.layout!, (newLayout, oldLayout) => {
   graphFilterMenuState.value.selectedLayout.name = newLayout;
 });
 
-const toggleMenu = () => {
+const toggleMenu = async () => {
   graphFilterMenuState.value.isExpanded = !graphFilterMenuState.value.isExpanded;
+  await getLayersOfLayout();
   emit('menuOpened', graphFilterMenuState.value.isExpanded)
 }
 
