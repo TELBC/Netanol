@@ -36,8 +36,8 @@ class FlowSample {
     uint Drops
     uint InputInterface
     OutputInterface OutputInterface
-    FlowFormat FlowFormat
-    FlowRecord FlowRecord
+    uint NumRecords
+    List<FlowRecord> FlowRecord
 }
 
 class OutputInterface {
@@ -52,8 +52,8 @@ class CounterSample {
     uint SequenceNumber
     ushort SourceIdType
     ushort SourceIdIndex
-    CounterFormat CounterType
-    CounterRecord CounterRecord
+    uint NumRecords
+    List<CounterRecord> CounterRecord
 }
 
 enum SampleType {

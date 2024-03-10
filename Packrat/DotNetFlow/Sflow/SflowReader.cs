@@ -175,7 +175,13 @@ namespace DotNetFlow.Sflow
 
                 if (enterprise == Enterprise.StandardSflow && format == FlowFormat.RawPacketHeader)
                 {
-                    flowSample.FlowRecords.Add(ReadRawPacketHeader(reader, flowSample));
+                    var rawPacketHeader = new RawPacketHeader
+                    {
+                        Enterprise = enterprise,
+                        Format = format,
+                    };
+                    
+                    flowSample.FlowRecords.Add(ReadRawPacketHeader(reader, rawPacketHeader));
                 }
             }
 
@@ -187,18 +193,24 @@ namespace DotNetFlow.Sflow
         /// </summary>
         /// <param name="reader"> Reader to read the raw packet header from.</param>
         /// <param name="flowSample"> The flow sample object to populate.</param>
-        private RawPacketHeader ReadRawPacketHeader(BinaryReader reader, FlowSample flowSample)
+        private RawPacketHeader ReadRawPacketHeader(BinaryReader reader, RawPacketHeader rawPacketHeader)
         {
-            var rawPacketHeader = new RawPacketHeader
-            {
-                Enterprise = (Enterprise)reader.ReadUInt16().ToNetworkByteOrder(),
-                Format = (FlowFormat)reader.ReadUInt16().ToNetworkByteOrder(),
-                FlowDataLength = reader.ReadUInt32().ToNetworkByteOrder(),
-                HeaderProtocol = (HeaderProtocol)reader.ReadUInt32().ToNetworkByteOrder(),
-                FrameLength = reader.ReadUInt32().ToNetworkByteOrder(),
-                StrippedBytes = reader.ReadUInt32().ToNetworkByteOrder(),
-                SampledHeaderLength = reader.ReadUInt32().ToNetworkByteOrder()
-            };
+            rawPacketHeader.FlowDataLength = reader.ReadUInt32().ToNetworkByteOrder();
+            rawPacketHeader.HeaderProtocol = (HeaderProtocol)reader.ReadUInt32().ToNetworkByteOrder();
+            rawPacketHeader.FrameLength = reader.ReadUInt32().ToNetworkByteOrder();
+            rawPacketHeader.StrippedBytes = reader.ReadUInt32().ToNetworkByteOrder();
+            rawPacketHeader.SampledHeaderLength = reader.ReadUInt32().ToNetworkByteOrder();
+            
+            // var rawPacketHeader = new RawPacketHeader
+            // {
+            //     Enterprise = (Enterprise)reader.ReadUInt16().ToNetworkByteOrder(),
+            //     Format = (FlowFormat)reader.ReadUInt16().ToNetworkByteOrder(),
+            //     FlowDataLength = reader.ReadUInt32().ToNetworkByteOrder(),
+            //     HeaderProtocol = (HeaderProtocol)reader.ReadUInt32().ToNetworkByteOrder(),
+            //     FrameLength = reader.ReadUInt32().ToNetworkByteOrder(),
+            //     StrippedBytes = reader.ReadUInt32().ToNetworkByteOrder(),
+            //     SampledHeaderLength = reader.ReadUInt32().ToNetworkByteOrder()
+            // };
 
             var headerBytes = reader.ReadBytes((int)rawPacketHeader.SampledHeaderLength)
                 .BytesSequenceToHexadecimalString();
