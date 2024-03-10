@@ -1,4 +1,6 @@
-﻿namespace DotNetFlow.Sflow
+﻿using System.Collections.Generic;
+
+namespace DotNetFlow.Sflow
 {
     /// <summary>
     /// A flow sample containing a set of flow records from a specific data source.
@@ -16,7 +18,7 @@
         public uint Drops { get; set; }
         public InterfaceInfo InputInterface { get; set; }
         public InterfaceInfo OutputInterface { get; set; }
-        public FlowFormat FlowFormat { get; set; }
-        public FlowRecord FlowRecord { get; set; }
+        public uint NumRecords { get; set; }
+        public List<FlowRecord> FlowRecords { get; set; }
     }
 }

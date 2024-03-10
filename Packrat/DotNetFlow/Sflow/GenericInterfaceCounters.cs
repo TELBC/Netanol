@@ -1,6 +1,19 @@
 ﻿namespace DotNetFlow.Sflow
 {
     /// <summary>
+    /// Represents the direction of the interface.
+    /// More detail can be found in the sFlow v5 specification.
+    /// </summary>
+    public enum IfDirection
+    {
+        Unknown = 0,
+        FullDuplex = 1,
+        HalfDuplex = 2,
+        In = 3,
+        Out = 4
+    }
+    
+    /// <summary>
     ///  Represents the sFlow Generic Interface Counters record.
     /// </summary>
     public class GenericInterfaceCounters : CounterRecord

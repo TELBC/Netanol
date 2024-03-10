@@ -166,7 +166,6 @@ CounterSample o-- CounterRecord
 GenericInterfaceCounters o-- IfDirection
 RawPacketHeader o-- HeaderProtocol
 
-FlowRecord <|-- GenericInterfaceCounters
 FlowRecord <|-- RawPacketHeader
 
 CounterRecord <|-- GenericInterfaceCounters

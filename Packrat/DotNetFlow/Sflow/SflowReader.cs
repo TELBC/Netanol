@@ -127,15 +127,21 @@ namespace DotNetFlow.Sflow
         {
             counterSample.SampleLength = reader.ReadUInt32().ToNetworkByteOrder();
             counterSample.SequenceNumber = reader.ReadUInt32().ToNetworkByteOrder();
-            counterSample.SourceIdType =
-                reader.ReadUInt16().ToNetworkByteOrder(); // will probably require to be an object
-            counterSample.SourceIdIndex =
-                reader.ReadUInt16().ToNetworkByteOrder(); // will probably require to be an object
-            counterSample.CounterType = (CounterFormat)reader.ReadUInt32().ToNetworkByteOrder();
+            counterSample.SourceIdType = reader.ReadUInt16().ToNetworkByteOrder(); // will probably have to be an object
+            counterSample.SourceIdIndex = reader.ReadUInt16().ToNetworkByteOrder(); // will probably have to be an object
+            counterSample.NumRecords = reader.ReadUInt32().ToNetworkByteOrder();
+            
+            counterSample.CounterRecords = new List<CounterRecord>();
 
-            if (counterSample.CounterType == CounterFormat.GenericInterfaceCounters)
+            for (var i = 0; i < counterSample.NumRecords; i++)
             {
-                counterSample.CounterRecord = ReadGenericInterfaceCounters(reader);
+                var enterprise = (Enterprise)reader.ReadUInt16().ToNetworkByteOrder();
+                var format = (CounterFormat)reader.ReadUInt16().ToNetworkByteOrder();
+
+                if (enterprise == Enterprise.StandardSflow && format == CounterFormat.GenericInterfaceCounters)
+                {
+                    counterSample.CounterRecords.Add(ReadGenericInterfaceCounters(reader));
+                }
             }
 
             return counterSample;
@@ -158,12 +164,19 @@ namespace DotNetFlow.Sflow
             flowSample.Drops = reader.ReadUInt32().ToNetworkByteOrder();
             flowSample.InputInterface = ParseInputInterface(reader);
             flowSample.OutputInterface = ParseOutputInterface(reader);
-            flowSample.FlowFormat = (FlowFormat)reader.ReadUInt32().ToNetworkByteOrder();
+            flowSample.NumRecords = reader.ReadUInt32().ToNetworkByteOrder();
 
-            if (flowSample.FlowFormat == FlowFormat.RawPacketHeader)
+            flowSample.FlowRecords = new List<FlowRecord>();
+
+            for (var i = 0; i < flowSample.NumRecords; i++)
             {
-                ReadRawPacketHeader(reader, flowSample);
-                return flowSample;
+                var enterprise = (Enterprise)reader.ReadUInt16().ToNetworkByteOrder();
+                var format = (FlowFormat)reader.ReadUInt16().ToNetworkByteOrder();
+
+                if (enterprise == Enterprise.StandardSflow && format == FlowFormat.RawPacketHeader)
+                {
+                    flowSample.FlowRecords.Add(ReadRawPacketHeader(reader, flowSample));
+                }
             }
 
             return flowSample;
@@ -174,9 +187,9 @@ namespace DotNetFlow.Sflow
         /// </summary>
         /// <param name="reader"> Reader to read the raw packet header from.</param>
         /// <param name="flowSample"> The flow sample object to populate.</param>
-        private void ReadRawPacketHeader(BinaryReader reader, FlowSample flowSample)
+        private RawPacketHeader ReadRawPacketHeader(BinaryReader reader, FlowSample flowSample)
         {
-            flowSample.FlowRecord = new RawPacketHeader
+            var rawPacketHeader = new RawPacketHeader
             {
                 Enterprise = (Enterprise)reader.ReadUInt16().ToNetworkByteOrder(),
                 Format = (FlowFormat)reader.ReadUInt16().ToNetworkByteOrder(),
@@ -187,19 +200,18 @@ namespace DotNetFlow.Sflow
                 SampledHeaderLength = reader.ReadUInt32().ToNetworkByteOrder()
             };
 
-            if (flowSample.FlowRecord is RawPacketHeader rawPacketHeader)
+            var headerBytes = reader.ReadBytes((int)rawPacketHeader.SampledHeaderLength)
+                .BytesSequenceToHexadecimalString();
+
+            if (rawPacketHeader.HeaderProtocol == HeaderProtocol.Ethernet)
             {
-                var headerLength = (int)rawPacketHeader.SampledHeaderLength;
-
-                var headerBytes = reader.ReadBytes(headerLength).BytesSequenceToHexadecimalString();
-
-                if (rawPacketHeader.HeaderProtocol == HeaderProtocol.Ethernet)
-                {
-                    var packet = Packet.FromHexadecimalString(headerBytes, DateTime.UtcNow,
-                        DataLinkKind.Ethernet);
-                    rawPacketHeader.Packet = packet;
-                }
+                // swapping to SharPcap is an option, did not weigh the pros and cons
+                var packet = Packet.FromHexadecimalString(headerBytes, DateTime.UtcNow,
+                    DataLinkKind.Ethernet);
+                rawPacketHeader.Packet = packet;
             }
+
+            return rawPacketHeader;
         }
 
         /// <summary>

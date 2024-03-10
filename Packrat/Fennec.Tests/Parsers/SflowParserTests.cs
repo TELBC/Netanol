@@ -36,15 +36,15 @@ public class SflowParserTests
         var substituteLogger = Substitute.For<ILogger>();
         
         var parser = new SflowParser(substituteLogger);
-        var flowSample = Convert.FromBase64String("AAAABQAAAAGsFSMRAAAAAQAAAZ9nPdcQAAAAAQAAAAIAAABsAAAhJQAABAwAAAABAAAAAQAAAFgAAAQMAAAABgAAAAAF9eEAAAAAAQAAAAMAAAAAAYwszAAAm4MAApAWAAH2cwAAAAAAAAAAAAAAAAAAAAAAUz3BAACgtwAAIYcAAAjXAAAAAAAAAAAAAAAA");
+        var counterSample = Convert.FromBase64String("AAAABQAAAAGsFSMRAAAAAQAAAZ9nPdcQAAAAAQAAAAIAAABsAAAhJQAABAwAAAABAAAAAQAAAFgAAAQMAAAABgAAAAAF9eEAAAAAAQAAAAMAAAAAAYwszAAAm4MAApAWAAH2cwAAAAAAAAAAAAAAAAAAAAAAUz3BAACgtwAAIYcAAAjXAAAAAAAAAAAAAAAA");
         
-        var flowSampleUdpReceiveResult = new UdpReceiveResult(flowSample, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 0));
+        var counterSampleUdpReceiveResult = new UdpReceiveResult(counterSample, new IPEndPoint(IPAddress.Parse("127.0.0.1"), 0));
         
         // Act
-        var resultSamples = parser.Parse(flowSampleUdpReceiveResult);
+        var resultSamples = parser.Parse(counterSampleUdpReceiveResult);
         
         // Assert
         Assert.NotNull(resultSamples);
-        Assert.Empty(resultSamples); // CounterSample is not relevant for topology visualization
+        Assert.Empty(resultSamples); // CounterSample is not relevant for topology visualization --> not returned by parser
     }
 }
