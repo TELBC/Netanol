@@ -84,7 +84,7 @@ class MetricService {
   }
 
   public async getApplicationStatusData() {
-    return await ApiService.get<SelfTestData>('/api/metrics/ApplicationStatus')
+    return await ApiService.get<SelfTestData>('/api/metrics/applicationStatus')
       .then(x => x.data);
   }
 }

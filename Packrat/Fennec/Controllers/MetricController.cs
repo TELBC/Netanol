@@ -57,7 +57,7 @@ public class MetricController : ControllerBase
         return Ok(data);
     }
 
-    [HttpGet("ApplicationStatus")]
+    [HttpGet("applicationStatus")]
     public async Task<IActionResult> GetApplicationStatus()
     {
         var data = _applicationStatus.GetLatestStatus();

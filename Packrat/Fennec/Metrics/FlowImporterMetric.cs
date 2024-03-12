@@ -54,7 +54,7 @@ public class FlowImporterMetric : IFlowImporterMetric
         _logger = logger;
     }
 
-    public void AddFlowImport(bool parsed, IPEndPoint endPoint, int receivedByteCount, long transmittedPackets, long transmittedBytes)
+    public void AddFlowImport(bool parsed, IPEndPoint endPoint, int receivedByteCount, long transmittedBytes, long transmittedPackets)
     {
         if (_tempFlowImports.ContainsKey(endPoint))
         {
