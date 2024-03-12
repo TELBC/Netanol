@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using NetFlow9TemplateRecord = DotNetFlow.Netflow9.TemplateRecord;
 using Fennec.Parsers;
 using Fennec.Services;
 using NSubstitute;
@@ -15,8 +16,10 @@ public class NetFlow9ParserTests
         // Arrange
         var substituteLogger = Substitute.For<ILogger>();
         var substituteMetricService = Substitute.For<IMetricService>();
+        var substituteTemplateCleanupService = Substitute.For<INetFlow9CleanupService>();
+        substituteTemplateCleanupService.TemplateRecords.Returns(new Dictionary<(IPAddress, ushort), NetFlow9TemplateRecord>());
 
-        var parser = new NetFlow9Parser(substituteLogger, substituteMetricService);
+        var parser = new NetFlow9Parser(substituteLogger, substituteMetricService, substituteTemplateCleanupService);
         var netflowTemplates = Convert.FromBase64String(
             "AAkAAgBaBI9k0SU7AAAAaAAAAAIBAwBRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAzC8AxwKgAlgG71i0GAAAAAQBZiYAAWYmAAAApaQAAAAAAAABAAAAAAAAAAAEAAAA8AQMADQAbABAAHAAQAAgABAAMAAQABwACAAsAAgAEAAEAMAAEABYABAAVAAQACgAEAAEACAACAAg=");
         var netflowData = Convert.FromBase64String(
