@@ -114,7 +114,7 @@ public class IpFixParser : IParser
     {
         // TODO: change readTime to flow duration or include both maybe --> more info for frontend
         var properties = (IDictionary<string, object>)record;
-        var readTime = DateTimeOffset.UtcNow; // TODO: handle flows with ex. 2 packets total duration 0.000000000 ms
+        var readTime = DateTime.UtcNow; // TODO: handle flows with ex. 2 packets total duration 0.000000000 ms
         var exporterIp = result.RemoteEndPoint.Address;
         
         // Yes! These double casts are necessary. Don't ask me why.

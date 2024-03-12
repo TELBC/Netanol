@@ -22,7 +22,7 @@ public class TraceRepositoryTests : MongoDbFactory
             DataProtocol = DataProtocol.Tcp,
             FlowProtocol = FlowProtocol.Ipfix,
             Duplicate = false,
-            Timestamp = DateTimeOffset.Now - TimeSpan.FromHours(1)
+            Timestamp = DateTime.Now - TimeSpan.FromHours(1)
         },
 
         new SingleTrace
@@ -34,7 +34,7 @@ public class TraceRepositoryTests : MongoDbFactory
             DataProtocol = DataProtocol.Tcp,
             FlowProtocol = FlowProtocol.Ipfix,
             Duplicate = false,
-            Timestamp = DateTimeOffset.Now
+            Timestamp = DateTime.Now
         }
     };
 
@@ -53,7 +53,7 @@ public class TraceRepositoryTests : MongoDbFactory
 
         // Act
         var traces = await service.AggregateTraces(
-            new QueryConditions(), DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
+            new QueryConditions(), DateTime.MinValue, DateTime.MaxValue);
 
         // Assert
         Assert.True(traces.Count == 1);

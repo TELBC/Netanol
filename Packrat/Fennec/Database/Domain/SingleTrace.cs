@@ -30,6 +30,7 @@ public class SingleTraceEndpoint
     {
     }
 #pragma warning restore CS8618
+    
     /// <summary>
     ///     The <see cref="IpAddress" /> of the host represented by in a byte array.
     /// </summary>
@@ -54,7 +55,7 @@ public class SingleTraceEndpoint
 /// </summary>
 public class SingleTrace
 {
-    public SingleTrace(DateTimeOffset timestamp, DataProtocol dataProtocol, FlowProtocol flowProtocol, bool duplicate,
+    public SingleTrace(DateTime timestamp, DataProtocol dataProtocol, FlowProtocol flowProtocol, bool duplicate,
         SingleTraceEndpoint source,
         SingleTraceEndpoint destination, ulong byteCount, ulong packetCount)
     {
@@ -81,7 +82,7 @@ public class SingleTrace
     ///     Time when this information was received.
     /// </summary>
     [BsonElement("timestamp")]
-    public DateTimeOffset Timestamp { get; set; }
+    public DateTime Timestamp { get; set; }
 
     /// <summary>
     ///     Information about the source of the communication between two devices.

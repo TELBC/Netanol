@@ -11,7 +11,7 @@ namespace Fennec.Tests.Services;
 public class DuplicateFlaggingTests
 {
     private static readonly TraceImportInfo ImportInfo = new(
-        DateTimeOffset.Now, IPAddress.Parse("192.168.0.1"),
+        DateTime.Now, IPAddress.Parse("192.168.0.1"),
         IPAddress.Parse("10.10.20.1"), 10,
         IPAddress.Parse("10.10.30.1"), 20,
         10, 10, DataProtocol.Tcp, FlowProtocol.Ipfix);

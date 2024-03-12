@@ -24,12 +24,12 @@ public interface ITraceRepository
     ///     Aggregate all traces in the database by their source and destination <see cref="IPAddress" /> and port.
     /// </summary>
     /// <returns></returns>
-    public Task<List<AggregateTrace>> AggregateTraces(QueryConditions conditions, DateTimeOffset start,
-        DateTimeOffset end);
+    public Task<List<AggregateTrace>> AggregateTraces(QueryConditions conditions, DateTime start,
+        DateTime end);
 }
 
 public record TraceImportInfo(
-    DateTimeOffset ReadTime,
+    DateTime ReadTime,
     IPAddress ExporterIp,
     IPAddress SrcIp,
     ushort SrcPort,
@@ -135,8 +135,7 @@ public class TraceRepository : ITraceRepository
         await Task.WhenAll(tasks);
     }
 
-    public async Task<List<AggregateTrace>> AggregateTraces(QueryConditions conditions, DateTimeOffset start,
-        DateTimeOffset end)
+    public async Task<List<AggregateTrace>> AggregateTraces(QueryConditions conditions, DateTime start, DateTime end)
     {
         var filter = BuildQueryConditions(conditions);
         return await _traces

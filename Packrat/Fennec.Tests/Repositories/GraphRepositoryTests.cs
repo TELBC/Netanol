@@ -14,7 +14,7 @@ public class GraphRepositoryTests
     {
         var mockTraceRepository = Substitute.For<ITraceRepository>();
         mockTraceRepository
-            .AggregateTraces(Arg.Any<QueryConditions>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
+            .AggregateTraces(Arg.Any<QueryConditions>(), Arg.Any<DateTime>(), Arg.Any<DateTime>())
             .Returns(Task.FromResult(sampleTraces));
         return mockTraceRepository;
     }
@@ -23,8 +23,8 @@ public class GraphRepositoryTests
     public async Task GenerateGraph_WithEmptyLayout_ShouldProcessCorrectly()
     {
         // Arrange
-        var from = DateTimeOffset.UtcNow.AddDays(-1);
-        var to = DateTimeOffset.UtcNow;
+        var from = DateTime.UtcNow.AddDays(-1);
+        var to = DateTime.UtcNow;
         var emptyLayout = new Layout("") { Layers = new List<ILayer>() };
 
         var sampleTraces = new List<AggregateTrace>
@@ -71,8 +71,8 @@ public class GraphRepositoryTests
     public async Task GenerateGraph_WithEmptyLayout_ReturnsSame()
     {
         // Arrange
-        var from = DateTimeOffset.UtcNow.AddDays(-1);
-        var to = DateTimeOffset.UtcNow;
+        var from = DateTime.UtcNow.AddDays(-1);
+        var to = DateTime.UtcNow;
         var emptyLayout = new Layout("") { Layers = new List<ILayer>() };
         
         var sampleTraces = new List<AggregateTrace>

@@ -13,13 +13,13 @@ public class QueryConditionTests : MongoDbFactory
         var traceCollection = Database.GetCollection<SingleTrace>("singleTraces");
         var traces = new SingleTrace[]
         {
-            new(DateTimeOffset.Now, DataProtocol.Udp, FlowProtocol.Ipfix, false,
+            new(DateTime.Now, DataProtocol.Udp, FlowProtocol.Ipfix, false,
                 new SingleTraceEndpoint(IPAddress.Parse("1.1.1.1"), 20),
                 new SingleTraceEndpoint(IPAddress.Parse("1.1.1.2"), 30), 100, 20),
-            new(DateTimeOffset.Now, DataProtocol.Tcp, FlowProtocol.Netflow9, true,
+            new(DateTime.Now, DataProtocol.Tcp, FlowProtocol.Netflow9, true,
                 new SingleTraceEndpoint(IPAddress.Parse("2.1.1.1"), 20),
                 new SingleTraceEndpoint(IPAddress.Parse("2.1.1.2"), 30), 100, 20),
-            new(DateTimeOffset.Now, DataProtocol.Tcp, FlowProtocol.Netflow5, false,
+            new(DateTime.Now, DataProtocol.Tcp, FlowProtocol.Netflow5, false,
                 new SingleTraceEndpoint(IPAddress.Parse("3.1.1.1"), 10),
                 new SingleTraceEndpoint(IPAddress.Parse("3.1.1.2"), 50), 100, 20)
         };
@@ -40,7 +40,7 @@ public class QueryConditionTests : MongoDbFactory
         var service = new TraceRepository(Database, null!, null!);
 
         // Act
-        var traces = await service.AggregateTraces(conditions, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
+        var traces = await service.AggregateTraces(conditions, DateTime.MinValue, DateTime.MaxValue);
 
         // Assert
         Assert.True(traces.Count == 2);
@@ -61,7 +61,7 @@ public class QueryConditionTests : MongoDbFactory
         var service = new TraceRepository(Database, null!, null!);
 
         // Act
-        var traces = await service.AggregateTraces(conditions, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
+        var traces = await service.AggregateTraces(conditions, DateTime.MinValue, DateTime.MaxValue);
 
         // Assert
         Assert.True(traces.Count == 1);
@@ -83,7 +83,7 @@ public class QueryConditionTests : MongoDbFactory
         var service = new TraceRepository(Database, null!, null!);
 
         // Act
-        var traces = await service.AggregateTraces(conditions, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
+        var traces = await service.AggregateTraces(conditions, DateTime.MinValue, DateTime.MaxValue);
 
         // Assert
         Assert.True(traces.Count == 1);

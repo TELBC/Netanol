@@ -47,7 +47,7 @@ public class SflowParser : IParser
                                 {
                                     var traceImportInfo = new TraceImportInfo
                                     (
-                                        DateTimeOffset.UtcNow,
+                                        DateTime.UtcNow,
                                         result.RemoteEndPoint.Address,
                                         IPAddress.Parse(
                                             rawPacketHeader.Packet.Ethernet.VLanTaggedFrame.IpV4.Source.ToString()),
@@ -68,7 +68,7 @@ public class SflowParser : IParser
                                 {
                                     var traceImportInfo = new TraceImportInfo
                                     (
-                                        DateTimeOffset.UtcNow,
+                                        DateTime.UtcNow,
                                         result.RemoteEndPoint.Address,
                                         IPAddress.Parse(rawPacketHeader.Packet.Ethernet.IpV4.Source.ToString()),
                                         rawPacketHeader.Packet.Ethernet.IpV4.Tcp.SourcePort,
@@ -87,7 +87,7 @@ public class SflowParser : IParser
                                 {
                                     var traceImportInfo = new TraceImportInfo
                                     (
-                                        DateTimeOffset.UtcNow,
+                                        DateTime.UtcNow,
                                         result.RemoteEndPoint.Address,
                                         IPAddress.Parse(rawPacketHeader.Packet.Ethernet.IpV6.Source.ToString()),
                                         rawPacketHeader.Packet.Ethernet.IpV6.Tcp.SourcePort,

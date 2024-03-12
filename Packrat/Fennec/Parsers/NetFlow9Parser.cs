@@ -112,7 +112,7 @@ public class NetFlow9Parser : IParser
     private TraceImportInfo CreateTraceImportInfo(dynamic record, UdpReceiveResult result)
     {
         var properties = (IDictionary<string, object>)record;
-        var readTime = DateTimeOffset.UtcNow;
+        var readTime = DateTime.UtcNow;
         var exporterIp = result.RemoteEndPoint.Address;
 
         var srcIp = properties.TryGetValue("IPv4SourceAddress", out var property)

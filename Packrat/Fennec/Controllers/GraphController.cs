@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Fennec.Controllers;
 
-public record GraphRequest(DateTimeOffset From, DateTimeOffset To, bool RemoveDisconnectedNodes = true);
+public record GraphRequest(DateTime From, DateTime To, bool RemoveDisconnectedNodes = true);
 
 public record GraphStatistics(long TotalHostCount, long TotalByteCount, long TotalPacketCount, long TotalTraceCount);
 
