@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using Newtonsoft.Json;
@@ -291,6 +292,24 @@ public class Startup
             }
         }
 
+        var database = app.Services.GetRequiredService<IMongoDatabase>();
+        try
+        {
+            Log.Information("Attempting to connect to the MongoDB");
+            await database.RunCommandAsync((Command<BsonDocument>) "{ping:1}");
+            Log.Information("Successfully connected to the MongoDB database");
+        }
+        catch (Exception e)
+        {
+            Log.Fatal(e, "Failed to connect to the MongoDB database | {ExceptionName}: {ExceptionMessage}", 
+                e.GetType(), 
+                e.Message);
+        }
+        // TODO: use an injected collection
+        var collection = database.GetCollection<SingleTrace>("singleTraces");
+        var model = Builders<SingleTrace>.IndexKeys.Descending(s => s.Timestamp);
+        await collection.Indexes.CreateOneAsync(new CreateIndexModel<SingleTrace>(model));
+        
         app.UsePathBase("/api");
         app.UseSerilogRequestLogging();
 

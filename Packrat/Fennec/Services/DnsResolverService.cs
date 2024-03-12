@@ -73,8 +73,12 @@ public class DnsResolverService : IDnsResolverService
         catch (Exception e)
         {
             // Prevent the console from being too cluttered with DNS resolution errors
-            if (e is SocketException { Message: "No such host is known." })
+            if (e is SocketException)
+            {
+                _log.Verbose(e, "Failed to resolve IP address {IpAddress} | {ExceptionName}: {ExceptionMessage}", ipAddress, 
+                    e.GetType(), e.Message);
                 return null;
+            }
             
             _log.Error(e, "Unexpected exception while DNS resolving {IpAddress} | {ExceptionName}: {ExceptionMessage}", ipAddress,
                 e.GetType(),

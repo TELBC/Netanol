@@ -32,7 +32,6 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.12" />
         <PackageReference Include="MongoDB.Bson" Version="2.22.0" />
         <PackageReference Include="MongoDB.Driver" Version="2.22.0" />
-        <PackageReference Include="QuickGraph" Version="3.6.61119.7" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="Serilog" Version="3.0.1" />
         <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
