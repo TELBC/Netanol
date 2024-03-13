@@ -30,6 +30,10 @@ class LayoutService {
   public updateLayout(name: string, newName: string) {
     return ApiService.put(`/api/layout/${name}/${newName}`);
   }
+
+  public setQueryConditions(name: string, queryConditions: any){
+    return ApiService.put(`/api/layout/${name}/queryConditions`, queryConditions)
+  }
 }
 
 export default new LayoutService();

@@ -207,20 +207,20 @@ const filterConditionBoxState = ref({
       useProtocolColors: true,
       protocolColors: {
         Unknown:{
-          startHex: "#000000",
-          endHex: "#FFFFFF"
+          startHex: "#FFFFFF",
+          endHex: "#000000"
         },
         Tcp:{
-          startHex: "#000000",
-          endHex: "#FFFFFF"
+          startHex: "#FFFFFF",
+          endHex: "#000000"
         },
         Udp:{
-          startHex: "#000000",
-          endHex: "#FFFFFF"
+          startHex: "#FFFFFF",
+          endHex: "#000000"
         },
         Icmp:{
-          startHex: "#000000",
-          endHex: "#FFFFFF"
+          startHex: "#FFFFFF",
+          endHex: "#000000"
         }
       }
     },

@@ -7,6 +7,7 @@
                                @change="handleTimeframeSelection"
                                :from-value="timeframeSelectorFrom"
                                :to-value="timeframeSelectorTo"/>
+    <QueryConditionButton class="query-conditions"/>
   </div>
 </template>
 
@@ -18,6 +19,7 @@ import Graph from "~/components/Graph.vue";
 import Dropdown from "~/components/Dropdown.vue";
 import GraphFilterMenu from "~/components/GraphFilterMenu.vue";
 import TopologyTimeframeSelector from "~/components/TopologyTimeframeSelector.vue";
+import QueryConditionButton from "~/components/QueryConditionButton.vue";
 
 const layout = ref('');
 const timeframeSelectorFrom = ref(new Date(new Date().getTime() - 2 * 60 * 1000).toISOString().slice(0,16))
@@ -118,5 +120,13 @@ onBeforeUnmount(() => {
   right: 0;
   z-index: 15;
   margin: 0.75vh 13vw 0 0;
+}
+
+.query-conditions{
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 15;
+  margin: 0.75vh 39vw 0 0;
 }
 </style>
