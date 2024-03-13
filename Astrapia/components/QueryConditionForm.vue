@@ -1,43 +1,45 @@
 <template>
-  <div class="query-condition-form-overlay">
-    <div class="query-condition-form">
+  <div class="query-condition-form-overlay" @click="handleOverlayClick">
+    <div class="query-condition-form" @click.stop>
       <div class="title">Query Conditions</div>
-      <div class="subtitle">Duplicates:</div>
+      <div class="layout-title">Layout-name: <b><u>{{ props.layout }}</u></b></div>
       <div class="scrollable-selector-include-exclude-traffic">
-        <p>Exclude</p>
+        <div class="subtitle-duplicates">Duplicates:</div>
         <input type="checkbox" class="theme-checkbox" v-model="allowDuplicates" />
-        <p>Include</p>
       </div>
-      <div class="subtitle">Flow Protocols Whitelist:</div>
-      <select v-model="selectedFlowProtocols" @change="addProtocol('flow')">
+      <div class="subtitle">Flow Whitelist:</div>
+      <select class="first-tag-condition-editing-input" v-model="selectedFlowProtocols" @change="addProtocol('flow')">
         <option value="">Select Protocol</option>
         <option value="Ipfix">Ipfix</option>
         <option value="Netflow5">Netflow5</option>
         <option value="Netflow9">Netflow9</option>
         <option value="sFlow">sFlow</option>
       </select>
-      <div v-for="(protocol, index) in flowProtocolsWhitelist" :key="index">
-        <span>{{ protocol }}</span>
+      <div v-for="(protocol, index) in flowProtocolsWhitelist" :key="index" class="whitelist-item">
+        <span class="dot">&#8226;</span>
+        <span class="protocol-text">{{ protocol }}</span>
         <font-awesome-icon icon="fa-solid fa-minus" class="removal-icon" @click="removeProtocol('flow', index)"/>
       </div>
-      <div class="subtitle">Data Protocols Whitelist:</div>
-      <select v-model="selectedDataProtocols" @change="addProtocol('data')">
+      <div class="subtitle">Protocol Whitelist:</div>
+      <select class="first-tag-condition-editing-input" v-model="selectedDataProtocols" @change="addProtocol('data')">
         <option value="">Select Protocol</option>
         <option value="Unknown">Unknown</option>
         <option value="Tcp">TCP</option>
         <option value="Udp">UDP</option>
       </select>
-      <div v-for="(protocol, index) in dataProtocolsWhitelist" :key="index">
-        <span>{{ protocol }}</span>
+      <div v-for="(protocol, index) in dataProtocolsWhitelist" :key="index" class="whitelist-item">
+        <span class="dot">&#8226;</span>
+        <span class="protocol-text">{{ protocol }}</span>
         <font-awesome-icon icon="fa-solid fa-minus" class="removal-icon" @click="removeProtocol('data', index)"/>
       </div>
-      <div class="subtitle">Ports Whitelist:</div>
+      <div class="subtitle">Port Whitelist:</div>
       <div class="port-input-container">
-        <input type="number" v-model="selectedPort" placeholder="Enter Port Number" @keydown.enter.prevent="addPort">
-        <button @click="addPort">Add Port</button>
+        <input class="first-tag-condition-editing-input" type="number" v-model="selectedPort" placeholder="Enter Port Number" @keydown.enter.prevent="addPort">
+        <font-awesome-icon icon="fa-solid fa-plus" class="adding-icon" @click="addPort"/>
       </div>
-      <div v-for="(port, index) in portsWhitelist" :key="index">
-        <span>{{ port }}</span>
+      <div v-for="(port, index) in portsWhitelist" :key="index" class="whitelist-item">
+        <span class="dot">&#8226;</span>
+        <span class="protocol-text">{{ port }}</span>
         <font-awesome-icon icon="fa-solid fa-minus" class="removal-icon" @click="removePort(index)"/>
       </div>
       <div class="button-container">
@@ -49,12 +51,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import LayoutService from "~/services/layoutService";
 
 const emit = defineEmits<{
   isVisible: []
 }>()
+
+const props = defineProps<{
+  layout: string
+}>();
 
 const allowDuplicates = ref(true);
 const flowProtocolsWhitelist = ref([]);
@@ -73,6 +80,7 @@ const saveForm = () => {
     portsWhitelist: portsWhitelist.value
   };
   console.log(jsonData);
+  LayoutService.setQueryConditions('test',jsonData);
   cancelForm();
 };
 
@@ -112,7 +120,7 @@ const addPort = () => {
   const port = parseInt(selectedPort);
   if (!isNaN(port) && !portsWhitelist.value.includes(port)) {
     portsWhitelist.value.push(port);
-    selectedPort = ''; // Clear input after adding port
+    selectedPort = '';
   }
 };
 
@@ -120,9 +128,53 @@ const removePort = (index) => {
   portsWhitelist.value.splice(index, 1);
 };
 
+const handleOverlayClick = (event) => {
+  const form = document.querySelector('.query-condition-form');
+  if (!form.contains(event.target)) {
+    cancelForm();
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      cancelForm();
+    }
+  });
+});
+
 </script>
 
 <style scoped>
+.first-tag-condition-editing-input{
+  border: 1px solid #424242;
+  border-radius: 4px;
+  font-size: 2vh;
+  width: 90%;
+  padding: 2%;
+  margin: 0.5vh 0;
+}
+
+.first-tag-condition-editing-input:focus {
+  outline: none;
+}
+
+.whitelist-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  margin-left: 15px;
+}
+
+.dot {
+  margin-right: 10px;
+  font-size: 1.2em;
+}
+
+.protocol-text {
+  margin-right: 10px;
+}
+
 .port-input-container {
   display: flex;
   align-items: center;
@@ -160,6 +212,8 @@ const removePort = (index) => {
   background-color: white;
   padding: 20px;
   border-radius: 5px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .title {
@@ -168,8 +222,19 @@ const removePort = (index) => {
   margin-bottom: 10px;
 }
 
+.layout-title{
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
 .subtitle {
   font-size: 12px;
+  margin-bottom: 10px;
+  color: #666;
+}
+
+.subtitle-duplicates {
+  font-size: 1.8vh;
   margin-bottom: 10px;
   color: #666;
 }
@@ -249,7 +314,7 @@ const removePort = (index) => {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  width: 90%;
+  width: 70%;
   font-size: 2vh;
 }
 </style>

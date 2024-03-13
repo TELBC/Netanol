@@ -7,7 +7,7 @@
                                @change="handleTimeframeSelection"
                                :from-value="timeframeSelectorFrom"
                                :to-value="timeframeSelectorTo"/>
-    <QueryConditionButton class="query-conditions"/>
+    <QueryConditionButton v-if="data && layout" class="query-conditions" :layout="layout"/>
   </div>
 </template>
 

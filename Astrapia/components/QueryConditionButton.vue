@@ -6,7 +6,7 @@
         <font-awesome-icon icon="fa-solid fa-filter" />
       </button>
     </div>
-    <QueryConditionForm v-if="isVisible" @isVisible="toggleForm"/>
+    <QueryConditionForm v-if="isVisible" @isVisible="toggleForm" :layout="layout"/>
   </div>
 </template>
 
@@ -15,7 +15,12 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import { ref } from 'vue';
 import QueryConditionForm from "~/components/QueryConditionForm.vue";
 
+const props = defineProps<{
+  layout: string
+}>();
+
 const isVisible = ref(false);
+const layout = props.layout;
 
 const toggleForm = () => {
   isVisible.value = !isVisible.value;
