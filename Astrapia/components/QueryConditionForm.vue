@@ -136,10 +136,12 @@ const handleOverlayClick = (event) => {
 };
 
 onMounted(() => {
-  allowDuplicates.value = props.queryConditions.allowDuplicates;
-  flowProtocolsWhitelist.value = props.queryConditions.flowProtocolsWhitelist;
-  dataProtocolsWhitelist.value = props.queryConditions.dataProtocolsWhitelist;
-  portsWhitelist.value = props.queryConditions.portsWhitelist;
+  if(props.queryConditions) {
+    allowDuplicates.value = props.queryConditions.allowDuplicates;
+    flowProtocolsWhitelist.value = props.queryConditions.flowProtocolsWhitelist;
+    dataProtocolsWhitelist.value = props.queryConditions.dataProtocolsWhitelist;
+    portsWhitelist.value = props.queryConditions.portsWhitelist;
+  }
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       cancelForm();

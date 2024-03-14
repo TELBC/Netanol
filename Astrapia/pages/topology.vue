@@ -2,12 +2,12 @@
   <div class="topology-menu">
     <Dropdown class="layout-dropdown" @changeLayout="handleLayoutChange" />
     <Graph :data="data" @intervalAmount="handleIntervalAmount"/>
-    <GraphFilterMenu v-bind:layout="layout" @menuOpened="handleMenuOpened" @layersFetched="fetchAndUpdateGraph" @queryConditions="handleQueryConditions"/>
-    <TopologyTimeframeSelector v-if="data && layout" class="topology-timeframe"
+    <GraphFilterMenu :layout="layout" @menuOpened="handleMenuOpened" @layersFetched="fetchAndUpdateGraph" @queryConditions="handleQueryConditions"/>
+    <TopologyTimeframeSelector v-if="data" class="topology-timeframe"
                                @change="handleTimeframeSelection"
                                :from-value="timeframeSelectorFrom"
                                :to-value="timeframeSelectorTo"/>
-    <QueryConditionButton v-if="data && layout" class="query-conditions" :layout="layout" :queryConditions="queryConditions"/>
+    <QueryConditionButton v-if="data" class="query-conditions" :layout="layout" :queryConditions="queryConditions"/>
   </div>
 </template>
 

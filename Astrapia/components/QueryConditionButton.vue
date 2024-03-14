@@ -36,6 +36,7 @@ const toggleForm = () => {
   margin-right: 4px;
   background: none;
   border: solid 1px #797878;
+  border-radius: 3px;
   cursor: pointer;
   outline: none;
   width: 1.5vw;
