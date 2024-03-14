@@ -7,7 +7,13 @@ export interface Layouts {
 
 export interface Layout {
   name: string,
-  layers: []
+  layers: [],
+  queryConditions: {
+    allowDuplicates: boolean,
+    dataProtocolsWhitelist: [],
+    flowProtocolsWhitelist: [],
+    portsWhitelist: []
+  }
 }
 
 class LayoutService {

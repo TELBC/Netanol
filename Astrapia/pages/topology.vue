@@ -2,12 +2,12 @@
   <div class="topology-menu">
     <Dropdown class="layout-dropdown" @changeLayout="handleLayoutChange" />
     <Graph :data="data" @intervalAmount="handleIntervalAmount"/>
-    <GraphFilterMenu v-bind:layout="layout" @menuOpened="handleMenuOpened" @layersFetched="fetchAndUpdateGraph"/>
+    <GraphFilterMenu v-bind:layout="layout" @menuOpened="handleMenuOpened" @layersFetched="fetchAndUpdateGraph" @queryConditions="handleQueryConditions"/>
     <TopologyTimeframeSelector v-if="data && layout" class="topology-timeframe"
                                @change="handleTimeframeSelection"
                                :from-value="timeframeSelectorFrom"
                                :to-value="timeframeSelectorTo"/>
-    <QueryConditionButton v-if="data && layout" class="query-conditions" :layout="layout"/>
+    <QueryConditionButton v-if="data && layout" class="query-conditions" :layout="layout" :queryConditions="queryConditions"/>
   </div>
 </template>
 
@@ -25,6 +25,7 @@ const layout = ref('');
 const timeframeSelectorFrom = ref(new Date(new Date().getTime() - 2 * 60 * 1000).toISOString().slice(0,16))
 const timeframeSelectorTo = ref(new Date().toISOString().slice(0,16))
 const data = ref();
+const queryConditions = ref(null);
 const intervalAmount = ref<number>(0);
 
 let fetchInterval: NodeJS.Timeout | null = null;
@@ -35,6 +36,10 @@ const handleTimeframeSelection = (from: string, to: string) => {
   timeframeSelectorTo.value = to;
   fetchAndUpdateGraph();
 }
+
+const handleQueryConditions = (conditions: any) => {
+  queryConditions.value = conditions;
+};
 
 const handleIntervalAmount = (amount: number) => {
   intervalAmount.value = amount;

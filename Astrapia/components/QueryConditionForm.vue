@@ -34,7 +34,7 @@
       </div>
       <div class="subtitle">Port Whitelist:</div>
       <div class="port-input-container">
-        <input class="first-tag-condition-editing-input" type="number" v-model="selectedPort" placeholder="Enter Port Number" @keydown.enter.prevent="addPort">
+        <input class="first-tag-condition-editing-input" type="text" v-model="selectedPort" placeholder="Enter Port Number" @keydown.enter.prevent="addPort">
         <font-awesome-icon icon="fa-solid fa-plus" class="adding-icon" @click="addPort"/>
       </div>
       <div v-for="(port, index) in portsWhitelist" :key="index" class="whitelist-item">
@@ -60,7 +60,8 @@ const emit = defineEmits<{
 }>()
 
 const props = defineProps<{
-  layout: string
+  layout: any,
+  queryConditions: any
 }>();
 
 const allowDuplicates = ref(true);
@@ -79,7 +80,6 @@ const saveForm = () => {
     dataProtocolsWhitelist: dataProtocolsWhitelist.value,
     portsWhitelist: portsWhitelist.value
   };
-  console.log(jsonData);
   LayoutService.setQueryConditions('test',jsonData);
   cancelForm();
 };
@@ -92,8 +92,8 @@ const cancelForm = () => {
   emit('isVisible');
 };
 
-const addProtocol = (type) => {
-  const selectedProtocol = type === 'flow' ? selectedFlowProtocols : selectedDataProtocols;
+const addProtocol = (type: string) => {
+  const selectedProtocol: string = type === 'flow' ? selectedFlowProtocols : selectedDataProtocols;
   if (selectedProtocol && !flowProtocolsWhitelist.value.includes(selectedProtocol) && !dataProtocolsWhitelist.value.includes(selectedProtocol)) {
     if (type === 'flow') {
       flowProtocolsWhitelist.value.push(selectedProtocol);
@@ -108,7 +108,7 @@ const addProtocol = (type) => {
   }
 };
 
-const removeProtocol = (type, index) => {
+const removeProtocol = (type: string, index: number) => {
   if (type === 'flow') {
     flowProtocolsWhitelist.value.splice(index, 1);
   } else {
@@ -117,8 +117,8 @@ const removeProtocol = (type, index) => {
 };
 
 const addPort = () => {
-  const port = parseInt(selectedPort);
-  if (!isNaN(port) && !portsWhitelist.value.includes(port)) {
+  const port: number = parseInt(selectedPort);
+  if (!isNaN(port) && port <= 65535 && !portsWhitelist.value.includes(port)) {
     portsWhitelist.value.push(port);
     selectedPort = '';
   }
@@ -136,6 +136,10 @@ const handleOverlayClick = (event) => {
 };
 
 onMounted(() => {
+  allowDuplicates.value = props.queryConditions.allowDuplicates;
+  flowProtocolsWhitelist.value = props.queryConditions.flowProtocolsWhitelist;
+  dataProtocolsWhitelist.value = props.queryConditions.dataProtocolsWhitelist;
+  portsWhitelist.value = props.queryConditions.portsWhitelist;
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       cancelForm();
@@ -146,13 +150,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.first-tag-condition-editing-input{
+
+
+.first-tag-condition-editing-input {
   border: 1px solid #424242;
   border-radius: 4px;
-  font-size: 2vh;
+  font-size: 1.5vh;
   width: 90%;
-  padding: 2%;
-  margin: 0.5vh 0;
+  padding: 4px;
+  margin-bottom: 10px;
+  background: white;
 }
 
 .first-tag-condition-editing-input:focus {
@@ -164,30 +171,40 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 5px;
   margin-left: 15px;
+  font-size: 1.5vh;
+  width: 40%;
 }
 
 .dot {
   margin-right: 10px;
-  font-size: 1.2em;
+  font-size: 1.5vh;
 }
 
 .protocol-text {
-  margin-right: 10px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.removal-icon {
+  margin-left: auto;
+  cursor: pointer;
 }
 
 .port-input-container {
   display: flex;
   align-items: center;
+  width: 90%;
 }
 
 .port-input-container input {
   margin-right: 10px;
+  flex: 1;
 }
 
-.port-input-container button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
+.adding-icon {
+  margin-bottom: 10px;
   cursor: pointer;
 }
 
@@ -214,22 +231,25 @@ onMounted(() => {
   border-radius: 5px;
   max-height: 400px;
   overflow-y: auto;
+  margin-bottom: 10px;
+  width: 35vh;
+  box-sizing: border-box;
 }
 
 .title {
   font-weight: bold;
-  font-size: 24px;
+  font-size: 3vh;
   margin-bottom: 10px;
 }
 
 .layout-title{
-  font-size: 18px;
+  font-size: 2vh;
   margin-bottom: 15px;
 }
 
 .subtitle {
   font-size: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   color: #666;
 }
 
@@ -237,14 +257,7 @@ onMounted(() => {
   font-size: 1.8vh;
   margin-bottom: 10px;
   color: #666;
-}
-
-.query-condition-form input,
-.query-condition-form select {
-  margin-bottom: 10px;
-  width: 100%;
-  padding: 8px;
-  box-sizing: border-box;
+  margin-top: 10px;
 }
 
 .button-container {
@@ -309,12 +322,13 @@ onMounted(() => {
 .theme-checkbox:checked, .scrollable-selector-include-exclude-traffic input[type="checkbox"]:checked {
   background-position: 100%;
 }
+
 .scrollable-selector-include-exclude-traffic {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  width: 70%;
+  width: 60%;
   font-size: 2vh;
 }
 </style>
