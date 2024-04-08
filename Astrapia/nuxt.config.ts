@@ -56,4 +56,9 @@ export default defineNuxtConfig({
   css: [
     "@fortawesome/fontawesome-svg-core/styles.css"
   ],
+  routeRules: {
+    '/about': { prerender: true },
+    '/topology': {ssr:true},
+    '/': {isr: 60}
+  }
 });
