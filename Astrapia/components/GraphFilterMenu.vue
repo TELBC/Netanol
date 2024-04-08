@@ -21,7 +21,8 @@ const props = defineProps({
 
 const emit = defineEmits<{
   layersFetched: [],
-  menuOpened: [boolean]
+  menuOpened: [boolean],
+  queryConditions: [any]
 }>();
 
 const graphFilterMenuState = ref({
@@ -35,6 +36,7 @@ const graphFilterMenuState = ref({
 async function getLayersOfLayout() {
   const layoutData = await layoutService.getLayoutByName(graphFilterMenuState.value.selectedLayout.name);
   graphFilterMenuState.value.selectedLayout.layers = layoutData.layers;
+  emit('queryConditions', layoutData.queryConditions);
   emit('layersFetched');
 }
 

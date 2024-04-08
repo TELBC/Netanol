@@ -27,28 +27,28 @@ public class QueryConditions
     /// </summary>
     /// <remarks>This is intended to help differentiate between SFlow and other flow protocols.</remarks>
     [BsonElement("flowProtocolsWhitelist")]
-    public FlowProtocol[]? FlowProtocolsWhitelist { get; set; } 
+    public List<FlowProtocol>? FlowProtocolsWhitelist { get; set; } 
 
     /// <summary>
     ///     A list of allowed only those data carrying protocols that should be included in the result. If null this
     ///     condition is ignored.
     /// </summary>
     [BsonElement("dataProtocolsWhitelist")]
-    public DataProtocol[]? DataProtocolsWhitelist { get; set; }
+    public List<DataProtocol>? DataProtocolsWhitelist { get; set; }
 
     /// <summary>
     ///     If specified a list of allowed source and destination ports that should be included in the result. If either
     ///     source or destination port matches any of the ports in the list the trace is included in the result.
     /// </summary>
     [BsonElement("portsWhitelist")]
-    public int[]? PortsWhitelist { get; set; }
+    public List<int>? PortsWhitelist { get; set; }
 }
 
 public record QueryConditionsDto(
     bool? AllowDuplicates, 
-    FlowProtocol[]? FlowProtocolsWhitelist, 
-    DataProtocol[]? DataProtocolsWhitelist, 
-    int[]? PortsWhitelist);
+    List<FlowProtocol>? FlowProtocolsWhitelist, 
+    List<DataProtocol>? DataProtocolsWhitelist, 
+    List<int>? PortsWhitelist);
 
 /// <summary>
 ///     Represents a list of steps that should be taken before sending data to the frontend.
@@ -59,6 +59,7 @@ public class Layout
     {
         Name = name;
         Layers = new List<ILayer>();
+        QueryConditions = new QueryConditions();
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -78,7 +79,7 @@ public class Layout
     /// <summary>
     ///    The conditions that should be applied when querying the database.
     /// </summary>
-    [BsonElement("queryConditions")] 
+    [BsonElement("queryConditions")]
     public QueryConditions QueryConditions { get; set; } = new();
 
     /// <summary>

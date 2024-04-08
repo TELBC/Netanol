@@ -7,7 +7,13 @@ export interface Layouts {
 
 export interface Layout {
   name: string,
-  layers: []
+  layers: [],
+  queryConditions: {
+    allowDuplicates: boolean,
+    dataProtocolsWhitelist: [],
+    flowProtocolsWhitelist: [],
+    portsWhitelist: []
+  }
 }
 
 class LayoutService {
@@ -29,6 +35,10 @@ class LayoutService {
 
   public updateLayout(name: string, newName: string) {
     return ApiService.put(`/api/layout/${name}/${newName}`);
+  }
+
+  public setQueryConditions(name: string, queryConditions: any){
+    return ApiService.put(`/api/layout/${name}/queryConditions`, queryConditions)
   }
 }
 
