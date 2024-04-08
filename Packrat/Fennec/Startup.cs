@@ -74,6 +74,18 @@ public class Startup
         // Metric service
         services.AddSingleton<IMetricService, MetricService>();
         
+        // Template cleanup services
+        services.Configure<TemplateCleanupOptions>(Configuration.GetSection("TemplateCleanupOptions"));
+        
+        services.AddSingleton<IIpFixCleanupService, IpFixTemplateCleanupService>();
+        services.AddSingleton<INetFlow9CleanupService, NetFlow9TemplateCleanupService>();
+        
+        // services.AddSingleton<IpFixTemplateCleanupService>();
+        // services.AddSingleton<NetFlow9TemplateCleanupService>();
+
+        // services.AddHostedService<IpFixTemplateCleanupService>();
+        // services.AddHostedService<NetFlow9TemplateCleanupService>();
+
         // Database services
         services.AddSingleton<ITraceRepository, TraceRepository>();
         services.AddSingleton<ITimeService, TimeService>();

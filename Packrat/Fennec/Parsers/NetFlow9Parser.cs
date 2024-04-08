@@ -13,33 +13,33 @@ namespace Fennec.Parsers;
 public class NetFlow9Parser : IParser
 {
     private readonly ILogger _log;
-    private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords; // matches (ExporterIp, TemplateId) to TemplateRecord
     private readonly IMetricService _metricService;
-    
-    public NetFlow9Parser(ILogger log, IMetricService metricService)
+    private readonly INetFlow9CleanupService _templateCleanupService;
+
+    public NetFlow9Parser(ILogger log, IMetricService metricService, INetFlow9CleanupService templateCleanupService)
     {
         _log = log.ForContext<NetFlow9Parser>();
-        _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
         _metricService = metricService;
+        _templateCleanupService = templateCleanupService;
     }
     public IEnumerable<TraceImportInfo> Parse(UdpReceiveResult result)
     {
         var stream = new MemoryStream(result.Buffer);
-        using var nr = new NetflowReader(stream, 0, _templateRecords.Values);
+        using var nr = new NetflowReader(stream, 0, _templateCleanupService.TemplateRecords.Values);
         var header = nr.ReadPacketHeader();
 
         for (var i = 0; i < header.Count; i++)
         {
             try
             {
-                var dict = _templateRecords.Values.ToDictionary(t => t.ID, t => t);
+                var dict = _templateCleanupService.TemplateRecords.Values.ToDictionary(t => t.ID, t => t);
                 var set = nr.ReadFlowSet(dict);
 
                 switch (set)
                 {
                     case DataFlowSet dataFlowSet:
                         var key = (result.RemoteEndPoint.Address, set.ID);
-                        if (!_templateRecords.TryGetValue(key, out var template))
+                        if (!_templateCleanupService.TemplateRecords.TryGetValue(key, out var template))
                         {
                             _log.Warning("Could not parse data set... " +
                                          "Reading this set requires a not yet transmitted " +
@@ -52,7 +52,9 @@ public class NetFlow9Parser : IParser
                     case TemplateFlowSet templateFlowSet:
                         foreach (var templateRecord in templateFlowSet.Records)
                         {
-                            _templateRecords.Add((result.RemoteEndPoint.Address, templateRecord.ID), templateRecord);
+                            if (_templateCleanupService.TemplateRecords.ContainsKey((result.RemoteEndPoint.Address, templateRecord.ID)))
+                                continue;
+                            _templateCleanupService.TemplateRecords.Add((result.RemoteEndPoint.Address, templateRecord.ID), templateRecord);
                             _log.Information("Received new template set with id #{TemplateSetId}", templateRecord.ID);
                         }
 

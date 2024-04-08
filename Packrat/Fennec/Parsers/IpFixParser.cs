@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
+using System.Net;
 using System.Net.Sockets;
 using DotNetFlow.Ipfix;
 using Fennec.Database;
@@ -16,22 +17,21 @@ public class IpFixParser : IParser
 {
     private readonly ILogger _log;
     // TODO: expand _templateRecords to a service, can be used to display/monitor templates in frontend
-    private readonly IDictionary<(IPAddress, ushort), TemplateRecord> _templateRecords;
     private readonly IMetricService _metricService;
+    private readonly IIpFixCleanupService _templateCleanupService;
 
-    public IpFixParser(ILogger log,  IMetricService metricService)
+    public IpFixParser(ILogger log,  IMetricService metricService, IIpFixCleanupService templateCleanupService)
     {
         _log = log.ForContext<IpFixParser>();
-        _templateRecords = new Dictionary<(IPAddress, ushort), TemplateRecord>();
         _metricService = metricService;
+        _templateCleanupService = templateCleanupService;
     }
 
     public IEnumerable<TraceImportInfo> Parse(UdpReceiveResult result)
     {
-        // result.RemoteEndPoint.Address --> address of exporter
         var stream = new MemoryStream(result.Buffer);
 
-        using var ipfixReader = new IpfixReader(stream, 0, _templateRecords.Values);
+        using var ipfixReader = new IpfixReader(stream, 0, _templateCleanupService.TemplateRecords.Values);
         _ = ipfixReader.ReadPacketHeader();
 
         // Process each set in the IPFIX message. Has to be while(true) because header doesn't provide a count of sets.
@@ -45,7 +45,7 @@ public class IpFixParser : IParser
                 {
                     case DataSet dataSet:
                         var key = (result.RemoteEndPoint.Address, set.ID);
-                        if (!_templateRecords.TryGetValue(key, out var template))
+                        if (!_templateCleanupService.TemplateRecords.TryGetValue(key, out var template))
                         {
                             _log.Warning("Could not parse data set... " +
                                          "Reading this set requires a not yet transmitted " +
@@ -58,7 +58,9 @@ public class IpFixParser : IParser
                     case TemplateSet templateSet:
                         foreach (var templateRecord in templateSet.Records)
                         {
-                            _templateRecords.Add((result.RemoteEndPoint.Address, templateRecord.ID), templateRecord);
+                            if (_templateCleanupService.TemplateRecords.ContainsKey((result.RemoteEndPoint.Address, templateRecord.ID)))
+                                continue;
+                            _templateCleanupService.TemplateRecords.Add((result.RemoteEndPoint.Address, templateRecord.ID), templateRecord);
                             _log.Information("Received new template set with id #{TemplateSetId}", templateRecord.ID);
                         }
 
