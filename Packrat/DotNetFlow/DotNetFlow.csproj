@@ -14,10 +14,14 @@
         <PackageProjectUrl>https://github.com/UniStuttgart-VISUS/dotnetflow</PackageProjectUrl>
         <RepositoryUrl>https://github.com/UniStuttgart-VISUS/dotnetflow</RepositoryUrl>
         <PackageTags>netflow ipfix</PackageTags>
+        <LangVersion>8</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="PcapDotNet" Version="0.10.2" />
+        <PackageReference Include="PcapDotNet.Base" Version="1.0.4.1" />
+        <PackageReference Include="PcapDotNet.Packets" Version="1.0.4.1" />
     </ItemGroup>
 
     <ItemGroup>

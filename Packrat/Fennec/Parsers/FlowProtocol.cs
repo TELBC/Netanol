@@ -4,7 +4,8 @@ public enum FlowProtocol
 {
     Netflow9,
     Ipfix,
-    Netflow5
+    Netflow5,
+    Sflow
 }
 
 public class CollectorSingleTraceMetrics
