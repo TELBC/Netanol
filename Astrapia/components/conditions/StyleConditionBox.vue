@@ -74,16 +74,15 @@
               <div class="grid-item">
                 <input class="selector-color-input" type="color" @change="changeStyling" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Udp.endHex" title="End Color"/>
               </div>
-<!--TODO: ICMP needs to be enabled by Michal-->
-<!--              <div class="grid-label">-->
-<!--                <label class="dropdown-label">ICMP</label>-->
-<!--              </div>-->
-<!--              <div class="grid-item">-->
-<!--                <input class="selector-color-input" type="color" @change="changeStyling" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Icmp.startHex" title="Start Color"/>-->
-<!--              </div>-->
-<!--              <div class="grid-item">-->
-<!--                <input class="selector-color-input" type="color" @change="changeStyling" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Icmp.endHex" title="End Color"/>-->
-<!--              </div>-->
+              <div class="grid-label">
+                <label class="dropdown-label">ICMP</label>
+              </div>
+              <div class="grid-item">
+                <input class="selector-color-input" type="color" @change="changeStyling" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Icmp.startHex" title="Start Color"/>
+              </div>
+              <div class="grid-item">
+                <input class="selector-color-input" type="color" @change="changeStyling" v-model="filterConditionBoxState.editingCondition.edgeStyler.protocolColors.Icmp.endHex" title="End Color"/>
+              </div>
             </div>
           </div>
         </div>
@@ -219,10 +218,10 @@ const filterConditionBoxState = ref({
           startHex: "#000000",
           endHex: "#FFFFFF"
         },
-        // Icmp:{
-        //   startHex: "#000000",
-        //   endHex: "#FFFFFF"
-        // }
+        Icmp:{
+          startHex: "#000000",
+          endHex: "#FFFFFF"
+        }
       }
     },
     nodeStyler: {
