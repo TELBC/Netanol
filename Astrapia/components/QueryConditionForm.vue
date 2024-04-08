@@ -26,6 +26,7 @@
         <option value="Unknown">Unknown</option>
         <option value="Tcp">TCP</option>
         <option value="Udp">UDP</option>
+        <option value="Icmp">ICMP</option>
       </select>
       <div v-for="(protocol, index) in dataProtocolsWhitelist" :key="index" class="whitelist-item">
         <span class="dot">&#8226;</span>

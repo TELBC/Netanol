@@ -3,11 +3,11 @@
     <Dropdown class="layout-dropdown" @changeLayout="handleLayoutChange" />
     <Graph :data="data" @intervalAmount="handleIntervalAmount"/>
     <GraphFilterMenu :layout="layout" @menuOpened="handleMenuOpened" @layersFetched="fetchAndUpdateGraph" @queryConditions="handleQueryConditions"/>
-    <TopologyTimeframeSelector v-if="data" class="topology-timeframe"
+    <TopologyTimeframeSelector class="topology-timeframe"
                                @change="handleTimeframeSelection"
                                :from-value="timeframeSelectorFrom"
                                :to-value="timeframeSelectorTo"/>
-    <QueryConditionButton v-if="data" class="query-conditions" :layout="layout" :queryConditions="queryConditions"/>
+    <QueryConditionButton class="query-conditions" :layout="layout" :queryConditions="queryConditions"/>
   </div>
 </template>
 
