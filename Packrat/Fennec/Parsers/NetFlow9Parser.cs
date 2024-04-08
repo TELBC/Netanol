@@ -135,7 +135,6 @@ public class NetFlow9Parser : IParser
             readTime, exporterIp,
             srcIp, srcPort,
             dstIp, dstPort,
-            false,
             packetCount, byteCount,
             protocol switch
             {

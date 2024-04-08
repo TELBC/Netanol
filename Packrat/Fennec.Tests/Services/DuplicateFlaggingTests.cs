@@ -14,7 +14,6 @@ public class DuplicateFlaggingTests
         DateTimeOffset.Now, IPAddress.Parse("192.168.0.1"),
         IPAddress.Parse("10.10.20.1"), 10,
         IPAddress.Parse("10.10.30.1"), 20,
-        false,
         10, 10, DataProtocol.Tcp, FlowProtocol.Ipfix);
 
     [Fact]

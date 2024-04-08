@@ -7,9 +7,10 @@ namespace Fennec.Database.Domain;
 
 public enum DataProtocol
 {
-    Unknown,
-    Udp,
-    Tcp
+    Unknown = 253, // "Used for experimentation and testing"
+    Udp = 17,
+    Tcp = 6,
+    Icmp = 1,
 }
 
 /// <summary>

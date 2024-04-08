@@ -4,7 +4,7 @@ using Fennec.Database;
 namespace Fennec.Parsers;
 
 /// <summary>
-/// Interface for all collectors.
+/// Interface for all parsers.
 /// </summary>
 public interface IParser
 {
