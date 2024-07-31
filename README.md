@@ -27,7 +27,7 @@ An intuitive Flow based Network Traffic Visualizer & Analyzer.
 ![npm version](https://img.shields.io/npm/v/npm.svg?logo=npm)
 ![nuxt](https://img.shields.io/badge/nuxt-3.6.5-green)
 ![dotnet](https://img.shields.io/badge/.NET-7.0.22-5027d5)
-![postgresql](https://img.shields.io/badge/postgres-12-396c94)
+![mongodb](https://img.shields.io/badge/-MongoDB-4DB33D?style=flat&logo=mongodb&logoColor=FFFFFF)
 ![typescript](https://img.shields.io/badge/TypeScript-5.2.2-097ecd?logo=typescript&logoColor=white)
 ![docker](https://img.shields.io/badge/Docker-24.0.6-2468ee?logo=docker)
 
@@ -37,12 +37,14 @@ An intuitive Flow based Network Traffic Visualizer & Analyzer.
 ![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
 ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
 
-![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![MongoDB](https://img.shields.io/badge/-MongoDB-13aa52?style=for-the-badge&logo=mongodb&logoColor=white)
 ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 
 ## Documentation
 
-[![view - Documentation](https://img.shields.io/badge/view-Documentation-537B87?style=for-the-badge)](https://github.com/TELBC/Netanol/wiki "Go to project documentation")
+[![view - Documentation](https://img.shields.io/badge/wiki-documentation-537b87)](https://github.com/TELBC/Netanol/wiki "Go to project documentation")
+
+[![view - Documentation](https://img.shields.io/badge/view-Documentation-537B87?style=for-the-badge)](Resources%2FNETANOL_Software%20Requirements%20Specification.pdf)
 
 </div>
