@@ -10,7 +10,6 @@ An intuitive Flow based Network Traffic Visualizer & Analyzer.
 
 <br/>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-537B87.svg)](https://opensource.org/licenses/MIT)
 ![GitHub repo size](https://img.shields.io/github/repo-size/TELBC/Netanol)
 
 ### Workflows
@@ -45,6 +44,7 @@ An intuitive Flow based Network Traffic Visualizer & Analyzer.
 
 [![view - Documentation](https://img.shields.io/badge/wiki-documentation-537b87)](https://github.com/TELBC/Netanol/wiki "Go to project documentation")
 
+#### Software Requirements Specification:
 [![view - Documentation](https://img.shields.io/badge/view-Documentation-537B87?style=for-the-badge)](Resources%2FNETANOL_Software%20Requirements%20Specification.pdf)
 
 </div>
