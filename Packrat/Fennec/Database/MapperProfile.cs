@@ -12,16 +12,16 @@ public class MapperProfile : Profile
         // TODO: rethink all this dto madness
         CreateMap<IPAddress, string>()
             .ConvertUsing(ip => ip.ToString());
-        
+
         CreateMap<string, IPAddress>()
             .ConvertUsing(str => IPAddress.Parse(str));
-        
+
         CreateMap<string, byte[]>()
             .ConvertUsing(str => IPAddress.Parse(str).GetAddressBytes());
-        
+
         CreateMap<byte[], string>()
             .ConvertUsing(bytes => new IPAddress(bytes).ToString());
-        
+
         CreateMap<FilterConditionDto, FilterCondition>()
             .ConstructUsing((dto, _) =>
             {
@@ -63,36 +63,48 @@ public class MapperProfile : Profile
         CreateMap<FilterLayerDto, FilterLayer>();
 
         CreateMap<ILayer, ShortLayerDto>();
-        
+
         CreateMap<ILayerDto, ILayer>()
             .ConstructUsing((dto, ctx) =>
             {
                 if (!LayerType.LookupTable.TryGetValue(dto.Type, out var layerType))
                     throw new ArgumentException("No layer type found in the lookup table.");
-                
-                return (ILayer) ctx.Mapper.Map(dto, dto.GetType(), layerType.LayerType);
+
+                return (ILayer)ctx.Mapper.Map(dto, dto.GetType(), layerType.LayerType);
             });
-        
+
         CreateMap<ILayer, ILayerDto>()
             .ConstructUsing((layer, ctx) =>
             {
                 if (!LayerType.LookupTable.TryGetValue(layer.Type, out var layerType))
                     throw new ArgumentException("No layer type found in the lookup table.");
-                
-                return (ILayerDto) ctx.Mapper.Map(layer, layer.GetType(), layerType.DtoType);
+
+                return (ILayerDto)ctx.Mapper.Map(layer, layer.GetType(), layerType.DtoType);
             });
 
         CreateMap<Layout, ShortLayoutDto>()
-            .ForCtorParam("LayerCount", opt => 
+            .ForCtorParam("LayerCount", opt =>
                 opt.MapFrom(src => src.Layers.Count));
+        CreateMap<Layout, FullLayoutDto>()
+            .ForAllMembers(opts => opts.AllowNull());
 
-        CreateMap<Layout, FullLayoutDto>();
 
         CreateMap<QueryConditions, QueryConditionsDto>()
-            .ForAllMembers(opts => opts.AllowNull());
+            .ConstructUsing((q, _) =>
+                new QueryConditionsDto(q.AllowDuplicates, q.FlowProtocolsWhitelist, q.DataProtocolsWhitelist,
+                    q.PortsWhitelist))
+            .ForAllMembers(o => o.AllowNull());
 
         CreateMap<QueryConditionsDto, QueryConditions>()
-            .ForAllMembers(opts => opts.AllowNull());
+            .ConstructUsing(q =>
+                new QueryConditions
+                {
+                    AllowDuplicates = q.AllowDuplicates,
+                    FlowProtocolsWhitelist = q.FlowProtocolsWhitelist,
+                    DataProtocolsWhitelist = q.DataProtocolsWhitelist,
+                    PortsWhitelist = q.PortsWhitelist
+                })
+            .ForAllMembers(o => o.AllowNull());
 
         CreateMap<AggregationLayer, AggregationLayerDto>();
         CreateMap<AggregationLayerDto, AggregationLayer>();
@@ -101,7 +113,7 @@ public class MapperProfile : Profile
 
         CreateMap<VmwareTaggingLayer, VmwareTaggingLayerDto>();
         CreateMap<VmwareTaggingLayerDto, VmwareTaggingLayer>();
-        
+
         CreateMap<TagFilterLayer, TagFilterLayerDto>();
         CreateMap<TagFilterLayerDto, TagFilterLayer>();
         CreateMap<TagFilterCondition, TagFilterConditionDto>();

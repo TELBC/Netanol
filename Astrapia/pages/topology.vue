@@ -2,11 +2,12 @@
   <div class="topology-menu">
     <Dropdown class="layout-dropdown" @changeLayout="handleLayoutChange" />
     <Graph :data="data" @intervalAmount="handleIntervalAmount"/>
-    <GraphFilterMenu v-bind:layout="layout" @menuOpened="handleMenuOpened" @layersFetched="fetchAndUpdateGraph"/>
-    <TopologyTimeframeSelector v-if="data && layout" class="topology-timeframe"
+    <GraphFilterMenu :layout="layout" @menuOpened="handleMenuOpened" @layersFetched="fetchAndUpdateGraph" @queryConditions="handleQueryConditions"/>
+    <TopologyTimeframeSelector class="topology-timeframe"
                                @change="handleTimeframeSelection"
                                :from-value="timeframeSelectorFrom"
                                :to-value="timeframeSelectorTo"/>
+    <QueryConditionButton class="query-conditions" :layout="layout" :queryConditions="queryConditions"/>
   </div>
 </template>
 
@@ -18,11 +19,13 @@ import Graph from "~/components/Graph.vue";
 import Dropdown from "~/components/Dropdown.vue";
 import GraphFilterMenu from "~/components/GraphFilterMenu.vue";
 import TopologyTimeframeSelector from "~/components/TopologyTimeframeSelector.vue";
+import QueryConditionButton from "~/components/QueryConditionButton.vue";
 
 const layout = ref('');
 const timeframeSelectorFrom = ref(new Date(new Date().getTime() - 2 * 60 * 1000).toISOString().slice(0,16))
 const timeframeSelectorTo = ref(new Date().toISOString().slice(0,16))
 const data = ref();
+const queryConditions = ref(null);
 const intervalAmount = ref<number>(0);
 
 let fetchInterval: NodeJS.Timeout | null = null;
@@ -33,6 +36,10 @@ const handleTimeframeSelection = (from: string, to: string) => {
   timeframeSelectorTo.value = to;
   fetchAndUpdateGraph();
 }
+
+const handleQueryConditions = (conditions: any) => {
+  queryConditions.value = conditions;
+};
 
 const handleIntervalAmount = (amount: number) => {
   intervalAmount.value = amount;
@@ -118,5 +125,13 @@ onBeforeUnmount(() => {
   right: 0;
   z-index: 15;
   margin: 0.75vh 13vw 0 0;
+}
+
+.query-conditions{
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 15;
+  margin: 0.75vh 39vw 0 0;
 }
 </style>

@@ -21,7 +21,8 @@ import {
   faMinus,
   faFloppyDisk,
   faArrowLeft,
-  faRightFromBracket
+  faRightFromBracket,
+  faFilter
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -45,7 +46,8 @@ library.add(
   faMinus,
   faFloppyDisk,
   faArrowLeft,
-  faRightFromBracket
+  faRightFromBracket,
+  faFilter
 )
 
 config.autoAddCss = false

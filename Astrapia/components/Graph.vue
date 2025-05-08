@@ -167,12 +167,14 @@ export default {
 
       this.node = this.node
         .data(nodes, d => d.id)
-        .join(enter => enter.append("circle")
-          .attr("r", 8)
-          .attr("fill", d => d.hexColor ?? "#537B87")
-          .call(this.drag(this.simulation))
-          .call(node => node.append("title")
-            .text(d => `IP: ${d.name} ${d.tags ? `\nTags: ${d.tags}` : ''}`))
+        .join(
+          enter => enter.append("circle")
+            .attr("r", 8)
+            .attr("fill", d => d.hexColor ?? "#537B87")
+            .call(this.drag(this.simulation))
+            .call(node => node.append("title")
+              .text(d => `IP: ${d.name} ${d.tags ? `\nTags: ${d.tags}` : ''}`)),
+          update => update.attr("fill", d => d.hexColor ?? "#537B87")
         );
 
       this.label = this.label
@@ -255,7 +257,7 @@ export default {
           if (selectedNode) {
             this.node.transition()
               .duration(150)
-              .attr("fill", "#537B87")
+              .attr("fill", d => d.hexColor ?? "#537B87")
               .attr("r", 8)
               .attr("opacity", 1);
             this.link.transition()

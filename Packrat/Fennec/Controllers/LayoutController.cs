@@ -50,6 +50,9 @@ public class LayoutController : ControllerBase
     [SwaggerResponse(StatusCodes.Status400BadRequest, "A layout with the name already exists")]
     public async Task<IActionResult> Create(string name)
     {
+        if (!ModelState.IsValid)
+            return BadRequest();
+        
         try
         {
             var layout = await _layoutRepository.CreateLayout(name);
@@ -68,7 +71,7 @@ public class LayoutController : ControllerBase
     /// <param name="name"></param>
     /// <returns></returns>
     [HttpGet("{name}")]
-    [SwaggerResponse(StatusCodes.Status200OK, "Layout successfully returned", typeof(Layout))]
+    [SwaggerResponse(StatusCodes.Status200OK, "Layout successfully returned", typeof(FullLayoutDto))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "The layout with the name does not exist")]
     public async Task<IActionResult> Get(string name)
     {
@@ -137,14 +140,20 @@ public class LayoutController : ControllerBase
     [HttpPut("{name}/queryConditions")]
     [SwaggerResponse(StatusCodes.Status200OK, "Query conditions successfully updated", typeof(FullLayoutDto))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "The layout with the name does not exist")]
-    public async Task<IActionResult> ReplaceQueryConditions(string name, QueryConditionsDto queryConditions)
+    public async Task<IActionResult> ReplaceQueryConditions(string name, [FromBody] QueryConditionsDto queryConditions)
     {
+        if (!ModelState.IsValid)
+            return BadRequest();
+            
         var layout = await _layoutRepository.GetLayout(name);
         if (layout == null)
             return NotFound($"The layout with the name `{name}` does not exist.");
 
         var newQueryConditions = _mapper.Map<QueryConditions>(queryConditions);
         await _layoutRepository.ReplaceQueryConditions(name, newQueryConditions);
+        
+        // TODO: update it using the previous call instead of re-fetching
+        layout = await _layoutRepository.GetLayout(name);
         return Ok(_mapper.Map<FullLayoutDto>(layout));
     }
 }

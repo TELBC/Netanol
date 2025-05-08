@@ -54,8 +54,8 @@ public class QueryConditionTests : MongoDbFactory
         await SeedDatabase();
         var conditions = new QueryConditions
         {
-            FlowProtocolsWhitelist = new[] { FlowProtocol.Ipfix, FlowProtocol.Netflow5 },
-            DataProtocolsWhitelist = new[] { DataProtocol.Tcp }
+            FlowProtocolsWhitelist = new List<FlowProtocol> { FlowProtocol.Ipfix, FlowProtocol.Netflow5 },
+            DataProtocolsWhitelist = new List<DataProtocol> { DataProtocol.Tcp }
         };
 
         var service = new TraceRepository(Database, null!, null!);
@@ -77,7 +77,7 @@ public class QueryConditionTests : MongoDbFactory
         var conditions = new QueryConditions
         {
             AllowDuplicates = false,
-            PortsWhitelist = new[] { 10, 50 }
+            PortsWhitelist = new List<int> { 10, 50 }
         };
 
         var service = new TraceRepository(Database, null!, null!);

@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json.Serialization;
 using Fennec.Database;
 using Fennec.Database.Domain;
 using Fennec.Metrics;
@@ -49,10 +50,7 @@ public class Startup
     {
         BsonSerializer.RegisterSerializer(typeof(ILayer), new MongoLayerSerializer());
         BsonSerializer.RegisterSerializer(typeof(Dictionary<DataProtocol, ColorRange>), new ProtocolColorsDictionarySerializer());
-        JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-        {
-            Converters = { new StringEnumConverter() }
-        };
+        
         
         services.AddAutoMapper(typeof(MapperProfile));
 
@@ -174,8 +172,14 @@ public class Startup
             Log.Error("Failed to read multiplexer configuration... To run no multiplexers define an empty list");
 
         // Web services
-        services.AddControllers(c => { c.ModelBinderProviders.Insert(0, new LayerModelBinderProvider()); })
-            .AddNewtonsoftJson(options => { options.SerializerSettings.Converters.Add(new StringEnumConverter()); });
+        services
+            .AddControllers(c => { c.ModelBinderProviders.Insert(0, new LayerModelBinderProvider()); })
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.NullValueHandling = NullValueHandling.Include;
+                options.SerializerSettings.Converters.Add(new StringEnumConverter());
+            });
+        
         services.AddAutoMapper(typeof(Program).Assembly);
 
         if (StartupOptions.AllowCors)
